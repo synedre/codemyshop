@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const token = String(getRouterParam(event, 'token') || '').trim()
   if (!token) {
     throw createError({ statusCode: 400, statusMessage: 'token requis' })

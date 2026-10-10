@@ -65,7 +65,7 @@ useHead(() => (flatItems.value.length
 
       <div class="space-y-10">
         <div v-for="(group, gi) in groups" :key="group.id ?? gi">
-          <h3 v-if="i18nt(group.title)" class="text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
+          <h3 v-if="i18nt(group.title)" class="text-sm font-semibold uppercase tracking-widest text-primary-700 dark:text-primary-400 mb-4">
             {{ i18nt(group.title) }}
           </h3>
 

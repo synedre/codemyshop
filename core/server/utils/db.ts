@@ -25,6 +25,8 @@ function buildClientDbMap(): Record<string, { database: string; host?: string; p
 
 const CLIENT_DB_MAP = buildClientDbMap()
 
+const DEFAULT_CLIENT_ID = process.env.DEFAULT_CLIENT_ID || 'codemyshop'
+
 export function getKnownTenantClientIds(): string[] {
   return Object.keys(CLIENT_DB_MAP)
 }
@@ -34,7 +36,7 @@ export function resolveClientId(event?: any): string {
   try {
     const cfg = useRuntimeConfig(event)
     const fromCfg = (cfg.clientId as string | undefined) || ''
-    if (fromCfg && fromCfg !== 'ac-hub') return fromCfg
+    if (fromCfg && fromCfg !== DEFAULT_CLIENT_ID) return fromCfg
   } catch {  }
 
   
@@ -48,10 +50,16 @@ export function resolveClientId(event?: any): string {
     } catch {  }
   }
 
-  return 'ac-hub'
+  return DEFAULT_CLIENT_ID
 }
 
-const VAISSEAU_MERE_TENANTS = new Set(['ac-hub', 'alexandrecarette', 'codemyshop'])
+function getPrimaryPgTenants(): Set<string> {
+  const raw = process.env.PG_PRIMARY_TENANTS || ''
+  const parsed = raw.split(',').map((s) => s.trim()).filter(Boolean)
+  return new Set(parsed.length ? parsed : [DEFAULT_CLIENT_ID])
+}
+
+const PRIMARY_PG_TENANTS = getPrimaryPgTenants()
 
 function getExtraPgTenants(): Set<string> {
   const raw = process.env.PG_ENABLED_TENANTS || ''
@@ -60,14 +68,14 @@ function getExtraPgTenants(): Set<string> {
 
 function shouldDispatchToPg(clientId: string): boolean {
   if (!isDomainOnPg('*')) return false
-  return VAISSEAU_MERE_TENANTS.has(clientId) || getExtraPgTenants().has(clientId)
+  return PRIMARY_PG_TENANTS.has(clientId) || getExtraPgTenants().has(clientId)
 }
 
 export function useClientDbById(clientId: string): PgAdapterClient {
   if (shouldDispatchToPg(clientId)) return buildPgAdapter(clientId)
   throw new Error(
-    `[db] useClientDbById('${clientId}') : path mysql2 droppé (chantier #44 E.4). `
-    + `Tenant non vaisseau-mère AC ou PG_ENABLED_DOMAINS non wildcard. `
+    `[db] useClientDbById('${clientId}') : path mysql2 droppé (migration). `
+    + `Tenant non primary ou PG_ENABLED_DOMAINS non wildcard. `
     + `Migrer ce tenant vers PG avant son prochain deploy.`,
   )
 }

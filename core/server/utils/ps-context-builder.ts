@@ -103,11 +103,5 @@ export async function buildClientContext(clientId: string): Promise<ClientContex
 }
 
 function getClientDisplayName(clientId: string): string {
-  const names: Record<string, string> = {
-    'ac-hub':       'CodeMyShop Hub',
-    'example-shop':   'Example Shop',
-    'example-vape': 'Example Vape',
-    'codemyshop':   'CodeMyShop (Demo)',
-  }
-  return names[clientId] ?? clientId
+  return clientId
 }

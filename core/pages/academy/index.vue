@@ -98,12 +98,16 @@ async function submitLogin() {
 
 const modulesCount = computed(() => academy.value?.modules?.length || 0)
 
+const metaDescription = modulesCount.value > 0
+  ? t('academy.meta_description', `${modulesCount.value} modules et ${totalLessons.value} leçons par ${brandName}.`)
+  : t('academy.meta_description_mentors', `Mentors historiques, quiz de certification et playbook ${brandName} — l'Academy gratuite.`)
+
 useHead({
   title: t('academy.meta_title', `Academy — ${brandName}`),
   meta: [
-    { name: 'description', content: t('academy.meta_description', `${modulesCount.value} modules et ${totalLessons.value} leçons par ${brandName}.`) },
+    { name: 'description', content: metaDescription },
   ],
-  script: [{
+  script: modulesCount.value > 0 ? [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify({
       '@context': 'https://schema.org',
@@ -118,7 +122,7 @@ useHead({
         name: m.title,
       })),
     }),
-  }],
+  }] : [],
 })
 </script>
 
@@ -143,20 +147,24 @@ useHead({
         </h1>
 
         <p class="text-xl text-gray-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-          {{ t('academy.hero_subtitle', `L'expertise ${brandName} condensée en ${totalLessons} leçons pratiques.`) }}
+          {{ totalLessons > 0
+            ? t('academy.hero_subtitle', `L'expertise ${brandName} condensée en ${totalLessons} leçons pratiques.`)
+            : t('academy.hero_subtitle_mentors', `L'expertise ${brandName}, transmise par ses mentors historiques.`) }}
         </p>
 
         <div class="flex items-center justify-center gap-8 mb-10">
-          <div class="text-center">
-            <p class="text-3xl font-extrabold text-primary-600 dark:text-primary-400">{{ modulesCount }}</p>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">{{ t('academy.stat_modules', 'modules') }}</p>
-          </div>
-          <div class="w-px h-10 bg-gray-200 dark:bg-slate-700" />
-          <div class="text-center">
-            <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ totalLessons }}</p>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">{{ t('academy.stat_lessons', 'leçons') }}</p>
-          </div>
-          <div class="w-px h-10 bg-gray-200 dark:bg-slate-700" />
+          <template v-if="modulesCount > 0">
+            <div class="text-center">
+              <p class="text-3xl font-extrabold text-primary-600 dark:text-primary-400">{{ modulesCount }}</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">{{ t('academy.stat_modules', 'modules') }}</p>
+            </div>
+            <div class="w-px h-10 bg-gray-200 dark:bg-slate-700" />
+            <div class="text-center">
+              <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ totalLessons }}</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">{{ t('academy.stat_lessons', 'leçons') }}</p>
+            </div>
+            <div class="w-px h-10 bg-gray-200 dark:bg-slate-700" />
+          </template>
           <div class="text-center">
             <p class="text-3xl font-extrabold text-gray-900 dark:text-white">0 €</p>
             <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">{{ t('academy.stat_price', 'prix') }}</p>
@@ -177,7 +185,7 @@ useHead({
           <button class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-semibold text-sm transition-colors" @click="authMode = 'register'">
             {{ t('academy.register_free', "S'inscrire gratuitement") }}
           </button>
-          <button class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-white dark:bg-white/[0.06] hover:bg-gray-50 dark:hover:bg-white/[0.1] border border-gray-200 dark:border-white/[0.1] text-gray-700 dark:text-white font-semibold text-sm transition-colors" @click="authMode = 'login'">
+          <button class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-white dark:bg-white/[0.06] hover:bg-gray-50 dark:hover:bg-slate-800/[0.1] border border-gray-200 dark:border-white/[0.1] text-gray-700 dark:text-white font-semibold text-sm transition-colors" @click="authMode = 'login'">
             {{ t('academy.login', 'Se connecter') }}
           </button>
         </div>
@@ -213,7 +221,7 @@ useHead({
     </section>
 
     
-    <section id="modules" class="py-16 bg-gray-50 dark:bg-[#111827]">
+    <section v-if="modulesCount > 0" id="modules" class="py-16 bg-gray-50 dark:bg-[#111827]">
       <div class="max-w-5xl mx-auto px-6">
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           <NuxtLink

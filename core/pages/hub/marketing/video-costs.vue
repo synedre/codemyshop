@@ -5,8 +5,8 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Video Factory &middot; Simulateur de Co&ucirc;ts</h1>
-          <p class="text-xs text-gray-400 mt-0.5">Estimez le co&ucirc;t de production par vid&eacute;o et la rentabilit&eacute; mensuelle</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.video_costs.title', 'Video Factory · Simulateur de Coûts') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.video_costs.subtitle', 'Estimez le coût de production par vidéo et la rentabilité mensuelle') }}</p>
         </div>
         <NuxtLink to="/hub/marketing/youtube" class="text-xs text-gray-400 hover:text-primary-600 transition-colors">&larr; YouTube Studio</NuxtLink>
       </div>
@@ -18,19 +18,19 @@
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-4 text-center">
           <p class="text-2xl font-extrabold text-gray-900 dark:text-slate-100">{{ formatEur(totalCostPerVideo) }}</p>
-          <p class="text-xs text-gray-400 mt-0.5">Co&ucirc;t / vid&eacute;o</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.video_costs.cost_video', 'Coût / vidéo') }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-4 text-center">
           <p class="text-2xl font-extrabold text-primary-600">{{ formatEur(monthlyCost) }}</p>
-          <p class="text-xs text-gray-400 mt-0.5">Co&ucirc;t / mois</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.video_costs.cost_month', 'Coût / mois') }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-4 text-center">
           <p class="text-2xl font-extrabold" :class="marginPercent >= 95 ? 'text-success-600' : marginPercent >= 80 ? 'text-amber-600' : 'text-danger-600'">{{ marginPercent.toFixed(1) }}%</p>
-          <p class="text-xs text-gray-400 mt-0.5">Marge brute</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.video_costs.gross_margin', 'Marge brute') }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-4 text-center">
           <p class="text-2xl font-extrabold text-success-600">{{ formatEur(monthlyProfit) }}</p>
-          <p class="text-xs text-gray-400 mt-0.5">Profit net / mois</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.video_costs.net_profit_month', 'Profit net / mois') }}</p>
         </div>
       </div>
 
@@ -41,12 +41,12 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Param&egrave;tres vid&eacute;o</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ t('hub.ui.video_costs.video_params', 'Paramètres vidéo') }}</h2>
 
             <div class="space-y-4">
               <div>
                 <div class="flex items-center justify-between mb-1.5">
-                  <label class="label">Dur&eacute;e</label>
+                  <label class="label">{{ t('hub.ui.video_costs.duration', 'Durée') }}</label>
                   <span class="text-xs font-bold text-primary-600">{{ config.durationSeconds }}s</span>
                 </div>
                 <input v-model.number="config.durationSeconds" type="range" min="15" max="180" step="5" class="slider" />
@@ -55,7 +55,7 @@
 
               <div>
                 <div class="flex items-center justify-between mb-1.5">
-                  <label class="label">Nombre de sc&egrave;nes</label>
+                  <label class="label">{{ t('hub.ui.video_costs.scenes', 'Nombre de scènes') }}</label>
                   <span class="text-xs font-bold text-primary-600">{{ config.scenes }}</span>
                 </div>
                 <input v-model.number="config.scenes" type="range" min="2" max="20" step="1" class="slider" />
@@ -64,7 +64,7 @@
 
               <div>
                 <div class="flex items-center justify-between mb-1.5">
-                  <label class="label">R&eacute;solution</label>
+                  <label class="label">{{ t('hub.ui.video_costs.resolution', 'Résolution') }}</label>
                 </div>
                 <div class="flex gap-2">
                   <button
@@ -85,11 +85,11 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Mod&egrave;les IA</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ t('hub.ui.video_costs.ai_models', 'Modèles IA') }}</h2>
 
             <div class="space-y-3">
               <div>
-                <label class="label">TTS (Audio)</label>
+                <label class="label">{{ t('hub.ui.video_costs.tts_label', 'TTS (Audio)') }}</label>
                 <select v-model="config.ttsModel" class="input-field text-xs">
                   <option value="xttsv2">XTTSv2 (Coqui) &mdash; 0.02&euro;/min</option>
                   <option value="cosyvoice">CosyVoice &mdash; 0.015&euro;/min</option>
@@ -97,7 +97,7 @@
               </div>
 
               <div>
-                <label class="label">Image (T2I)</label>
+                <label class="label">{{ t('hub.ui.video_costs.img_label', 'Image (T2I)') }}</label>
                 <select v-model="config.imageModel" class="input-field text-xs">
                   <option value="flux-schnell">Flux.1 Schnell &mdash; 0.005&euro;/img</option>
                   <option value="flux-dev">Flux.1 Dev &mdash; 0.015&euro;/img</option>
@@ -106,7 +106,7 @@
               </div>
 
               <div>
-                <label class="label">Vid&eacute;o (I2V)</label>
+                <label class="label">{{ t('hub.ui.video_costs.vid_label', 'Vidéo (I2V)') }}</label>
                 <select v-model="config.videoModel" class="input-field text-xs">
                   <option value="cogvideox-5b">CogVideoX-5B &mdash; ~0.10&euro;/clip 5s</option>
                   <option value="svd">Stable Video Diffusion &mdash; ~0.06&euro;/clip 5s</option>
@@ -114,7 +114,7 @@
               </div>
 
               <div>
-                <label class="label">LLM (Storyboard)</label>
+                <label class="label">{{ t('hub.ui.video_costs.llm_label', 'LLM (Storyboard)') }}</label>
                 <select v-model="config.llmModel" class="input-field text-xs">
                   <option value="claude-haiku">Claude Haiku &mdash; ~0.005&euro;/script</option>
                   <option value="claude-sonnet">Claude Sonnet &mdash; ~0.01&euro;/script</option>
@@ -126,21 +126,21 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Projection mensuelle</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ t('hub.ui.video_costs.projection', 'Projection mensuelle') }}</h2>
 
             <div class="space-y-4">
               <div>
-                <label class="label">Offre client</label>
+                <label class="label">{{ t('hub.ui.video_costs.offer', 'Offre client') }}</label>
                 <select v-model="config.offer" class="input-field text-xs">
-                  <option value="internal">Usage interne (Alexandre) &mdash; Illimit&eacute;</option>
-                  <option value="premium">Premium (800&euro;/mois) &mdash; 10 vid&eacute;os</option>
-                  <option value="starter">Starter (39&euro;/mois) &mdash; 2 vid&eacute;os</option>
+                  <option value="internal">{{ t('hub.ui.video_costs.opt_internal', 'Usage interne (Alexandre) — Illimité') }}</option>
+                  <option value="premium">{{ t('hub.ui.video_costs.opt_premium', 'Premium (800€/mois) — 10 vidéos') }}</option>
+                  <option value="starter">{{ t('hub.ui.video_costs.opt_starter', 'Starter (39€/mois) — 2 vidéos') }}</option>
                 </select>
               </div>
 
               <div>
                 <div class="flex items-center justify-between mb-1.5">
-                  <label class="label">Vid&eacute;os / mois</label>
+                  <label class="label">{{ t('hub.ui.video_costs.videos_month', 'Vidéos / mois') }}</label>
                   <span class="text-xs font-bold text-primary-600">{{ config.videosPerMonth }}</span>
                 </div>
                 <input v-model.number="config.videosPerMonth" type="range" min="1" max="60" step="1" class="slider" />
@@ -155,7 +155,7 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">D&eacute;composition du co&ucirc;t par vid&eacute;o</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ t('hub.ui.video_costs.breakdown', 'Décomposition du coût par vidéo') }}</h2>
 
             <div class="space-y-3">
               <div v-for="node in costBreakdown" :key="node.id" class="flex items-center gap-3">
@@ -176,7 +176,7 @@
 
               
               <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-800">
-                <span class="text-sm font-bold text-gray-800 dark:text-slate-100">TOTAL</span>
+                <span class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.video_costs.total', 'TOTAL') }}</span>
                 <span class="text-lg font-extrabold text-primary-600">{{ formatEur(totalCostPerVideo) }}</span>
               </div>
             </div>
@@ -184,7 +184,7 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Comparatif march&eacute; (vid&eacute;o {{ config.durationSeconds }}s)</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ t('hub.ui.video_costs.market', 'Comparatif marché (vidéo {seconds}s)', { seconds: config.durationSeconds }) }}</h2>
 
             <div class="space-y-3">
               <div v-for="comp in competitors" :key="comp.name" class="flex items-center gap-3">
@@ -199,7 +199,7 @@
                   </div>
                 </div>
                 <span class="text-[10px] font-bold shrink-0 w-14 text-right" :class="comp.highlight ? 'text-success-600' : 'text-gray-400'">
-                  {{ comp.highlight ? 'VOUS' : comp.multiplier }}
+                  {{ comp.highlight ? t('hub.ui.video_costs.you', 'VOUS') : comp.multiplier }}
                 </span>
               </div>
             </div>
@@ -208,13 +208,13 @@
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800">
-              <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">Projection mensuelle &mdash; {{ offerLabel }}</h2>
+              <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">{{ t('hub.ui.video_costs.projection_offer', 'Projection mensuelle — {offer}', { offer: offerLabel }) }}</h2>
             </div>
             <table class="w-full text-sm">
               <thead>
                 <tr class="bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800">
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">M&eacute;trique</th>
-                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500">Valeur</th>
+                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">{{ t('hub.ui.video_costs.metric', 'Métrique') }}</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500">{{ t('hub.ui.video_costs.value', 'Valeur') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-50 dark:divide-slate-800">
@@ -228,7 +228,7 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Temps GPU estim&eacute; par vid&eacute;o</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ t('hub.ui.video_costs.gpu_title', 'Temps GPU estimé par vidéo') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div v-for="gpu in gpuTimeBreakdown" :key="gpu.label" class="bg-gray-50 dark:bg-slate-950 rounded-lg p-3 text-center">
                 <p class="text-sm">{{ gpu.icon }}</p>
@@ -238,7 +238,7 @@
               </div>
             </div>
             <div class="mt-3 flex items-center justify-between px-1">
-              <span class="text-xs text-gray-400">Temps total (s&eacute;quentiel)</span>
+              <span class="text-xs text-gray-400">{{ t('hub.ui.video_costs.gpu_total', 'Temps total (séquentiel)') }}</span>
               <span class="text-sm font-bold text-primary-600">{{ totalGpuTime }}s &asymp; {{ (totalGpuTime / 60).toFixed(1) }} min</span>
             </div>
           </div>
@@ -252,6 +252,8 @@
 <script setup lang="ts">
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+
+const { t } = useHubT()
 
 interface CostNode {
   id: string
@@ -296,11 +298,11 @@ const OFFER_MRR: Record<string, number> = {
   starter:  39,
 }
 
-const OFFER_LABELS: Record<string, string> = {
-  internal: 'Usage interne (Alexandre)',
-  premium:  'Premium (800 €/mois)',
-  starter:  'Starter (39 €/mois)',
-}
+const OFFER_LABELS = computed<Record<string, string>>(() => ({
+  internal: t('hub.ui.video_costs.offer_internal', 'Usage interne (Alexandre)'),
+  premium:  t('hub.ui.video_costs.offer_premium', 'Premium (800 €/mois)'),
+  starter:  t('hub.ui.video_costs.offer_starter', 'Starter (39 €/mois)'),
+}))
 
 const STORAGE_COST_PER_GB = 0.023 
 
@@ -358,17 +360,17 @@ const marginPercent = computed(() => {
   return ((mrr.value - monthlyCost.value) / mrr.value) * 100
 })
 
-const offerLabel = computed(() => OFFER_LABELS[config.offer])
+const offerLabel = computed(() => OFFER_LABELS.value[config.offer])
 
 const costBreakdown = computed((): CostNode[] => {
   const total = totalCostPerVideo.value || 1
   const nodes = [
-    { id: 'audio',    icon: '🎙️', label: `Audio TTS (${config.ttsModel})`,      cost: audioCost.value,   bgClass: 'bg-violet-100', barClass: 'bg-violet-500' },
-    { id: 'image',    icon: '🖼️', label: `Images T2I (${config.imageModel})`,    cost: imageCost.value,   bgClass: 'bg-blue-100',   barClass: 'bg-blue-500' },
-    { id: 'video',    icon: '🎬', label: `Vidéo I2V (${config.videoModel})`,     cost: videoCost.value,   bgClass: 'bg-red-100',    barClass: 'bg-red-500' },
-    { id: 'assembly', icon: '🎞️', label: 'Assemblage FFmpeg + Whisper',          cost: assemblyCost.value, bgClass: 'bg-gray-100 dark:bg-slate-800', barClass: 'bg-gray-400' },
-    { id: 'storage',  icon: '💾', label: 'Stockage S3/MinIO',                    cost: storageCost.value, bgClass: 'bg-amber-100',  barClass: 'bg-amber-500' },
-    { id: 'llm',      icon: '🧠', label: `LLM Storyboard (${config.llmModel})`, cost: llmCost.value,     bgClass: 'bg-green-100',  barClass: 'bg-green-500' },
+    { id: 'audio',    icon: '🎙️', label: t('hub.ui.video_costs.n_audio', 'Audio TTS ({model})', { model: config.ttsModel }),   cost: audioCost.value,   bgClass: 'bg-violet-100', barClass: 'bg-violet-500' },
+    { id: 'image',    icon: '🖼️', label: t('hub.ui.video_costs.n_image', 'Images T2I ({model})', { model: config.imageModel }),   cost: imageCost.value,   bgClass: 'bg-blue-100',   barClass: 'bg-blue-500' },
+    { id: 'video',    icon: '🎬', label: t('hub.ui.video_costs.n_video', 'Vidéo I2V ({model})', { model: config.videoModel }),   cost: videoCost.value,   bgClass: 'bg-red-100',    barClass: 'bg-red-500' },
+    { id: 'assembly', icon: '🎞️', label: t('hub.ui.video_costs.n_assembly', 'Assemblage FFmpeg + Whisper'),       cost: assemblyCost.value, bgClass: 'bg-gray-100 dark:bg-slate-800', barClass: 'bg-gray-400' },
+    { id: 'storage',  icon: '💾', label: t('hub.ui.video_costs.n_storage', 'Stockage S3/MinIO'),                 cost: storageCost.value, bgClass: 'bg-amber-100',  barClass: 'bg-amber-500' },
+    { id: 'llm',      icon: '🧠', label: t('hub.ui.video_costs.n_llm', 'LLM Storyboard ({model})', { model: config.llmModel }), cost: llmCost.value,     bgClass: 'bg-green-100',  barClass: 'bg-green-500' },
   ]
   return nodes.map(n => ({ ...n, percent: (n.cost / total) * 100 }))
 })
@@ -377,11 +379,11 @@ const competitors = computed(() => {
   const mine = totalCostPerVideo.value
   const maxCost = 150
   const list = [
-    { name: 'Video Factory (vous)',    cost: mine,  color: 'bg-primary-500', barColor: 'bg-primary-500', highlight: true },
+    { name: t('hub.ui.video_costs.c_me', 'Video Factory (vous)'),    cost: mine,  color: 'bg-primary-500', barColor: 'bg-primary-500', highlight: true },
     { name: 'RunwayML',                cost: 5,     color: 'bg-gray-300',    barColor: 'bg-gray-400',    highlight: false },
     { name: 'Synthesia / HeyGen',      cost: 10,    color: 'bg-gray-300',    barColor: 'bg-gray-400',    highlight: false },
-    { name: 'Monteur freelance',       cost: 100,   color: 'bg-gray-300',    barColor: 'bg-gray-300',    highlight: false },
-    { name: 'Agence vidéo',            cost: 150,   color: 'bg-gray-200',    barColor: 'bg-gray-200',    highlight: false },
+    { name: t('hub.ui.video_costs.c_free', 'Monteur freelance'),       cost: 100,   color: 'bg-gray-300',    barColor: 'bg-gray-300',    highlight: false },
+    { name: t('hub.ui.video_costs.c_agency', 'Agence vidéo'),            cost: 150,   color: 'bg-gray-200',    barColor: 'bg-gray-200',    highlight: false },
   ]
   return list.map(c => ({
     ...c,
@@ -392,22 +394,22 @@ const competitors = computed(() => {
 
 const projectionRows = computed(() => {
   const rows = [
-    { label: 'Vidéos / mois',             value: `${config.videosPerMonth}`,                            class: 'text-gray-900 dark:text-slate-100' },
-    { label: 'Coût IA / vidéo',            value: formatEur(totalCostPerVideo.value),                    class: 'text-gray-900 dark:text-slate-100' },
-    { label: 'Coût IA total / mois',       value: formatEur(monthlyCost.value),                          class: 'text-amber-600' },
-    { label: 'Durée GPU totale / mois',    value: `${(totalGpuTime.value * config.videosPerMonth / 60).toFixed(0)} min`, class: 'text-gray-600 dark:text-slate-300' },
+    { label: t('hub.ui.video_costs.videos_month', 'Vidéos / mois'),             value: `${config.videosPerMonth}`,                            class: 'text-gray-900 dark:text-slate-100' },
+    { label: t('hub.ui.video_costs.ai_cost_video', 'Coût IA / vidéo'),            value: formatEur(totalCostPerVideo.value),                    class: 'text-gray-900 dark:text-slate-100' },
+    { label: t('hub.ui.video_costs.ai_cost_total', 'Coût IA total / mois'),       value: formatEur(monthlyCost.value),                          class: 'text-amber-600' },
+    { label: t('hub.ui.video_costs.gpu_month', 'Durée GPU totale / mois'),    value: `${(totalGpuTime.value * config.videosPerMonth / 60).toFixed(0)} min`, class: 'text-gray-600 dark:text-slate-300' },
   ]
   if (mrr.value > 0) {
     rows.push(
-      { label: `MRR client (${config.offer})`, value: formatEur(mrr.value),                              class: 'text-primary-600' },
-      { label: 'Profit net / mois',             value: formatEur(monthlyProfit.value),                    class: monthlyProfit.value >= 0 ? 'text-success-600' : 'text-danger-600' },
-      { label: 'Marge brute',                   value: `${marginPercent.value.toFixed(1)}%`,              class: marginPercent.value >= 90 ? 'text-success-600' : 'text-amber-600' },
-      { label: 'Coût IA / MRR',                 value: `${((monthlyCost.value / mrr.value) * 100).toFixed(2)}%`, class: 'text-gray-600 dark:text-slate-300' },
+      { label: t('hub.ui.video_costs.mrr_client', 'MRR client ({offer})', { offer: config.offer }), value: formatEur(mrr.value),                              class: 'text-primary-600' },
+      { label: t('hub.ui.video_costs.net_profit_month', 'Profit net / mois'),             value: formatEur(monthlyProfit.value),                    class: monthlyProfit.value >= 0 ? 'text-success-600' : 'text-danger-600' },
+      { label: t('hub.ui.video_costs.gross_margin', 'Marge brute'),                   value: `${marginPercent.value.toFixed(1)}%`,              class: marginPercent.value >= 90 ? 'text-success-600' : 'text-amber-600' },
+      { label: t('hub.ui.video_costs.ai_cost_mrr', 'Coût IA / MRR'),                 value: `${((monthlyCost.value / mrr.value) * 100).toFixed(2)}%`, class: 'text-gray-600 dark:text-slate-300' },
     )
   }
   rows.push(
-    { label: 'Équivalent freelance / mois', value: formatEur(100 * config.videosPerMonth),               class: 'text-gray-400 line-through' },
-    { label: 'Économie réalisée',            value: formatEur(100 * config.videosPerMonth - monthlyCost.value), class: 'text-success-600' },
+    { label: t('hub.ui.video_costs.freelance_eq', 'Équivalent freelance / mois'), value: formatEur(100 * config.videosPerMonth),               class: 'text-gray-400 line-through' },
+    { label: t('hub.ui.video_costs.savings', 'Économie réalisée'),            value: formatEur(100 * config.videosPerMonth - monthlyCost.value), class: 'text-success-600' },
   )
   return rows
 })
@@ -422,8 +424,8 @@ const gpuTimeBreakdown = computed(() => {
 
   return [
     { icon: '🎙️', label: 'TTS',        seconds: ttsSeconds,    gpu: 'A40/L4' },
-    { icon: '🖼️', label: 'Images T2I', seconds: imageSeconds,  gpu: 'A40/L40S' },
-    { icon: '🎬', label: 'Vidéo I2V',  seconds: videoSeconds,  gpu: 'A100 40GB' },
+    { icon: '🖼️', label: t('hub.ui.video_costs.gpu_img', 'Images T2I'), seconds: imageSeconds,  gpu: 'A40/L40S' },
+    { icon: '🎬', label: t('hub.ui.video_costs.gpu_vid', 'Vidéo I2V'),  seconds: videoSeconds,  gpu: 'A100 40GB' },
     { icon: '🎞️', label: 'Whisper',    seconds: whisperSeconds, gpu: 'CPU' },
   ]
 })

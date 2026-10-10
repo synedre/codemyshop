@@ -11,6 +11,9 @@ import {
 
 export default defineEventHandler(async (event) => {
   const session = requireEmployeeSession(event)
+  if (!session.isAdmin && !isSuperAdminSaaS(session)) {
+    throw createError({ statusCode: 403, message: 'Accès administrateur requis' })
+  }
   const isSaas = isSuperAdminSaaS(session)
 
   const rawId = getRouterParam(event, 'id')

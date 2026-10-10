@@ -22,6 +22,9 @@ export interface WishlistItem {
   reference: string
   active: boolean
   id_image: number | null
+  
+
+  url?: string
 }
 
 function ssrHeaders(): Record<string, string> {

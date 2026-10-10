@@ -3,9 +3,11 @@
 import { resolveClientId } from '~/server/utils/db'
 import { listSubscribers, type SubscriberStatus } from '~/server/utils/newsletter-subscriber'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const VALID_STATUSES = new Set(['pending', 'confirmed', 'unsubscribed', 'bounced', 'all'])
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   const clientId = resolveClientId(event)
   const status = String(q.status ?? 'all')

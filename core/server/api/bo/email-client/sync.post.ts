@@ -3,6 +3,7 @@
 import { fetchRecentMessages } from '~/server/utils/imap'
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 
 function deriveImapHost(smtpHost: string): string {
@@ -12,6 +13,7 @@ function deriveImapHost(smtpHost: string): string {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ sinceDays?: number }>(event).catch(() => ({})) as { sinceDays?: number }
   const sinceDays = Math.max(1, Math.min(90, Number(body?.sinceDays || 14)))
 

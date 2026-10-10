@@ -2,10 +2,10 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Origines &amp; Calibres</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ products.length }} produit{{ products.length > 1 ? 's' : '' }} · {{ nbWithLegal }} avec mentions · {{ nbInherited }} via héritage lot</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.pim_legal_labels.title', 'Origines & Calibres') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.pim_legal_labels.summary', '{count} produit(s) · {legal} avec mentions · {inherited} via héritage lot', { count: products.length, legal: nbWithLegal, inherited: nbInherited }) }}</p>
       </div>
-      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Actualiser</button>
+      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">{{ tHub('hub.ui.pim_legal_labels.refresh', 'Actualiser') }}</button>
     </header>
 
     <div class="flex-1 overflow-auto p-6 space-y-6">
@@ -15,8 +15,8 @@
         <div class="flex items-start gap-3">
           <span class="text-lg">🏷️</span>
           <div class="text-xs text-gray-700 dark:text-slate-300 space-y-1">
-            <p><span class="font-semibold">Mentions légales obligatoires B2B grossiste</span> — injectées sur fiche produit + PDF facture/BL.</p>
-            <p class="text-gray-500 dark:text-slate-400">Si les champs produit sont vides, les valeurs sont héritées du lot FIFO actif (<code class="font-mono bg-gray-100 dark:bg-slate-800 px-1 rounded">cs_lot</code>). Badge <span class="font-semibold text-primary-600">lot</span> = source héritée, <span class="font-semibold text-gray-700 dark:text-slate-200">produit</span> = valeur explicite.</p>
+            <p><span class="font-semibold">{{ tHub('hub.ui.pim_legal_labels.legend_title', 'Mentions légales obligatoires B2B grossiste') }}</span>{{ tHub('hub.ui.pim_legal_labels.legend_rest', ' — injectées sur fiche produit + PDF facture/BL.') }}</p>
+            <p class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.pim_legal_labels.legend_inherit_a', 'Si les champs produit sont vides, les valeurs sont héritées du lot FIFO actif (') }}<code class="font-mono bg-gray-100 dark:bg-slate-800 px-1 rounded">cs_lot</code>{{ tHub('hub.ui.pim_legal_labels.legend_inherit_b', '). Badge ') }}<span class="font-semibold text-primary-600">{{ tHub('hub.ui.pim_legal_labels.badge_lot', 'lot') }}</span>{{ tHub('hub.ui.pim_legal_labels.legend_inherit_c', ' = source héritée, ') }}<span class="font-semibold text-gray-700 dark:text-slate-200">{{ tHub('hub.ui.pim_legal_labels.badge_product', 'produit') }}</span>{{ tHub('hub.ui.pim_legal_labels.legend_inherit_d', ' = valeur explicite.') }}</p>
           </div>
         </div>
       </section>
@@ -24,23 +24,23 @@
       
       <section>
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Produits</h2>
-          <input v-model="filter" type="text" placeholder="🔍 filtrer nom/ref…" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded w-48" />
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ tHub('hub.ui.pim_legal_labels.products', 'Produits') }}</h2>
+          <input v-model="filter" type="text" :placeholder="tHub('hub.ui.pim_legal_labels.filter_ph', '🔍 filtrer nom/ref…')" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded w-48" />
         </div>
 
         <div v-if="loading" class="space-y-2">
           <div v-for="i in 5" :key="i" class="h-10 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
         </div>
-        <div v-else-if="!filtered.length" class="py-10 text-center text-xs text-gray-400">Aucun produit ne correspond.</div>
+        <div v-else-if="!filtered.length" class="py-10 text-center text-xs text-gray-400">{{ tHub('hub.ui.pim_legal_labels.no_match', 'Aucun produit ne correspond.') }}</div>
         <table v-else class="w-full text-sm bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 overflow-hidden">
           <thead class="bg-gray-50 dark:bg-slate-800/50">
             <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-              <th class="px-4 py-2.5 font-medium">Produit</th>
-              <th class="px-4 py-2.5 font-medium">Origine</th>
-              <th class="px-4 py-2.5 font-medium">Calibre</th>
-              <th class="px-4 py-2.5 font-medium">Catégorie légale</th>
-              <th class="px-4 py-2.5 font-medium">Mentions</th>
-              <th class="px-4 py-2.5 font-medium text-right">Actions</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.pim_legal_labels.col_product', 'Produit') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.pim_legal_labels.col_origin', 'Origine') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.pim_legal_labels.col_caliber', 'Calibre') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.pim_legal_labels.col_category', 'Catégorie légale') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.pim_legal_labels.col_mentions', 'Mentions') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.pim_legal_labels.col_actions', 'Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -55,7 +55,7 @@
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-mono font-semibold">{{ p.effectiveOrigin || '—' }}</span>
                   <span v-if="p.effectiveOrigin" class="text-[10px] px-1.5 py-0.5 rounded-full" :class="sourceBadge(p.originIso2 ? 'product' : 'lot')">
-                    {{ p.originIso2 ? 'produit' : 'lot' }}
+                    {{ p.originIso2 ? tHub('hub.ui.pim_legal_labels.badge_product', 'produit') : tHub('hub.ui.pim_legal_labels.badge_lot', 'lot') }}
                   </span>
                 </div>
               </td>
@@ -63,7 +63,7 @@
                 <div class="flex items-center gap-2">
                   <span class="text-xs">{{ p.effectiveCaliber || '—' }}</span>
                   <span v-if="p.effectiveCaliber" class="text-[10px] px-1.5 py-0.5 rounded-full" :class="sourceBadge(p.caliber ? 'product' : 'lot')">
-                    {{ p.caliber ? 'produit' : 'lot' }}
+                    {{ p.caliber ? tHub('hub.ui.pim_legal_labels.badge_product', 'produit') : tHub('hub.ui.pim_legal_labels.badge_lot', 'lot') }}
                   </span>
                 </div>
               </td>
@@ -71,8 +71,8 @@
               <td class="px-4 py-2 text-xs text-gray-500 max-w-xs truncate" :title="p.additionalMentions">{{ p.additionalMentions || '—' }}</td>
               <td class="px-4 py-2 text-right">
                 <div class="flex justify-end gap-1">
-                  <button @click="openEdit(p)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" title="Éditer">✎</button>
-                  <button v-if="p.id" @click="deleteLegal(p)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" title="Vider (retour héritage lot)">✕</button>
+                  <button @click="openEdit(p)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" :title="tHub('hub.ui.pim_legal_labels.edit', 'Éditer')">✎</button>
+                  <button v-if="p.id" @click="deleteLegal(p)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" :title="tHub('hub.ui.pim_legal_labels.clear_title', 'Vider (retour héritage lot)')">✕</button>
                 </div>
               </td>
             </tr>
@@ -86,38 +86,38 @@
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-lg mx-4">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">
-            Mentions légales — {{ editForm.productName || `#${editForm.idProduct}` }}
+            {{ tHub('hub.ui.pim_legal_labels.modal_title', 'Mentions légales — {name}', { name: editForm.productName || `#${editForm.idProduct}` }) }}
           </h2>
           <button @click="editModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="submitEdit" class="p-5 space-y-3">
           <div class="grid grid-cols-2 gap-3">
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Origine (ISO alpha-2)</span>
-              <input v-model="editForm.originIso2" maxlength="2" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 font-mono uppercase" placeholder="FR, US, ES…" />
-              <span v-if="inheritedHint.origin" class="text-[10px] text-amber-600 mt-0.5 block">Si vide, héritage lot : <code>{{ inheritedHint.origin }}</code></span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.pim_legal_labels.origin_iso', 'Origine (ISO alpha-2)') }}</span>
+              <input v-model="editForm.originIso2" maxlength="2" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 font-mono uppercase" :placeholder="tHub('hub.ui.pim_legal_labels.origin_ph', 'FR, US, ES…')" />
+              <span v-if="inheritedHint.origin" class="text-[10px] text-amber-600 mt-0.5 block">{{ tHub('hub.ui.pim_legal_labels.inherit_hint', 'Si vide, héritage lot :') }} <code>{{ inheritedHint.origin }}</code></span>
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Calibre</span>
-              <input v-model="editForm.caliber" maxlength="32" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="23/25, M, Extra…" />
-              <span v-if="inheritedHint.caliber" class="text-[10px] text-amber-600 mt-0.5 block">Si vide, héritage lot : <code>{{ inheritedHint.caliber }}</code></span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.pim_legal_labels.col_caliber', 'Calibre') }}</span>
+              <input v-model="editForm.caliber" maxlength="32" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="tHub('hub.ui.pim_legal_labels.caliber_ph', '23/25, M, Extra…')" />
+              <span v-if="inheritedHint.caliber" class="text-[10px] text-amber-600 mt-0.5 block">{{ tHub('hub.ui.pim_legal_labels.inherit_hint', 'Si vide, héritage lot :') }} <code>{{ inheritedHint.caliber }}</code></span>
             </label>
           </div>
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Catégorie légale</span>
-            <input v-model="editForm.categoryLegal" maxlength="64" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="Fruit sec, Légume frais, Épice…" />
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.pim_legal_labels.col_category', 'Catégorie légale') }}</span>
+            <input v-model="editForm.categoryLegal" maxlength="64" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="tHub('hub.ui.pim_legal_labels.category_ph', 'Fruit sec, Légume frais, Épice…')" />
           </label>
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Mentions additionnelles</span>
-            <textarea v-model="editForm.additionalMentions" rows="4" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs" placeholder="Allergènes, conservation, DLC, lot, etc." />
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.pim_legal_labels.extra_mentions', 'Mentions additionnelles') }}</span>
+            <textarea v-model="editForm.additionalMentions" rows="4" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs" :placeholder="tHub('hub.ui.pim_legal_labels.extra_ph', 'Allergènes, conservation, DLC, lot, etc.')" />
           </label>
 
           
           <div class="mt-3 p-3 bg-gray-50 dark:bg-slate-800/50 rounded border border-dashed border-gray-200 dark:border-slate-700">
-            <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Preview (fiche / facture)</p>
+            <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">{{ tHub('hub.ui.pim_legal_labels.preview', 'Preview (fiche / facture)') }}</p>
             <p class="text-xs text-gray-800 dark:text-slate-100">
-              <span v-if="previewOrigin">🌍 Origine : <span class="font-semibold">{{ previewOrigin }}</span></span>
-              <span v-if="previewCaliber"> · 📏 Calibre : <span class="font-semibold">{{ previewCaliber }}</span></span>
+              <span v-if="previewOrigin">🌍 {{ tHub('hub.ui.pim_legal_labels.preview_origin', 'Origine :') }} <span class="font-semibold">{{ previewOrigin }}</span></span>
+              <span v-if="previewCaliber"> · 📏 {{ tHub('hub.ui.pim_legal_labels.preview_caliber', 'Calibre :') }} <span class="font-semibold">{{ previewCaliber }}</span></span>
               <span v-if="editForm.categoryLegal"> · 🏷️ <span class="font-semibold">{{ editForm.categoryLegal }}</span></span>
             </p>
             <p v-if="editForm.additionalMentions" class="text-[10px] text-gray-500 mt-1 whitespace-pre-wrap">{{ editForm.additionalMentions }}</p>
@@ -125,8 +125,8 @@
 
           <p v-if="editError" class="text-xs text-danger-500">{{ editError }}</p>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="editModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">Annuler</button>
-            <button type="submit" :disabled="saving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ saving ? 'Enreg…' : 'Enregistrer' }}</button>
+            <button type="button" @click="editModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.pim_legal_labels.cancel', 'Annuler') }}</button>
+            <button type="submit" :disabled="saving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ saving ? tHub('hub.ui.pim_legal_labels.saving', 'Enreg…') : tHub('hub.ui.pim_legal_labels.save', 'Enregistrer') }}</button>
           </div>
         </form>
       </div>
@@ -136,6 +136,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 interface ProductLegal {
   idProduct: number
@@ -244,7 +245,7 @@ async function submitEdit() {
     editModalOpen.value = false
     await load()
   } catch (e: any) {
-    editError.value = e?.data?.statusMessage || e?.message || 'Erreur inconnue'
+    editError.value = e?.data?.statusMessage || e?.message || tHub('hub.ui.pim_legal_labels.unknown_error', 'Erreur inconnue')
   } finally {
     saving.value = false
   }
@@ -252,12 +253,12 @@ async function submitEdit() {
 
 async function deleteLegal(p: ProductLegal) {
   if (!p.id) return
-  if (!confirm(`Vider les mentions de "${p.productName}" ? (l'héritage lot reprendra la main)`)) return
+  if (!confirm(tHub('hub.ui.pim_legal_labels.clear_confirm', 'Vider les mentions de "{name}" ? (l\'héritage lot reprendra la main)', { name: p.productName }))) return
   try {
     await $fetch(`/api/bo/legal-labels/${p.id}`, { method: 'DELETE' })
     await load()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.pim_legal_labels.error_prefix', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 

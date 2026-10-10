@@ -57,9 +57,14 @@ export type AtlasStatus =
   | 'qualifie'
   | 'veille'
   | 'pret-contact'
+  
+  | 'contacte'
   | 'ecarte'
 
 export type RelationalRisk =
+  
+  | 'a-verifier'
+  
   | 'aucun'
   | 'voisin-example-shop'
   | 'client-aude-connu'
@@ -124,7 +129,7 @@ export const smartleadRungisVaisseau = vaisseauMereAcSchema.table(
     relationalRisk: varchar('relational_risk', { length: 24 })
       .$type<RelationalRisk>()
       .notNull()
-      .default('aucun'),
+      .default('a-verifier'),
     atlasStatus: varchar('atlas_status', { length: 16 })
       .$type<AtlasStatus>()
       .notNull()

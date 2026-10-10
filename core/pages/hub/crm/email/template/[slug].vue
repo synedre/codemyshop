@@ -4,6 +4,7 @@ definePageMeta({ layout: 'hub' })
 
 const route = useRoute()
 const slug = String(route.params.slug || '')
+const { t: tHub } = useHubT()
 
 interface Lang {
   id_lang:    number
@@ -21,32 +22,35 @@ interface TemplateData {
     recipient_cc:  string
     recipient_bcc: string
     priority:      number
+    attach_invoice: number
   }
   langs: Lang[]
 }
 
-const PRIORITY_LEVELS = [
-  { value: 10, label: 'Critique',   hint: 'UX bloquant si retard (welcome, confirmation commande, reset mdp)' },
-  { value: 20, label: 'Important',  hint: 'Délai gênant (devis, expédition, RIB virement)' },
-  { value: 50, label: 'Standard',   hint: 'Notifs admin, transactionnel non urgent' },
-  { value: 80, label: 'Marketing',  hint: 'Peut attendre (relance panier, newsletter, promo)' },
-]
+const PRIORITY_LEVELS = computed(() => [
+  { value: 10, label: tHub('hub.ui.crm_email_template.lvl_critical', 'Critique'),   hint: tHub('hub.ui.crm_email_template.lvl_critical_hint', 'UX bloquant si retard (welcome, confirmation commande, reset mdp)') },
+  { value: 20, label: tHub('hub.ui.crm_email_template.lvl_important', 'Important'),  hint: tHub('hub.ui.crm_email_template.lvl_important_hint', 'Délai gênant (devis, expédition, RIB virement)') },
+  { value: 50, label: tHub('hub.ui.crm_email_template.lvl_standard', 'Standard'),   hint: tHub('hub.ui.crm_email_template.lvl_standard_hint', 'Notifs admin, transactionnel non urgent') },
+  { value: 80, label: tHub('hub.ui.crm_email_template.lvl_marketing', 'Marketing'),  hint: tHub('hub.ui.crm_email_template.lvl_marketing_hint', 'Peut attendre (relance panier, newsletter, promo)') },
+])
 
 const { data: tplData, refresh } = await useFetch<TemplateData>(`/api/bo/email-templates/${slug}`)
 
 const recipientForm = reactive({
-  recipient_to:  '',
-  recipient_cc:  '',
-  recipient_bcc: '',
-  priority:      50,
+  recipient_to:   '',
+  recipient_cc:   '',
+  recipient_bcc:  '',
+  priority:       50,
+  attach_invoice: false,
 })
 function syncRecipients() {
   const t = tplData.value?.template
   if (!t) return
-  recipientForm.recipient_to  = t.recipient_to  || ''
-  recipientForm.recipient_cc  = t.recipient_cc  || ''
-  recipientForm.recipient_bcc = t.recipient_bcc || ''
-  recipientForm.priority      = Number(t.priority ?? 50)
+  recipientForm.recipient_to   = t.recipient_to  || ''
+  recipientForm.recipient_cc   = t.recipient_cc  || ''
+  recipientForm.recipient_bcc  = t.recipient_bcc || ''
+  recipientForm.priority       = Number(t.priority ?? 50)
+  recipientForm.attach_invoice = Number(t.attach_invoice ?? 0) === 1
 }
 syncRecipients()
 watch(tplData, syncRecipients)
@@ -62,16 +66,17 @@ async function saveRecipients() {
     await $fetch(`/api/bo/email-templates/${slug}`, {
       method: 'PUT',
       body: {
-        recipient_to:  recipientForm.recipient_to,
-        recipient_cc:  recipientForm.recipient_cc,
-        recipient_bcc: recipientForm.recipient_bcc,
-        priority:      recipientForm.priority,
+        recipient_to:   recipientForm.recipient_to,
+        recipient_cc:   recipientForm.recipient_cc,
+        recipient_bcc:  recipientForm.recipient_bcc,
+        priority:       recipientForm.priority,
+        attach_invoice: recipientForm.attach_invoice,
       },
     })
-    message.value = 'Destinataires + priorité enregistrés.'
+    message.value = tHub('hub.ui.crm_email_template.msg_rcpt_saved', 'Destinataires + priorité enregistrés.')
     await refresh()
   } catch (err: any) {
-    errorMsg.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    errorMsg.value = err?.data?.statusMessage || err?.message || tHub('hub.ui.crm_email_template.error', 'Erreur')
   } finally {
     recipientsSaving.value = false
   }
@@ -112,16 +117,16 @@ async function save(idLang: number) {
         plain_body: body.plain_body,
       },
     })
-    message.value = `${LANG_LABELS[idLang]} : enregistré.`
+    message.value = tHub('hub.ui.crm_email_template.msg_lang_saved', '{lang} : enregistré.', { lang: LANG_LABELS[idLang] })
     await refresh()
   } catch (err: any) {
-    errorMsg.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    errorMsg.value = err?.data?.statusMessage || err?.message || tHub('hub.ui.crm_email_template.error', 'Erreur')
   } finally {
     saving.value = false
   }
 }
 
-const previewSrcDoc = computed(() => formByLang[activeLang.value]?.html_body || '<p style="color:#999;font-family:sans-serif;padding:1rem">(corps HTML vide — saisir à gauche pour prévisualiser)</p>')
+const previewSrcDoc = computed(() => formByLang[activeLang.value]?.html_body || `<p style="color:#999;font-family:sans-serif;padding:1rem">${tHub('hub.ui.crm_email_template.preview_empty', '(corps HTML vide — saisir à gauche pour prévisualiser)')}</p>`)
 
 const testTo = ref('')
 const testing = ref(false)
@@ -132,7 +137,7 @@ async function sendTest() {
   testMessage.value = ''
   testError.value = ''
   if (!testTo.value || !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(testTo.value)) {
-    testError.value = 'Adresse email invalide'
+    testError.value = tHub('hub.ui.crm_email_template.invalid_email', 'Adresse email invalide')
     return
   }
   testing.value = true
@@ -141,9 +146,9 @@ async function sendTest() {
       `/api/bo/email-templates/${slug}/test-send`,
       { method: 'POST', body: { id_lang: activeLang.value, to: testTo.value.trim() } },
     )
-    testMessage.value = `✓ Envoyé à ${r.to} (id ${r.id || '—'}). Variables d'exemple substituées.`
+    testMessage.value = tHub('hub.ui.crm_email_template.test_sent', '✓ Envoyé à {to} (id {id}). Variables d\'exemple substituées.', { to: r.to, id: r.id || '—' })
   } catch (err: any) {
-    testError.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    testError.value = err?.data?.statusMessage || err?.message || tHub('hub.ui.crm_email_template.error', 'Erreur')
   } finally {
     testing.value = false
   }
@@ -155,7 +160,7 @@ async function sendTest() {
     <div class="mb-6 flex items-start justify-between gap-4">
       <div class="min-w-0 flex-1">
         <NuxtLink to="/hub/crm/email" class="text-xs text-gray-500 hover:text-primary-600 transition-colors mb-2 inline-block">
-          ← Retour à la liste des emails
+          {{ tHub('hub.ui.crm_email_template.back', '← Retour à la liste des emails') }}
         </NuxtLink>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
           {{ tplData?.template?.slug }}
@@ -165,7 +170,7 @@ async function sendTest() {
           </span>
         </h1>
         <p v-if="tplData?.template?.trigger_hint" class="text-xs text-gray-500 dark:text-slate-400 mt-1 font-mono">
-          Déclencheur : {{ tplData.template.trigger_hint }}
+          {{ tHub('hub.ui.crm_email_template.trigger', 'Déclencheur : {hint}', { hint: tplData.template.trigger_hint }) }}
         </p>
       </div>
     </div>
@@ -198,12 +203,10 @@ async function sendTest() {
     <section class="mb-6 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-700/40 p-5 space-y-3">
       <div>
         <h2 class="text-sm font-semibold text-indigo-900 dark:text-indigo-200 mb-1">
-          Priorité d'envoi
+          {{ tHub('hub.ui.crm_email_template.prio_title', 'Priorité d\'envoi') }}
         </h2>
         <p class="text-xs text-indigo-800 dark:text-indigo-300">
-          Le worker traite la queue par ordre de priorité (0 = critique en premier,
-          100 = marketing en dernier). Si plusieurs emails sont en attente, les plus
-          critiques partent avant.
+          {{ tHub('hub.ui.crm_email_template.prio_desc', 'Le worker traite la queue par ordre de priorité (0 = critique en premier, 100 = marketing en dernier). Si plusieurs emails sont en attente, les plus critiques partent avant.') }}
         </p>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
@@ -229,7 +232,42 @@ async function sendTest() {
         class="text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors font-medium"
         @click="saveRecipients"
       >
-        {{ recipientsSaving ? 'Enregistrement…' : 'Enregistrer la priorité' }}
+        {{ recipientsSaving ? tHub('hub.ui.crm_email_template.saving_dots', 'Enregistrement…') : tHub('hub.ui.crm_email_template.save_prio', 'Enregistrer la priorité') }}
+      </button>
+    </section>
+
+    
+    <section class="mb-6 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 p-5 space-y-3">
+      <div>
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">
+          {{ tHub('hub.ui.crm_email_template.attach_title', 'Pièces jointes') }}
+        </h2>
+        <p class="text-xs text-slate-600 dark:text-slate-400">
+          {{ tHub('hub.ui.crm_email_template.attach_desc', 'Cochez pour joindre automatiquement la facture PDF de la commande. Sans coche, le client recevra l\'email sans pièce jointe — il pourra télécharger sa facture depuis son espace commandes.') }}
+        </p>
+      </div>
+      <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg border-2 transition-colors"
+             :class="recipientForm.attach_invoice
+               ? 'border-slate-500 bg-white dark:bg-slate-800'
+               : 'border-slate-200 dark:border-slate-700 hover:border-slate-400'">
+        <input v-model="recipientForm.attach_invoice" type="checkbox" class="mt-0.5 w-4 h-4 rounded text-slate-600 focus:ring-slate-500" />
+        <div class="flex-1">
+          <div class="text-sm font-medium text-slate-900 dark:text-slate-100">
+            {{ tHub('hub.ui.crm_email_template.attach_label', 'Joindre la facture PDF') }}
+          </div>
+          <div class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+            {{ tHub('hub.ui.crm_email_template.attach_hint_a', 'Active uniquement si l\'email concerne une commande (ex :') }}
+            <span class="font-mono">order_confirmation</span>{{ tHub('hub.ui.crm_email_template.attach_hint_b', '). Sans effet sur les templates sans contexte commande.') }}
+          </div>
+        </div>
+      </label>
+      <button
+        type="button"
+        :disabled="recipientsSaving"
+        class="text-sm px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-40 transition-colors font-medium"
+        @click="saveRecipients"
+      >
+        {{ recipientsSaving ? tHub('hub.ui.crm_email_template.saving_dots', 'Enregistrement…') : tHub('hub.ui.crm_email_template.save_attach', 'Enregistrer le choix PJ') }}
       </button>
     </section>
 
@@ -248,12 +286,12 @@ async function sendTest() {
             ? 'text-rose-900 dark:text-rose-200'
             : 'text-amber-900 dark:text-amber-200'"
         >
-          Destinataires admin
+          {{ tHub('hub.ui.crm_email_template.rcpt_title', 'Destinataires admin') }}
           <span
             v-if="!recipientForm.recipient_to"
             class="ml-2 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 dark:bg-rose-800/60 dark:text-rose-100"
           >
-            ⚠ Vide — email non envoyé
+            {{ tHub('hub.ui.crm_email_template.rcpt_empty', '⚠ Vide — email non envoyé') }}
           </span>
         </h2>
         <p
@@ -262,27 +300,27 @@ async function sendTest() {
             ? 'text-rose-800 dark:text-rose-300'
             : 'text-amber-800 dark:text-amber-300'"
         >
-          Adresses séparées par virgule (ou point-virgule).
+          {{ tHub('hub.ui.crm_email_template.rcpt_desc', 'Adresses séparées par virgule (ou point-virgule).') }}
           <strong v-if="!recipientForm.recipient_to">
-            Tant que ce champ reste vide, l'email ne sera jamais envoyé
-            (fallback env <span class="font-mono">ADMIN_NOTIF_EMAIL</span> rarement défini en preprod).
+            {{ tHub('hub.ui.crm_email_template.rcpt_empty_a', 'Tant que ce champ reste vide, l\'email ne sera jamais envoyé (fallback env') }}
+            <span class="font-mono">ADMIN_NOTIF_EMAIL</span> {{ tHub('hub.ui.crm_email_template.rcpt_empty_b', 'rarement défini en preprod).') }}
           </strong>
-          <span v-else>Cc/Bcc enregistrés mais non encore utilisés à l'envoi (à câbler côté queue).</span>
+          <span v-else>{{ tHub('hub.ui.crm_email_template.rcpt_cc_note', 'Cc/Bcc enregistrés mais non encore utilisés à l\'envoi (à câbler côté queue).') }}</span>
         </p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <label class="block text-xs uppercase tracking-wide text-amber-800 dark:text-amber-300 mb-1">To</label>
+          <label class="block text-xs uppercase tracking-wide text-amber-800 dark:text-amber-300 mb-1">{{ tHub('hub.ui.crm_email_template.to', 'To') }}</label>
           <input
             v-model="recipientForm.recipient_to"
             type="text"
-            placeholder="aude@example-shop.com, alex@codemyshop.com"
+            placeholder="contact@exemple.fr, equipe@exemple.fr"
             class="w-full px-3 py-2 border border-amber-200 dark:border-amber-700/40 rounded-lg text-sm focus:border-amber-600 focus:outline-none bg-white dark:bg-slate-900"
           />
         </div>
         <div>
-          <label class="block text-xs uppercase tracking-wide text-amber-800 dark:text-amber-300 mb-1">Cc <span class="text-[10px] normal-case opacity-60">(non implémenté)</span></label>
+          <label class="block text-xs uppercase tracking-wide text-amber-800 dark:text-amber-300 mb-1">Cc <span class="text-[10px] normal-case opacity-60">{{ tHub('hub.ui.crm_email_template.not_implemented', '(non implémenté)') }}</span></label>
           <input
             v-model="recipientForm.recipient_cc"
             type="text"
@@ -290,7 +328,7 @@ async function sendTest() {
           />
         </div>
         <div>
-          <label class="block text-xs uppercase tracking-wide text-amber-800 dark:text-amber-300 mb-1">Bcc <span class="text-[10px] normal-case opacity-60">(non implémenté)</span></label>
+          <label class="block text-xs uppercase tracking-wide text-amber-800 dark:text-amber-300 mb-1">Bcc <span class="text-[10px] normal-case opacity-60">{{ tHub('hub.ui.crm_email_template.not_implemented', '(non implémenté)') }}</span></label>
           <input
             v-model="recipientForm.recipient_bcc"
             type="text"
@@ -305,7 +343,7 @@ async function sendTest() {
         class="text-sm px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-40 transition-colors font-medium"
         @click="saveRecipients"
       >
-        {{ recipientsSaving ? 'Enregistrement…' : 'Enregistrer les destinataires' }}
+        {{ recipientsSaving ? tHub('hub.ui.crm_email_template.saving_dots', 'Enregistrement…') : tHub('hub.ui.crm_email_template.save_rcpt', 'Enregistrer les destinataires') }}
       </button>
     </section>
 
@@ -313,7 +351,7 @@ async function sendTest() {
       
       <section class="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-5 space-y-4">
         <div>
-          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">Sujet</label>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">{{ tHub('hub.ui.crm_email_template.subject', 'Sujet') }}</label>
           <input
             v-model="formByLang[activeLang].subject"
             type="text"
@@ -321,7 +359,7 @@ async function sendTest() {
           />
         </div>
         <div>
-          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">Corps HTML</label>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">{{ tHub('hub.ui.crm_email_template.html_body', 'Corps HTML') }}</label>
           <textarea
             v-model="formByLang[activeLang].html_body"
             rows="20"
@@ -329,11 +367,11 @@ async function sendTest() {
             spellcheck="false"
           ></textarea>
           <p class="text-[10px] text-gray-400 mt-1">
-            Variables disponibles selon le contexte : <span class="font-mono">{customer_name}</span>, <span class="font-mono">{order_ref}</span>, <span class="font-mono">{shop_name}</span>, etc. Voir doc trigger.
+            {{ tHub('hub.ui.crm_email_template.vars_intro', 'Variables disponibles selon le contexte :') }} <span class="font-mono">{customer_name}</span>, <span class="font-mono">{order_ref}</span>, <span class="font-mono">{shop_name}</span>{{ tHub('hub.ui.crm_email_template.vars_outro', ', etc. Voir doc trigger.') }}
           </p>
         </div>
         <div>
-          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">Corps texte (fallback non-HTML, optionnel)</label>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">{{ tHub('hub.ui.crm_email_template.plain_body', 'Corps texte (fallback non-HTML, optionnel)') }}</label>
           <textarea
             v-model="formByLang[activeLang].plain_body"
             rows="6"
@@ -347,13 +385,13 @@ async function sendTest() {
           class="w-full text-sm px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
           @click="save(activeLang)"
         >
-          {{ saving ? 'Enregistrement…' : `Enregistrer ${LANG_LABELS[activeLang]}` }}
+          {{ saving ? tHub('hub.ui.crm_email_template.saving_dots', 'Enregistrement…') : tHub('hub.ui.crm_email_template.save_lang', 'Enregistrer {lang}', { lang: LANG_LABELS[activeLang] }) }}
         </button>
       </section>
 
       
       <section class="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-5">
-        <h2 class="text-xs uppercase tracking-wide text-gray-500 mb-3">Prévisualisation</h2>
+        <h2 class="text-xs uppercase tracking-wide text-gray-500 mb-3">{{ tHub('hub.ui.crm_email_template.preview', 'Prévisualisation') }}</h2>
         <iframe
           :srcdoc="previewSrcDoc"
           sandbox="allow-same-origin"
@@ -366,21 +404,21 @@ async function sendTest() {
     <section class="mt-6 rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-5">
       <div class="flex items-start justify-between gap-4 flex-wrap">
         <div class="min-w-0 flex-1">
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Envoyer un test</h2>
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ tHub('hub.ui.crm_email_template.test_title', 'Envoyer un test') }}</h2>
           <p class="text-xs text-gray-500 dark:text-slate-400">
-            Envoie le template <strong class="font-mono">{{ slug }}</strong> ({{ LANG_LABELS[activeLang] }}) à l'adresse de votre choix
-            avec des valeurs d'exemple substituées (ex. <span class="font-mono">{firstname}</span> → "Marie",
-            <span class="font-mono">{order_name}</span> → "#PAL2026-1234"…). Sujet préfixé <span class="font-mono">[TEST]</span>.
+            {{ tHub('hub.ui.crm_email_template.test_a', 'Envoie le template') }} <strong class="font-mono">{{ slug }}</strong> {{ tHub('hub.ui.crm_email_template.test_b', '({lang}) à l\'adresse de votre choix avec des valeurs d\'exemple substituées (ex.', { lang: LANG_LABELS[activeLang] }) }}
+            <span class="font-mono">{firstname}</span> {{ tHub('hub.ui.crm_email_template.test_c', '→ "Marie",') }}
+            <span class="font-mono">{order_name}</span> {{ tHub('hub.ui.crm_email_template.test_d', '→ "#CMD2026-1234"…). Sujet préfixé') }} <span class="font-mono">[TEST]</span>.
           </p>
         </div>
       </div>
       <div class="mt-4 flex items-end gap-2 flex-wrap">
         <div class="flex-1 min-w-[260px]">
-          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">Adresse destinataire</label>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-1">{{ tHub('hub.ui.crm_email_template.test_recipient', 'Adresse destinataire') }}</label>
           <input
             v-model="testTo"
             type="email"
-            placeholder="vous@exemple.fr"
+            :placeholder="tHub('hub.ui.crm_email_template.test_ph', 'vous@exemple.fr')"
             class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900"
             @keyup.enter="sendTest"
           />
@@ -391,7 +429,7 @@ async function sendTest() {
           class="text-sm px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium whitespace-nowrap"
           @click="sendTest"
         >
-          {{ testing ? 'Envoi…' : 'Envoyer le test' }}
+          {{ testing ? tHub('hub.ui.crm_email_template.test_sending', 'Envoi…') : tHub('hub.ui.crm_email_template.test_send', 'Envoyer le test') }}
         </button>
       </div>
       <p v-if="testMessage" class="mt-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">{{ testMessage }}</p>

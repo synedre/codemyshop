@@ -2,7 +2,9 @@
 
 import { deleteProjectTask } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idStr = getRouterParam(event, 'id')
   const idTask = Number(idStr)
   if (!idTask || idTask <= 0) {

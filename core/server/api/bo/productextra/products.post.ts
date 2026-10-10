@@ -2,7 +2,9 @@
 
 import { saveProduct } from '~/modules/product-extra/server/utils/productextra'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<any>(event)
   if (!body) throw createError({ statusCode: 400, message: 'Body manquant' })
 
@@ -14,5 +16,7 @@ export default defineEventHandler(async (event) => {
     success: true,
     id_product: result.id_product,
     message: result.created ? 'Produit créé avec succès' : 'Produit mis à jour',
+    
+    non_traduites: result.nonTraduites ?? [],
   }
 })

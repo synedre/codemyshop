@@ -6,9 +6,17 @@ interface SuggestProduct {
   ref: string
   price: string
   priceRaw: number
+  
+  priceTaxExcluded?: boolean
   pricePerUnitFormatted?: string
   unitLabel?: string
   image?: string
+  
+
+  url?: string
+  
+
+  matchedAlias?: { alias: string; kind: 'oe' | 'bosch_new' | 'bosch_exchange' | 'other' }
 }
 interface SuggestCategory  { id: number; name: string; href: string }
 interface SuggestCms       { id: number; title: string; href: string }
@@ -26,12 +34,28 @@ const props = defineProps<{
   placeholder?: string
   variant?: 'desktop' | 'mobile'
   inputClass?: string
+  
+
+  iconSide?: 'left' | 'right'
 }>()
 
 const emit = defineEmits<{ (e: 'navigate'): void }>()
 
 const { t } = useT()
+
+function aliasKindLabel(kind: NonNullable<SuggestProduct['matchedAlias']>['kind']): string {
+  switch (kind) {
+    case 'oe': return t('product.alias_kind_oe', 'Référence constructeur')
+    case 'bosch_new': return t('product.alias_kind_bosch_new', 'Équivalent neuf')
+    case 'bosch_exchange': return t('product.alias_kind_bosch_exchange', 'Équivalent échange standard')
+    default: return t('product.alias_kind_other', 'Autre référence')
+  }
+}
 const { activeLang } = useRouteLang()
+
+const { currentContext, currentContextConfig } = useMegamenu()
+
+const contextPlaceholder = computed(() => (currentContextConfig.value as any)?.searchPlaceholder || '')
 
 const query      = ref('')
 const products   = ref<SuggestProduct[]>([])
@@ -52,7 +76,9 @@ const inputId   = useId()
 
 const flatItems = computed<FlatItem[]>(() => {
   const arr: FlatItem[] = []
-  for (const p of products.value)   arr.push({ section: 'products',   href: `/produit/${p.id}`, payload: p })
+  
+  
+  for (const p of products.value)   arr.push({ section: 'products',   href: p.url || `/produit/${p.id}`, payload: p })
   for (const c of categories.value) arr.push({ section: 'categories', href: c.href,             payload: c })
   for (const c of cmsPages.value)   arr.push({ section: 'cms',        href: c.href,             payload: c })
   for (const d of dictionary.value) arr.push({ section: 'dictionary', href: d.href,             payload: d })
@@ -84,14 +110,24 @@ async function doSearch(term: string) {
   isLoading.value = true
   isOpen.value = true
   try {
+    
+    
+    
+    const suggestParams: Record<string, string | number> = {
+      q: term,
+      clientId: props.clientId,
+      limit: 12,
+      lang: activeLang.value,
+    }
+    if (currentContext.value && currentContext.value !== 'default') {
+      suggestParams.context = currentContext.value
+    }
     const data = await $fetch<{
       products: SuggestProduct[]
       categories: SuggestCategory[]
       cms: SuggestCms[]
       dictionary: SuggestDictionary[]
-    }>('/api/catalogue/suggest', {
-      query: { q: term, clientId: props.clientId, limit: 12, lang: activeLang.value },
-    })
+    }>('/api/catalogue/suggest', { query: suggestParams })
     products.value   = data?.products   ?? []
     categories.value = data?.categories ?? []
     cmsPages.value   = data?.cms        ?? []
@@ -134,12 +170,26 @@ function submitFullSearch() {
   if (!q) return
   close()
   emit('navigate')
-  navigateTo(`/recherche?q=${encodeURIComponent(q)}`)
+  
+  
+  
+  const ctx = currentContext.value
+  const params = new URLSearchParams({ q })
+  if (ctx && ctx !== 'default') params.set('context', ctx)
+  navigateTo(`/recherche?${params.toString()}`)
 }
 
 function gotoItem(item: FlatItem) {
   close()
   emit('navigate')
+  if (item.section === 'products') {
+    const refToPass = (item.payload as any)?.matchedAlias?.alias || query.value.trim()
+    if (refToPass && refToPass.length >= 3) {
+      const sep = item.href.includes('?') ? '&' : '?'
+      navigateTo(`${item.href}${sep}ref=${encodeURIComponent(refToPass)}`)
+      return
+    }
+  }
   navigateTo(item.href)
 }
 
@@ -191,9 +241,11 @@ onUnmounted(() => {
           :id="inputId"
           ref="inputRef"
           v-model="query"
-          type="search"
+          type="text"
+          inputmode="search"
+          enterkeyhint="search"
           autocomplete="off"
-          :placeholder="placeholder || t('search.placeholder')"
+          :placeholder="contextPlaceholder || placeholder || t('search.placeholder')"
           role="combobox"
           :aria-expanded="isOpen"
           aria-autocomplete="list"
@@ -208,7 +260,8 @@ onUnmounted(() => {
         <button
           v-if="query"
           type="button"
-          class="absolute right-9 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+          class="absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+          :class="iconSide === 'left' ? 'right-3' : 'right-9'"
           :aria-label="t('search.aria_clear')"
           @click="clearQuery"
         >
@@ -216,9 +269,11 @@ onUnmounted(() => {
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
         </button>
+        
         <button
           type="submit"
-          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600 transition-colors"
+          class="absolute top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-primary-600 transition-colors"
+          :class="iconSide === 'left' ? 'left-2' : 'right-2'"
           :aria-label="t('search.aria_submit')"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -270,7 +325,7 @@ onUnmounted(() => {
                 activeIndex === flatIndexFor('products', i) ? 'bg-primary-50 dark:bg-slate-800/70' : 'hover:bg-gray-50 dark:hover:bg-slate-800/50',
               ]"
               @mouseenter="activeIndex = flatIndexFor('products', i)"
-              @click="gotoItem({ section: 'products', href: `/produit/${p.id}`, payload: p })"
+              @click="gotoItem({ section: 'products', href: p.url || `/produit/${p.id}`, payload: p })"
             >
               <div class="flex items-center gap-3 px-3 py-2">
                 <img
@@ -284,6 +339,10 @@ onUnmounted(() => {
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ p.name }}</p>
                   <p v-if="p.ref" class="text-[11px] text-gray-500 dark:text-slate-400 truncate">{{ t('common.item_ref', { ref: p.ref }) }}</p>
+                  
+                  <p v-if="p.matchedAlias" class="text-[11px] text-primary-700 dark:text-primary-400 truncate">
+                    {{ aliasKindLabel(p.matchedAlias.kind) }} {{ p.matchedAlias.alias }}
+                  </p>
                 </div>
                 
                 <div class="text-right shrink-0 tabular-nums">
@@ -293,13 +352,13 @@ onUnmounted(() => {
                       <span class="text-[11px] font-semibold">{{ p.unitLabel || 'HT/K' }}</span>
                     </span>
                     <span class="block text-[10px] text-gray-500 dark:text-slate-400">
-                      {{ p.price }} {{ t('common.price_ht_suffix') }}
+                      {{ p.price }}<template v-if="p.priceTaxExcluded"> {{ t('common.price_ht_suffix') }}</template>
                     </span>
                   </template>
                   <template v-else>
                     <span class="block text-sm font-semibold text-primary-600 dark:text-primary-400">
                       {{ p.price }}
-                      <span class="text-[10px] font-normal text-gray-400">{{ t('common.price_ht_suffix') }}</span>
+                      <span v-if="p.priceTaxExcluded" class="text-[10px] font-normal text-gray-400">{{ t('common.price_ht_suffix') }}</span>
                     </span>
                   </template>
                 </div>

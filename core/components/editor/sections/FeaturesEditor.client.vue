@@ -3,13 +3,13 @@
   <div class="space-y-3">
     <div class="flex items-center justify-between">
       <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-        Atouts ({{ items.length }})
+        {{ tHub('hub.ui.editor_features_editor.title', 'Atouts ({count})', { count: items.length }) }}
       </span>
       <button @click="addItem" class="flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700 px-2 py-1 rounded-lg hover:bg-primary-50 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        Atout
+        {{ tHub('hub.ui.editor_features_editor.add', 'Atout') }}
       </button>
     </div>
 
@@ -28,9 +28,9 @@
           </svg>
         </button>
         <button @click="expandedItem = expandedItem === i ? null : i" class="flex-1 flex items-center gap-2 px-1 text-left">
-          <span class="text-xs font-semibold text-gray-800 truncate">{{ i18nt(item.title) || `Atout ${i + 1}` }}</span>
+          <span class="text-xs font-semibold text-gray-800 truncate">{{ i18nt(featureFieldValue(item, 'titre')) || `${tHub('hub.ui.editor_features_editor.item_n', 'Atout {n}', { n: i + 1 })}` }}</span>
         </button>
-        <button @click="removeItem(i)" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Supprimer">
+        <button @click="removeItem(i)" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" :title="tHub('hub.ui.editor_features_editor.delete', 'Supprimer')">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
@@ -42,11 +42,11 @@
 
       <div v-if="expandedItem === i" class="p-3 space-y-3">
         <div>
-          <label class="field-label">Icône</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_features_editor.icon', 'Icône') }}</label>
           <div class="flex gap-1.5 flex-wrap">
             <button
-              v-for="ic in ICON_OPTIONS" :key="ic.value"
-              @click="updateItem(i, 'icon', ic.value)"
+              v-for="ic in FEATURE_ICONS" :key="ic.value"
+              @click="updateIcon(i, ic.value)"
               class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-colors"
               :class="item.icon === ic.value ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300'"
             >
@@ -55,44 +55,35 @@
           </div>
         </div>
         <div>
-          <label class="field-label">Titre</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_features_editor.title_label', 'Titre') }}</label>
           <EditorI18nField
-            :model-value="item.title"
+            :model-value="featureFieldValue(item, 'titre')"
             :langs="langs"
-            placeholder="Livraison gratuite"
-            @update:model-value="updateItem(i, 'title', $event)"
+            :placeholder="tHub('hub.ui.editor_features_editor.title_ph', 'Livraison gratuite')"
+            @update:model-value="updateText(i, 'titre', $event)"
           />
         </div>
         <div>
-          <label class="field-label">Description</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_features_editor.desc', 'Description') }}</label>
           <EditorI18nField
-            :model-value="item.text"
+            :model-value="featureFieldValue(item, 'texte')"
             :langs="langs"
             type="textarea"
-            placeholder="Dès 300 € HT en France"
-            @update:model-value="updateItem(i, 'text', $event)"
+            :placeholder="tHub('hub.ui.editor_features_editor.desc_ph', 'Dès 50 € d\'achat en France')"
+            @update:model-value="updateText(i, 'texte', $event)"
           />
         </div>
       </div>
     </div>
 
-    <p v-if="!items.length" class="text-xs text-gray-400 text-center py-4">Aucun atout — cliquez sur + Atout</p>
+    <p v-if="!items.length" class="text-xs text-gray-400 text-center py-4">{{ tHub('hub.ui.editor_features_editor.empty', 'Aucun atout — cliquez sur + Atout') }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ClientLang } from '~/server/api/client-langs.get'
-
-const ICON_OPTIONS = [
-  { value: 'truck',  label: '🚚 Livraison' },
-  { value: 'shield', label: '🛡️ Qualité' },
-  { value: 'store',  label: '🏪 Drive' },
-  { value: 'card',   label: '💳 Paiement' },
-  { value: 'clock',  label: '⏱️ Délai' },
-  { value: 'leaf',   label: '🌿 Eco' },
-  { value: 'check',  label: '✅ Certifié' },
-  { value: 'star',   label: '⭐ Premium' },
-]
+import { FEATURE_ICONS } from '~/composables/useEditorState'
+import { featureFieldValue, setFeatureField, type FeatureTextRole } from '~/utils/section-feature-fields'
 
 const props = defineProps<{
   payload: any
@@ -104,6 +95,7 @@ const emit = defineEmits<{
 }>()
 
 const { t: i18nt } = useI18nField()
+const { t: tHub } = useHubT()
 
 const localPayload = computed(() => props.payload ?? { items: [] })
 const items = computed(() => localPayload.value.items ?? [])
@@ -113,14 +105,20 @@ function emitPayload(items: any[]) {
   emit('update:payload', { ...localPayload.value, items })
 }
 
-function updateItem(index: number, key: string, value: any) {
+function updateIcon(index: number, value: string) {
   const updated = [...items.value]
-  updated[index] = { ...updated[index], [key]: value }
+  updated[index] = { ...updated[index], icon: value }
+  emitPayload(updated)
+}
+
+function updateText(index: number, role: FeatureTextRole, value: any) {
+  const updated = [...items.value]
+  updated[index] = setFeatureField(updated[index], role, value)
   emitPayload(updated)
 }
 
 function addItem() {
-  const updated = [...items.value, { icon: 'check', title: '', text: '' }]
+  const updated = [...items.value, { icon: 'check', label: '', description: '' }]
   emitPayload(updated)
   expandedItem.value = updated.length - 1
 }

@@ -3,7 +3,9 @@
 import { resolveClientId } from '~/server/utils/db'
 import { unsubscribeById } from '~/server/utils/newsletter-subscriber'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idStr = getRouterParam(event, 'id')
   const id = Number(idStr)
   if (!Number.isInteger(id) || id <= 0) {

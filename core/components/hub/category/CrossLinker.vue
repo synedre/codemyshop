@@ -3,20 +3,30 @@
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Cross Categories</h2>
+        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.category_cross_linker.title', 'Cross Categories') }}</h2>
         <p class="text-[11px] text-gray-400 mt-0.5">
-          Catégories liées affichées en queue des sous-cats natives sur la page front. Pivot
+          {{ t('hub.ui.category_cross_linker.subtitle', 'Catégories liées affichées en queue des sous-cats natives sur la page front.') }} {{ t('hub.ui.category_cross_linker.pivot', 'Pivot') }}
           <span class="font-mono">cs_category_cross</span>.
         </p>
       </div>
-      <span class="text-[10px] uppercase tracking-wide text-gray-400 font-mono">{{ items.length }} liée{{ items.length > 1 ? 's' : '' }}</span>
+      <span class="text-[10px] uppercase tracking-wide text-gray-400 font-mono">{{ items.length > 1 ? t('hub.ui.category_cross_linker.linked_other', '{count} liées', { count: items.length }) : t('hub.ui.category_cross_linker.linked_one', '{count} liée', { count: items.length }) }}</span>
     </div>
+
+    <label class="flex items-center gap-2 text-xs text-gray-700 dark:text-slate-200 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        :checked="crossFirst"
+        @change="onCrossFirstToggle(($event.target as HTMLInputElement).checked)"
+        class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500/40"
+      />
+      <span>{{ t('hub.ui.category_cross_linker.show_before_a', 'Afficher les cross-cats') }} <strong>{{ t('hub.ui.category_cross_linker.show_before_b', 'avant') }}</strong> {{ t('hub.ui.category_cross_linker.show_before_c', 'les sous-catégories natives sur le front') }}</span>
+    </label>
 
     <div class="relative">
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Rechercher une catégorie par nom…"
+        :placeholder="t('hub.ui.category_cross_linker.search_ph', 'Rechercher une catégorie par nom…')"
         @focus="open = true"
         @input="onSearch"
         class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
@@ -29,7 +39,7 @@
         v-if="open && (results.length || searching)"
         class="absolute z-20 mt-1 w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-h-80 overflow-auto"
       >
-        <div v-if="searching" class="px-3 py-2 text-xs text-gray-400">Recherche…</div>
+        <div v-if="searching" class="px-3 py-2 text-xs text-gray-400">{{ t('hub.ui.category_cross_linker.searching', 'Recherche…') }}</div>
         <ul v-else>
           <li
             v-for="r in results"
@@ -42,16 +52,16 @@
               <p class="text-gray-800 dark:text-slate-100 truncate font-medium">{{ r.name }}</p>
               <p class="text-[10px] text-gray-400 truncate font-mono">#{{ r.id }} · /{{ r.link_rewrite }}</p>
             </div>
-            <span v-if="r.id === hostId" class="text-[10px] uppercase text-gray-400">Soi-même</span>
-            <span v-else-if="isLinked(r.id)" class="text-[10px] uppercase text-emerald-600">Déjà lié</span>
-            <span v-else class="text-[10px] text-primary-600">+ Lier</span>
+            <span v-if="r.id === hostId" class="text-[10px] uppercase text-gray-400">{{ t('hub.ui.category_cross_linker.self', 'Soi-même') }}</span>
+            <span v-else-if="isLinked(r.id)" class="text-[10px] uppercase text-emerald-600">{{ t('hub.ui.category_cross_linker.already_linked', 'Déjà lié') }}</span>
+            <span v-else class="text-[10px] text-primary-600">{{ t('hub.ui.category_cross_linker.link', '+ Lier') }}</span>
           </li>
         </ul>
       </div>
     </div>
 
     <div v-if="!items.length" class="text-center py-10 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
-      <p class="text-xs text-gray-400">Aucune cross-catégorie liée. Tape une recherche pour ajouter.</p>
+      <p class="text-xs text-gray-400">{{ t('hub.ui.category_cross_linker.empty', 'Aucune cross-catégorie liée. Tape une recherche pour ajouter.') }}</p>
     </div>
 
     <ul v-else class="space-y-2">
@@ -64,17 +74,17 @@
         <div class="flex-1 min-w-0">
           <p class="text-sm text-gray-800 dark:text-slate-100 truncate font-medium">
             {{ c.name }}
-            <span v-if="!c.active" class="ml-1 text-[10px] uppercase text-amber-600">inactif</span>
+            <span v-if="!c.active" class="ml-1 text-[10px] uppercase text-amber-600">{{ t('hub.ui.category_cross_linker.inactive', 'inactif') }}</span>
           </p>
           <p class="text-[10px] text-gray-400 truncate font-mono">#{{ c.id }} · /{{ c.link_rewrite }}</p>
         </div>
-        <button type="button" @click="move(idx, -1)" :disabled="idx === 0" title="Monter" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+        <button type="button" @click="move(idx, -1)" :disabled="idx === 0" :title="t('hub.ui.category_cross_linker.move_up', 'Monter')" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>
         </button>
-        <button type="button" @click="move(idx, 1)" :disabled="idx === items.length - 1" title="Descendre" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+        <button type="button" @click="move(idx, 1)" :disabled="idx === items.length - 1" :title="t('hub.ui.category_cross_linker.move_down', 'Descendre')" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
         </button>
-        <button type="button" @click="unlink(idx)" title="Délier" class="text-gray-400 hover:text-red-600 transition-colors ml-1">
+        <button type="button" @click="unlink(idx)" :title="t('hub.ui.category_cross_linker.unlink', 'Délier')" class="text-gray-400 hover:text-red-600 transition-colors ml-1">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
@@ -87,6 +97,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 const props = defineProps<{ hostId: number }>()
 
 interface CrossItem {
@@ -103,6 +114,7 @@ interface SearchResult {
 }
 
 const items = ref<CrossItem[]>([])
+const crossFirst = ref(false)
 const searchQuery = ref('')
 const results = ref<SearchResult[]>([])
 const searching = ref(false)
@@ -113,11 +125,23 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 async function load() {
   try {
-    const res = await $fetch<{ items: CrossItem[] }>(`/api/bo/categories/${props.hostId}/cross-categories`)
+    const res = await $fetch<{ items: CrossItem[]; crossFirst?: boolean }>(`/api/bo/categories/${props.hostId}/cross-categories`)
     items.value = res.items ?? []
+    crossFirst.value = !!res.crossFirst
   } catch (err) {
     console.error('[CrossLinker] load error:', err)
   }
+}
+
+async function onCrossFirstToggle(v: boolean) {
+  crossFirst.value = v
+  if (!items.value.length) {
+    status.value = t('hub.ui.category_cross_linker.pref_kept', 'Préférence retenue. Ajoute au moins une cross-cat pour la persister.')
+    statusClass.value = 'text-amber-600'
+    setTimeout(() => { status.value = null }, 4000)
+    return
+  }
+  await persist()
 }
 
 async function runSearch() {
@@ -152,18 +176,18 @@ function isLinked(id: number) {
 }
 
 async function persist() {
-  status.value = 'Enregistrement…'
+  status.value = t('hub.ui.category_cross_linker.saving', 'Enregistrement…')
   statusClass.value = 'text-violet-600'
   try {
     await $fetch(`/api/bo/categories/${props.hostId}/cross-categories`, {
       method: 'PUT',
-      body: { ids: items.value.map((c) => c.id) },
+      body: { ids: items.value.map((c) => c.id), crossFirst: crossFirst.value },
     })
-    status.value = 'Lien enregistré'
+    status.value = t('hub.ui.category_cross_linker.saved', 'Lien enregistré')
     statusClass.value = 'text-emerald-600'
     setTimeout(() => { status.value = null }, 2500)
   } catch (err: any) {
-    status.value = err?.data?.message || 'Échec enregistrement'
+    status.value = err?.data?.message || t('hub.ui.category_cross_linker.save_failed', 'Échec enregistrement')
     statusClass.value = 'text-red-500'
   }
 }

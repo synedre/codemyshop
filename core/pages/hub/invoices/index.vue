@@ -2,24 +2,24 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Factures</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.invoices.title', 'Factures') }}</h1>
         <p class="text-xs text-gray-400 mt-0.5">
-          {{ total }} facture{{ total > 1 ? 's' : '' }}{{ filterLabel ? ` — ${filterLabel}` : '' }} ·
-          <NuxtLink to="/hub/finance/ae" class="text-primary-600 hover:underline">jauge AE →</NuxtLink>
+          {{ total > 1 ? t('hub.ui.invoices.count_other', '{n} factures', { n: total }) : t('hub.ui.invoices.count_one', '{n} facture', { n: total }) }}{{ filterLabel ? ` — ${filterLabel}` : '' }} ·
+          <NuxtLink to="/hub/finance/ae" class="text-primary-600 hover:underline">{{ t('hub.ui.invoices.ae_gauge', 'jauge AE →') }}</NuxtLink>
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <select v-model="regime" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1.5 bg-white dark:bg-slate-800" title="Régime URSSAF micro-entrepreneur">
-          <option value="bnc">BNC libérale (25,80%)</option>
-          <option value="bic_services">BIC services (21,50%)</option>
-          <option value="bic_ventes">BIC ventes (12,40%)</option>
+        <select v-model="regime" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1.5 bg-white dark:bg-slate-800" :title="t('hub.ui.invoices.regime_title', 'Régime URSSAF micro-entrepreneur')">
+          <option value="bnc">{{ t('hub.ui.invoices.opt_bnc', 'BNC libérale (25,80%)') }}</option>
+          <option value="bic_services">{{ t('hub.ui.invoices.opt_bic_services', 'BIC services (21,50%)') }}</option>
+          <option value="bic_ventes">{{ t('hub.ui.invoices.opt_bic_ventes', 'BIC ventes (12,40%)') }}</option>
         </select>
         <select v-model="mode" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1.5 bg-white dark:bg-slate-800">
-          <option value="paid">CA encaissé (URSSAF)</option>
-          <option value="issued">CA facturé</option>
+          <option value="paid">{{ t('hub.ui.invoices.mode_paid', 'CA encaissé (URSSAF)') }}</option>
+          <option value="issued">{{ t('hub.ui.invoices.mode_issued', 'CA facturé') }}</option>
         </select>
-        <input v-model="search" type="text" placeholder="N°, sujet, société, siret…" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-52 focus:outline-none focus:ring-2 focus:ring-primary-300" @keyup.enter="goPage(1)" />
-        <button @click="goPage(1)" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">Rechercher</button>
+        <input v-model="search" type="text" :placeholder="t('hub.ui.invoices.search_placeholder', 'N°, sujet, société, siret…')" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-52 focus:outline-none focus:ring-2 focus:ring-primary-300" @keyup.enter="goPage(1)" />
+        <button @click="goPage(1)" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">{{ t('hub.ui.invoices.search', 'Rechercher') }}</button>
       </div>
     </header>
 
@@ -28,16 +28,16 @@
       <div class="flex items-center justify-between mb-3">
         <div>
           <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-            Déclarations URSSAF — {{ mode === 'paid' ? 'CA encaissé' : 'CA facturé' }} mensuel
+            {{ mode === 'paid' ? t('hub.ui.invoices.declarations_paid', 'Déclarations URSSAF — CA encaissé mensuel') : t('hub.ui.invoices.declarations_issued', 'Déclarations URSSAF — CA facturé mensuel') }}
           </h2>
           <p class="text-[11px] text-gray-400 mt-0.5">
             {{ mode === 'paid'
-              ? 'Micro-entrepreneur : CA à déclarer = sommes encaissées dans le mois (date de paiement).'
-              : 'Régime réel BIC/BNC : CA constaté = factures émises dans le mois (date d\'émission).' }}
+              ? t('hub.ui.invoices.hint_paid', 'Micro-entrepreneur : CA à déclarer = sommes encaissées dans le mois (date de paiement).')
+              : t('hub.ui.invoices.hint_issued', 'Régime réel BIC/BNC : CA constaté = factures émises dans le mois (date d\'émission).') }}
           </p>
         </div>
         <button v-if="selectedMonth" @click="clearMonth" class="text-[11px] text-primary-600 hover:underline">
-          ✕ Retirer le filtre ({{ formatMonth(selectedMonth) }})
+          {{ t('hub.ui.invoices.clear_filter', '✕ Retirer le filtre ({month})', { month: formatMonth(selectedMonth) }) }}
         </button>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -65,13 +65,13 @@
               >
                 {{ statusBadgeLabel(m.month) }}
               </span>
-              <span v-else class="text-[10px] text-gray-400">{{ m.nb }} fact.</span>
+              <span v-else class="text-[10px] text-gray-400">{{ t('hub.ui.invoices.nb_short', '{n} fact.', { n: m.nb }) }}</span>
             </div>
             <div class="mt-1.5 text-base font-bold text-gray-900 dark:text-slate-100 tabular-nums">
               {{ formatEur(m.ht) }}
             </div>
             <div class="text-[10px] text-gray-400">
-              {{ m.nb }} fact. · {{ formatEur(m.ttc) }} TTC
+              {{ t('hub.ui.invoices.month_summary', '{n} fact. · {amount} TTC', { n: m.nb, amount: formatEur(m.ttc) }) }}
             </div>
             <div v-if="mode === 'paid'" class="mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
               <div class="flex items-baseline justify-between">
@@ -84,23 +84,23 @@
                 </span>
               </div>
               <div class="text-[9px] text-gray-400 tabular-nums">
-                cot. {{ formatEur(urssafForRow(m).cotis) }} · CFP {{ formatEur(urssafForRow(m).cfp) }}
+                {{ t('hub.ui.invoices.cotis_line', 'cot. {cotis} · CFP {cfp}', { cotis: formatEur(urssafForRow(m).cotis), cfp: formatEur(urssafForRow(m).cfp) }) }}
               </div>
               <div class="mt-1.5 flex items-baseline justify-between">
-                <span class="text-[10px] text-gray-400 uppercase">Solde net</span>
+                <span class="text-[10px] text-gray-400 uppercase">{{ t('hub.ui.invoices.net_balance', 'Solde net') }}</span>
                 <span class="text-sm font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
                   {{ formatEur(Number(m.ht || 0) - urssafForRow(m).total) }}
                 </span>
               </div>
               <div v-if="urssafStatus(m.month) === 'paid' && urssafByMonth[m.month]?.paidAt" class="mt-1 text-[9px] text-emerald-700 dark:text-emerald-400">
-                ✓ URSSAF payé le {{ formatDate(urssafByMonth[m.month].paidAt) }}
+                {{ t('hub.ui.invoices.urssaf_paid_on', '✓ URSSAF payé le {date}', { date: formatDate(urssafByMonth[m.month].paidAt) }) }}
               </div>
               <div v-else-if="urssafDeadline(m.month)" class="mt-1 text-[9px]" :class="urssafStatus(m.month) === 'overdue' ? 'text-rose-600 font-semibold' : 'text-gray-500'">
-                {{ urssafStatus(m.month) === 'overdue' ? '⚠ en retard depuis' : 'à payer avant' }} le {{ urssafDeadline(m.month) }}
+                {{ urssafStatus(m.month) === 'overdue' ? t('hub.ui.invoices.overdue_since', '⚠ en retard depuis le {date}', { date: urssafDeadline(m.month) }) : t('hub.ui.invoices.pay_before', 'à payer avant le {date}', { date: urssafDeadline(m.month) }) }}
               </div>
             </div>
             <div v-if="mode === 'issued' && Number(m.draftCount) > 0" class="mt-1 text-[10px] text-amber-600">
-              + {{ m.draftCount }} brouillon ({{ formatEur(m.draftTtc) }})
+              {{ Number(m.draftCount) > 1 ? t('hub.ui.invoices.draft_other', '+ {n} brouillons ({amount})', { n: m.draftCount, amount: formatEur(m.draftTtc) }) : t('hub.ui.invoices.draft_one', '+ {n} brouillon ({amount})', { n: m.draftCount, amount: formatEur(m.draftTtc) }) }}
             </div>
           </button>
           <label v-if="mode === 'paid'" class="mt-2 pt-2 border-t border-gray-100 dark:border-slate-700 flex items-center gap-2 cursor-pointer select-none group">
@@ -112,34 +112,34 @@
               class="w-3.5 h-3.5 rounded border-gray-300 dark:border-slate-600 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 disabled:opacity-40"
             />
             <span class="text-[10px] text-gray-600 dark:text-slate-300 group-hover:text-gray-900 dark:group-hover:text-slate-100 transition-colors">
-              <template v-if="urssafBusy === m.month">Sauvegarde…</template>
-              <template v-else-if="urssafStatus(m.month) === 'paid'">URSSAF payé</template>
-              <template v-else>Marquer URSSAF payé</template>
+              <template v-if="urssafBusy === m.month">{{ t('hub.ui.invoices.saving', 'Sauvegarde…') }}</template>
+              <template v-else-if="urssafStatus(m.month) === 'paid'">{{ t('hub.ui.invoices.urssaf_paid', 'URSSAF payé') }}</template>
+              <template v-else>{{ t('hub.ui.invoices.mark_urssaf_paid', 'Marquer URSSAF payé') }}</template>
             </span>
           </label>
         </div>
       </div>
       <div class="mt-3 flex items-center justify-between text-[11px] text-gray-500">
         <div>
-          <span class="font-semibold">Total {{ monthly.length }} mois :</span>
-          <span class="tabular-nums ml-1">{{ formatEur(monthlyTotals.ht) }} HT</span>
-          <span class="text-gray-400 ml-1">/ {{ formatEur(monthlyTotals.ttc) }} TTC</span>
-          <span class="text-gray-400 ml-2">· {{ monthlyTotals.nb }} fact.</span>
+          <span class="font-semibold">{{ t('hub.ui.invoices.total_months', 'Total {n} mois :', { n: monthly.length }) }}</span>
+          <span class="tabular-nums ml-1">{{ t('hub.ui.invoices.amount_ht', '{amount} HT', { amount: formatEur(monthlyTotals.ht) }) }}</span>
+          <span class="text-gray-400 ml-1">/ {{ t('hub.ui.invoices.amount_ttc', '{amount} TTC', { amount: formatEur(monthlyTotals.ttc) }) }}</span>
+          <span class="text-gray-400 ml-2">· {{ t('hub.ui.invoices.nb_short', '{n} fact.', { n: monthlyTotals.nb }) }}</span>
           <template v-if="mode === 'paid'">
             <span class="text-emerald-700 dark:text-emerald-400 font-semibold ml-3">
-              ✓ URSSAF payé {{ formatEur(urssafSplit.paid) }}
+              {{ t('hub.ui.invoices.urssaf_paid_total', '✓ URSSAF payé {amount}', { amount: formatEur(urssafSplit.paid) }) }}
             </span>
             <span v-if="urssafSplit.due > 0" class="text-rose-600 dark:text-rose-400 font-semibold ml-2">
-              ⚠ Reste dû {{ formatEur(urssafSplit.due) }}
+              {{ t('hub.ui.invoices.remaining_due', '⚠ Reste dû {amount}', { amount: formatEur(urssafSplit.due) }) }}
             </span>
             <span class="text-gray-700 dark:text-slate-200 font-semibold ml-3">
-              = Solde net {{ formatEur(monthlyTotals.ht - urssafTotal) }}
+              {{ t('hub.ui.invoices.net_balance_total', '= Solde net {amount}', { amount: formatEur(monthlyTotals.ht - urssafTotal) }) }}
             </span>
           </template>
         </div>
         <div class="flex items-center gap-3">
           <span class="text-[10px] text-gray-400">
-            Taux {{ currentRegime.label }} : cot. {{ (currentRegime.cotis * 100).toFixed(2) }}% + CFP {{ (currentRegime.cfp * 100).toFixed(2) }}%
+            {{ t('hub.ui.invoices.rates_line', 'Taux {label} : cot. {cotis}% + CFP {cfp}%', { label: regimeLabel, cotis: (currentRegime.cotis * 100).toFixed(2), cfp: (currentRegime.cfp * 100).toFixed(2) }) }}
           </span>
           <a href="/api/bo/invoices/urssaf" target="_blank" class="text-primary-600 hover:underline">JSON →</a>
         </div>
@@ -147,7 +147,7 @@
     </section>
 
     
-    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" label="factures"
+    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.invoices.invoices_label', 'factures')"
       :per-page="perPage" :per-page-options="perPageOptions"
       @go="goPage" @update:per-page="setPerPage"
       class="border-b border-gray-100 dark:border-slate-800" />
@@ -159,20 +159,20 @@
       </div>
 
       <div v-else-if="!invoices.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucune facture trouvée</p>
+        <p class="text-sm">{{ t('hub.ui.invoices.none_found', 'Aucune facture trouvée') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-            <th class="px-4 py-2.5 font-medium">N°</th>
-            <th class="px-4 py-2.5 font-medium">Sujet</th>
-            <th class="px-4 py-2.5 font-medium">Société</th>
-            <th class="px-4 py-2.5 font-medium">Émission</th>
-            <th class="px-4 py-2.5 font-medium">Encaissement</th>
-            <th class="px-4 py-2.5 font-medium">Statut</th>
-            <th class="px-4 py-2.5 font-medium text-right">HT</th>
-            <th class="px-4 py-2.5 font-medium text-right">TTC</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.invoices.col_number', 'N°') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.invoices.col_subject', 'Sujet') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.invoices.col_company', 'Société') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.invoices.col_issue', 'Émission') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.invoices.col_paid', 'Encaissement') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.invoices.col_status', 'Statut') }}</th>
+            <th class="px-4 py-2.5 font-medium text-right">{{ t('hub.ui.invoices.col_ht', 'HT') }}</th>
+            <th class="px-4 py-2.5 font-medium text-right">{{ t('hub.ui.invoices.col_ttc', 'TTC') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -181,8 +181,8 @@
               :class="{ 'opacity-60': inv.status === 'cancelled' }">
             <td class="px-4 py-2.5 font-mono text-xs">
               {{ inv.invoiceNumber }}
-              <span v-if="inv.type === 'avoir'" class="ml-1 text-[10px] text-rose-600 uppercase">avoir</span>
-              <span v-else-if="inv.type === 'acompte'" class="ml-1 text-[10px] text-amber-600 uppercase">acompte</span>
+              <span v-if="inv.type === 'avoir'" class="ml-1 text-[10px] text-rose-600 uppercase">{{ t('hub.ui.invoices.credit_note', 'avoir') }}</span>
+              <span v-else-if="inv.type === 'acompte'" class="ml-1 text-[10px] text-amber-600 uppercase">{{ t('hub.ui.invoices.deposit', 'acompte') }}</span>
             </td>
             <td class="px-4 py-2.5 truncate max-w-[260px]">{{ inv.subject }}</td>
             <td class="px-4 py-2.5 text-gray-800 dark:text-slate-100 truncate max-w-[180px]">
@@ -201,7 +201,7 @@
         </tbody>
         <tfoot v-if="invoices.length" class="bg-gray-50 dark:bg-slate-800/60 font-semibold">
           <tr class="text-xs">
-            <td colspan="6" class="px-4 py-2 text-right text-gray-500">Total page ({{ invoices.length }}) :</td>
+            <td colspan="6" class="px-4 py-2 text-right text-gray-500">{{ t('hub.ui.invoices.page_total', 'Total page ({n}) :', { n: invoices.length }) }}</td>
             <td class="px-4 py-2 text-right tabular-nums">{{ formatEur(pageTotals.ht) }}</td>
             <td class="px-4 py-2 text-right tabular-nums">{{ formatEur(pageTotals.ttc) }}</td>
           </tr>
@@ -210,12 +210,14 @@
     </div>
 
     
-    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" label="factures" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
+    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.invoices.invoices_label', 'factures')" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+
+const { t } = useHubT()
 
 interface Invoice {
   id: number
@@ -290,6 +292,11 @@ const urssafByMonth = computed<Record<string, UrssafDeclaration>>(() => {
 })
 
 const currentRegime = computed(() => URSSAF_RATES[regime.value])
+const regimeLabel = computed(() => ({
+  bnc: t('hub.ui.invoices.regime_bnc', 'BNC libérale'),
+  bic_services: t('hub.ui.invoices.regime_bic_services', 'BIC services'),
+  bic_ventes: t('hub.ui.invoices.regime_bic_ventes', 'BIC ventes'),
+} as Record<string, string>)[regime.value])
 
 const monthly = computed<MonthRow[]>(() => mode.value === 'paid' ? monthlyPaid.value : monthlyIssued.value)
 
@@ -336,7 +343,8 @@ const pageTotals = computed(() => invoices.value.reduce((acc, inv) => {
 
 const filterLabel = computed(() => {
   if (!selectedMonth.value) return ''
-  return `${mode.value === 'paid' ? 'encaissé en' : 'émis en'} ${formatMonth(selectedMonth.value)}`
+  const month = formatMonth(selectedMonth.value)
+  return mode.value === 'paid' ? t('hub.ui.invoices.filter_paid_in', 'encaissé en {month}', { month }) : t('hub.ui.invoices.filter_issued_in', 'émis en {month}', { month })
 })
 
 function setPerPage(n: number) {
@@ -400,7 +408,7 @@ async function toggleUrssafPaid(periodMonth: string, checked: boolean) {
     })
     await loadUrssaf()
   } catch (e: any) {
-    alert('Erreur : ' + (e?.data?.message || e?.message || 'inconnue'))
+    alert(t('hub.ui.invoices.error', 'Erreur : {msg}', { msg: e?.data?.message || e?.message || t('hub.ui.invoices.unknown', 'inconnue') }))
   } finally {
     urssafBusy.value = ''
   }
@@ -421,10 +429,10 @@ function urssafStatus(month: string): 'paid' | 'overdue' | 'due' | 'upcoming' {
 
 function statusBadgeLabel(month: string): string {
   return ({
-    paid: '✓ Payé',
-    overdue: 'En retard',
-    due: 'À payer',
-    upcoming: 'En cours',
+    paid: t('hub.ui.invoices.badge_paid', '✓ Payé'),
+    overdue: t('hub.ui.invoices.badge_overdue', 'En retard'),
+    due: t('hub.ui.invoices.badge_due', 'À payer'),
+    upcoming: t('hub.ui.invoices.badge_upcoming', 'En cours'),
   } as Record<string, string>)[urssafStatus(month)]
 }
 
@@ -462,8 +470,8 @@ function urssafDeadline(month: string): string {
 
 function statusLabel(s: string) {
   return ({
-    draft: 'brouillon', sent: 'envoyée', paid: 'payée',
-    overdue: 'en retard', cancelled: 'annulée',
+    draft: t('hub.ui.invoices.status_draft', 'brouillon'), sent: t('hub.ui.invoices.status_sent', 'envoyée'), paid: t('hub.ui.invoices.status_paid', 'payée'),
+    overdue: t('hub.ui.invoices.status_overdue', 'en retard'), cancelled: t('hub.ui.invoices.status_cancelled', 'annulée'),
   } as Record<string, string>)[s] || s
 }
 

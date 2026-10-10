@@ -7,12 +7,16 @@
   
   <div v-if="isInsideIframe" class="min-h-screen bg-background text-foreground font-sans">
     <LayoutTheHeader />
-    <main :class="[isEditMode ? 'edit-mode' : '', 'pb-24 sm:pb-0']">
+    
+    <HookSlot name="displayHeader" />
+    
+    <main :class="isEditMode ? 'edit-mode' : ''">
       <slot />
     </main>
     <LayoutPrefooterZone />
     <LayoutTheFooter />
-    <MobileStickyBar />
+    
+    <HookSlot name="displayFooterAfter" />
     <DemoControlBar />
     <ClientOnly>
       <LazyCartDrawer v-if="cartEnabled" />
@@ -43,8 +47,8 @@
     
     <div
       class="flex-1 min-w-0 transition-all duration-200 ease-out"
-      :class="[isEditMode && viewportWidth ? 'bg-gray-100 dark:bg-slate-950' : '']"
-      :style="isEditMode ? `margin-left: ${effectiveBuilderWidth}px;` : ''"
+      :class="[builderLayoutReady && isEditMode && viewportWidth ? 'bg-gray-100 dark:bg-slate-950' : '']"
+      :style="builderLayoutReady && isEditMode ? { marginLeft: `${effectiveBuilderWidth}px` } : undefined"
     >
       
       <ClientOnly v-if="isEditMode">
@@ -68,12 +72,16 @@
       
       <template v-else>
         <LayoutTheHeader />
-        <main :class="[isEditMode ? 'edit-mode' : '', 'pb-24 sm:pb-0']">
+        
+        <HookSlot name="displayHeader" />
+        
+        <main :class="isEditMode ? 'edit-mode' : ''">
           <slot />
         </main>
         <LayoutPrefooterZone />
         <LayoutTheFooter />
-        <MobileStickyBar />
+        
+        <HookSlot name="displayFooterAfter" />
         <DemoControlBar />
       </template>
     </div>
@@ -99,7 +107,10 @@
 import { deepMerge } from '~/utils/deepMerge'
 
 const { isEditMode }     = useEditMode()
-const { config, resolvedClientId } = useClientDetection()
+
+const builderLayoutReady = ref(false)
+onMounted(() => { builderLayoutReady.value = true })
+const { config, resolvedClientId, previewMode } = useClientDetection()
 const { header: headerDb } = useHeaderDb()
 
 const { effectiveWidth: effectiveBuilderWidth } = useBuilderGeometry()
@@ -129,11 +140,17 @@ const editor             = useEditorState()
 
 const { public: runtimePublic } = useRuntimeConfig()
 const faviconHref = computed(() => (runtimePublic.favicon as string) || '/favicon.svg')
+
+const faviconType = computed(() => {
+  const h = faviconHref.value.toLowerCase()
+  return h.endsWith('.ico') ? 'image/x-icon' : h.endsWith('.png') ? 'image/png' : 'image/svg+xml'
+})
 useHead({
-  link: [{ rel: 'icon', type: 'image/svg+xml', href: faviconHref }],
+  link: [{ rel: 'icon', type: faviconType, href: faviconHref }],
 })
 
-useI18nHead()
+const i18nAlternatesOverride = useState<Record<string, string> | null>('i18nAlternatesOverride', () => null)
+useI18nHead(i18nAlternatesOverride)
 
 const dbConfig = useState<Record<string, unknown> | null>('client_db_config', () => null)
 
@@ -141,8 +158,17 @@ const { data: _fetchedConfig } = await useFetch<Record<string, unknown>>(
   `/api/client-config/${resolvedClientId.value}`,
   { key: `client-config-${resolvedClientId.value}`, default: () => null },
 )
+
 if (_fetchedConfig.value) {
-  dbConfig.value = _fetchedConfig.value
+  const incomingClientId = (_fetchedConfig.value as { clientId?: string }).clientId
+  const currentClientId  = (dbConfig.value as { clientId?: string } | null)?.clientId
+  const isForeignConfig  = !!currentClientId && !!incomingClientId && incomingClientId !== currentClientId
+
+  if (previewMode.value || !isForeignConfig) {
+    dbConfig.value = _fetchedConfig.value
+  } else if (import.meta.dev) {
+    console.warn(`[white-label] config « ${incomingClientId} » ignorée : le tenant courant est « ${currentClientId} »`)
+  }
 }
 
 await customerAuth.checkSession()

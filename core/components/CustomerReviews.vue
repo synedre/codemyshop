@@ -8,12 +8,21 @@
         <span class="inline-block bg-warning-50 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400 text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full mb-4 border border-warning-100 dark:border-warning-700/30">
           {{ t('reviews.verified_badge') }}
         </span>
-        <h2
+        <component
+          :is="headingTag"
           id="reviews-heading"
           class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight"
         >
           {{ resolvedTitle }}
-        </h2>
+        </component>
+
+        
+        <p
+          v-if="intro"
+          class="text-base text-gray-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed mb-6"
+        >
+          {{ intro }}
+        </p>
 
         
         <div class="inline-flex items-center gap-3 bg-white dark:bg-white/[0.06] border border-gray-100 dark:border-white/[0.08] rounded-2xl px-5 py-3 shadow-sm">
@@ -38,7 +47,7 @@
 
       
       <div v-if="status === 'pending'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="n in limit" :key="n" class="bg-white dark:bg-white/[0.04] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm p-6 space-y-4 animate-pulse">
+        <div v-for="n in skeletonCount" :key="n" class="bg-white dark:bg-white/[0.04] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm p-6 space-y-4 animate-pulse">
           <div class="flex gap-1">
             <div v-for="s in 5" :key="s" class="w-4 h-4 bg-gray-200 dark:bg-slate-700 rounded" />
           </div>
@@ -57,11 +66,12 @@
       </div>
 
       
-      <div v-else-if="reviews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else-if="reviews.length > 0" :class="listClass">
         <article
           v-for="(review, i) in reviews"
           :key="i"
           class="flex flex-col bg-white dark:bg-white/[0.04] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm hover:shadow-md dark:hover:shadow-white/5 transition-shadow duration-200 p-6"
+          :class="cardSliderClass"
           :aria-label="`${t('reviews.review_by')} ${review.author}`"
         >
           
@@ -80,12 +90,13 @@
           </div>
 
           
-          <h3
+          <component
+            :is="reviewTitleTag"
             v-if="review.title"
             class="text-sm font-bold text-gray-900 dark:text-white mb-2 leading-snug"
           >
             {{ review.title }}
-          </h3>
+          </component>
 
           
           <p class="text-sm text-gray-600 dark:text-slate-400 leading-relaxed line-clamp-4 flex-1">
@@ -120,12 +131,28 @@
       </div>
 
       
-      <div v-if="ctaUrl" class="mt-10 text-center">
+      
+      <div v-if="ctaTo || ctaUrl" class="mt-10 text-center">
+        <NuxtLink
+          v-if="ctaTo"
+          :to="ctaTo"
+          class="inline-flex items-center gap-2 border border-gray-200 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] hover:bg-gray-50 dark:hover:bg-slate-800/[0.1] text-gray-700 dark:text-slate-200 font-semibold px-7 py-3.5 rounded-2xl shadow-sm hover:shadow-md transition-all text-sm"
+          :aria-label="ctaLabel"
+        >
+          <svg class="w-4 h-4 text-warning-400 fill-current" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          {{ ctaLabel }}
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </NuxtLink>
         <a
+          v-else
           :href="ctaUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 border border-gray-200 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] hover:bg-gray-50 dark:hover:bg-white/[0.1] text-gray-700 dark:text-slate-200 font-semibold px-7 py-3.5 rounded-2xl shadow-sm hover:shadow-md transition-all text-sm"
+          class="inline-flex items-center gap-2 border border-gray-200 dark:border-white/[0.1] bg-white dark:bg-white/[0.06] hover:bg-gray-50 dark:hover:bg-slate-800/[0.1] text-gray-700 dark:text-slate-200 font-semibold px-7 py-3.5 rounded-2xl shadow-sm hover:shadow-md transition-all text-sm"
           :aria-label="ctaLabel"
         >
           <svg class="w-4 h-4 text-warning-400 fill-current" viewBox="0 0 20 20" aria-hidden="true">
@@ -143,6 +170,10 @@
 </template>
 
 <script setup lang="ts">
+
+import { useDisplayTimeZone } from '../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
 export interface Review {
   author:  string
   company: string
@@ -170,24 +201,54 @@ interface ReviewsResponse {
 const { t } = useT()
 const props = withDefaults(defineProps<{
   
-  limit?:          number
+
+  limit?:          number | 'all'
   
   title?:          string
+  
+
+  headingTag?:     'h1' | 'h2'
+  
+
+  intro?:          string
+  
+  layout?:         'grid' | 'slider'
   
   sectionClass?:   string
   
   containerClass?: string
+  
+
+  ctaTo?:          string
 }>(), {
   limit:          6,
   title:          '',
+  headingTag:     'h2',
+  intro:          '',
+  layout:         'grid',
   sectionClass:   'py-20 bg-gray-50 dark:bg-slate-900/50',
   containerClass: 'max-w-5xl mx-auto px-6',
+  ctaTo:          '',
 })
 
 const resolvedTitle = computed(() => props.title || t('reviews.heading'))
 
+const reviewTitleTag = computed(() => (props.headingTag === 'h1' ? 'h2' : 'h3'))
+
+const skeletonCount = computed<number>(() => (typeof props.limit === 'number' ? props.limit : 6))
+
+const isSlider = computed(() => props.layout === 'slider')
+const listClass = computed(() => isSlider.value
+  ? 'flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6'
+  : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6')
+const cardSliderClass = computed(() => isSlider.value
+  ? 'w-[82%] sm:w-[340px] shrink-0 snap-start'
+  : '')
+
+const { activeLang } = useRouteLang()
 const { data, status } = await useFetch<ReviewsResponse>('/api/reviews', {
-  query: { limit: props.limit },
+  query: { limit: props.limit, lang: activeLang },
+  watch: [activeLang],
 })
 
 const reviews  = computed<Review[]>(() => data.value?.reviews ?? [])
@@ -196,7 +257,7 @@ const business = computed<BusinessMeta | null>(() => data.value?.business ?? nul
 const hasAggregate = computed<boolean>(() => !!business.value && business.value.total_rating !== null && business.value.total_rating !== undefined)
 
 const ctaUrl   = computed(() => business.value?.gmaps_url ?? null)
-const ctaLabel = computed(() => t('reviews.cta_google'))
+const ctaLabel = computed(() => props.ctaTo ? t('reviews.cta_all') : t('reviews.cta_google'))
 
 const aggregateRating = computed(() => {
   if (business.value?.total_rating !== null && business.value?.total_rating !== undefined) {
@@ -212,7 +273,7 @@ const reviewCountDisplay = computed(() => business.value?.total_reviews ?? total
 function formatDate(iso: string): string {
   if (!iso) return ''
   try {
-    return new Date(iso).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+    return new Date(iso).toLocaleDateString(activeLang.value || undefined, { timeZone: displayTz, month: 'short', year: 'numeric' })
   } catch {
     return iso
   }
@@ -230,6 +291,12 @@ function sourceLabel(source: string): string {
   return t('reviews.source_verified')
 }
 
+const _pub = useRuntimeConfig().public as Record<string, any>
+const siteUrl = String(_pub.psFrontUrl ?? '')
+const contactPhone = String(_pub.contactPhone ?? '')
+const localBusiness = _pub.localBusiness ?? null
+
+const businessLocations = _pub.businessLocations ?? null
 useHead(() => {
   if (!reviews.value.length) return {}
   if (!business.value) return {}
@@ -237,11 +304,30 @@ useHead(() => {
   const ratingValue = aggregateRating.value
   const reviewCount = reviewCountDisplay.value
 
+  
+  
+  
+  
+  
+  
+  
+  const lb = localBusiness
+  const hasLegacyLb = !!(lb && typeof lb === 'object')
+  const hasLb = hasLegacyLb
+    || (Array.isArray(businessLocations) && businessLocations.some((x: any) => x && typeof x === 'object'))
   const schema = {
     '@context': 'https://schema.org',
     '@type':    'LocalBusiness',
+    ...(hasLb ? { '@id': `${siteUrl}#localbusiness` } : {}),
     name:       business.value.name,
     url:        business.value.url,
+    ...(hasLegacyLb && contactPhone ? { telephone: contactPhone } : {}),
+    ...(hasLegacyLb && lb.priceRange ? { priceRange: lb.priceRange } : {}),
+    ...(hasLegacyLb && lb.address ? { address: { '@type': 'PostalAddress', ...lb.address } } : {}),
+    ...(hasLegacyLb && lb.openingHoursSpecification ? {
+      openingHoursSpecification: lb.openingHoursSpecification.map((h: any) => ({ '@type': 'OpeningHoursSpecification', ...h })),
+    } : {}),
+    ...(hasLegacyLb && lb.geo ? { geo: { '@type': 'GeoCoordinates', ...lb.geo } } : {}),
     aggregateRating: {
       '@type':     'AggregateRating',
       ratingValue,

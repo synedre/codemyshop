@@ -13,7 +13,7 @@ export type CoverTenantConfig = {
   brand: string
 }
 
-const FALLBACK_TENANT = 'ac-hub'
+const FALLBACK_TENANT = 'codemyshop'
 const cache = new Map<string, CoverTenantConfig>()
 
 export async function getCoverTenantConfig(tenant: string): Promise<CoverTenantConfig> {

@@ -5,12 +5,12 @@
     type="button"
     @click.stop.prevent="openChat"
     :class="variantClass"
-    :title="`Demander des infos sur ce produit`"
+    :title="t('chatbot.product_info_title', 'Demander des infos sur ce produit')"
   >
     <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l2.652-3.978c.26-.39.687-.634 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
     </svg>
-    <span v-if="variant !== 'icon'">{{ label }}</span>
+    <span v-if="variant !== 'icon'">{{ label || t('chatbot.product_info_button', "Besoin d'infos sur ce produit ?") }}</span>
   </button>
 </template>
 
@@ -25,10 +25,11 @@ const props = withDefaults(defineProps<{
   variant?:  'card' | 'detail' | 'icon'
 }>(), {
   qty:     1,
-  label:   'Besoin d\'infos sur ce produit ?',
+  label:   '',
   variant: 'card',
 })
 
+const { t } = useHubT()
 const { hasFeature } = useFeatureFlag()
 const chatbotEnabled = computed(() => hasFeature('chatbot'))
 
@@ -41,7 +42,10 @@ const variantClass = computed(() => {
     return base + ' h-11 px-4 rounded-lg bg-white dark:bg-slate-800 border border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300 text-sm font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/30'
   }
   
-  return base + ' h-9 px-3 rounded-lg border border-primary-200 dark:border-primary-700 text-primary-700 dark:text-primary-300 bg-white dark:bg-slate-800 text-xs font-medium hover:bg-primary-50 dark:hover:bg-primary-900/30 whitespace-nowrap'
+  
+  
+  
+  return base + ' min-h-9 px-3 py-1.5 rounded-lg border border-primary-200 dark:border-primary-700 text-primary-700 dark:text-primary-300 bg-white dark:bg-slate-800 text-xs font-medium hover:bg-primary-50 dark:hover:bg-primary-900/30 text-center leading-tight'
 })
 
 function openChat() {

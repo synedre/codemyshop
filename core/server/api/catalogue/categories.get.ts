@@ -2,6 +2,7 @@
 
 import { useClientDbById, useClientDb } from '~/server/utils/db'
 import { resolveIdLang } from '~/server/utils/lang'
+import { createCategoryTreeMemo } from '~/server/utils/memo-ttl'
 
 interface CategoryRow {
   id_category: number
@@ -14,6 +15,8 @@ interface CategoryRow {
   level_depth: number
 }
 
+const categoriesMemo = createCategoryTreeMemo<CategoryRow[]>(60 * 1000)
+
 export default defineEventHandler(async (event) => {
   const { clientId, limit = '200' } = getQuery(event)
   const idLang = await resolveIdLang(event)
@@ -24,7 +27,10 @@ export default defineEventHandler(async (event) => {
   try {
     
     
-    const rows = await db.query<CategoryRow>(
+    
+    
+    
+    const rows = await categoriesMemo.get(`${db.clientId}:${idLang}:${max}`, () => db.query<CategoryRow>(
       `SELECT c.id_category, c.id_parent, c.active, c.level_depth,
               COALESCE(cl.name,             clf.name, '')             AS name,
               COALESCE(cl.description,      clf.description, '')      AS description,
@@ -34,10 +40,10 @@ export default defineEventHandler(async (event) => {
     LEFT JOIN ps_category_lang cl  ON cl.id_category  = c.id_category AND cl.id_lang  = ?
     LEFT JOIN ps_category_lang clf ON clf.id_category = c.id_category AND clf.id_lang = 1
         WHERE c.active = 1 AND c.id_category > 2
-        ORDER BY cl.name
+        ORDER BY c.position ASC, cl.name ASC
         LIMIT ?`,
       [idLang, max],
-    )
+    ))
 
     return rows.map((r) => ({
       id: r.id_category,

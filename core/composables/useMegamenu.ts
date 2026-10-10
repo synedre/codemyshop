@@ -1,36 +1,33 @@
 
 
-interface ApiPsChild {
-  id: number
-  name: string
-  slug: string
-  href: string
+import { buildMegamenuColumns, type MegamenuApiItem } from '~/utils/megamenu-columns'
+import { resolveActiveContext } from '~/utils/menu-context'
+import { navItemCssStyle, resolveNavEmphasis } from '~/utils/nav-item-emphasis'
+
+interface ApiMenuContext {
+  key: string
+  label: string | Record<string, string>
+  position: number
+  
+  searchRootCategoryId?: number | null
+  topbarMessage?: string | Record<string, string> | null
+  topbarMessageMobile?: string | Record<string, string> | null
 }
 
-interface ApiMegamenuItem {
-  id: number
-  type: 'link' | 'megamenu' | 'dropdown'
-  label: Record<string, string>
-  href: string | null
-  icon: string | null
-  description: string | null
-  badge: string | null
-  groupTitle: string | null
-  style: Record<string, string> | null
-  gridColumns: number | null
-  cssClass: string | null
-  psCategoryId: number | null
-  showPsChildren: boolean
-  position: number
-  children: ApiMegamenuItem[]
-  psChildren: ApiPsChild[]
-}
+type ApiMegamenuItem = MegamenuApiItem
 
 function apiItemToHeaderFormat(root: ApiMegamenuItem): Record<string, any> {
   const item: Record<string, any> = {
     label: root.label,
     href: root.href,
+    
+    
+    barVisible: root.barVisible !== false,
   }
+
+  
+  
+  if (root.icon) item.icon = root.icon
 
   
   if (root.badge) item.badge = root.badge
@@ -40,8 +37,21 @@ function apiItemToHeaderFormat(root: ApiMegamenuItem): Record<string, any> {
   if (root.style) {
     item.bgColor = root.style.backgroundColor
     item.textColor = root.style.color
-    if ((root.style as any).highlight) item.highlight = true
-    item.style = root.style
+    
+    
+    
+    
+    if ((root.style as any).highlight) {
+      item.highlight = (root.style as any).highlight === 'solid' ? 'solid' : true
+    }
+    
+    
+    
+    
+    const emphasis = resolveNavEmphasis(root.style)
+    if (emphasis) item.emphasis = emphasis
+
+    item.style = navItemCssStyle(root.style)
   }
 
   if (root.cssClass?.includes('ml-auto')) {
@@ -53,57 +63,11 @@ function apiItemToHeaderFormat(root: ApiMegamenuItem): Record<string, any> {
     item.isMegaMenu = true
     
     
-    
-    const groupKeyOf = (gt: any): string => {
-      if (!gt) return ''
-      if (typeof gt === 'string') return gt
-      if (typeof gt === 'object') return gt.fr || gt.en || gt.de || ''
-      return String(gt)
-    }
-    const groups = new Map<string, ApiMegamenuItem[]>()
-    const groupOrder: string[] = []
+    const { columns, universeTree } = buildMegamenuColumns(root)
     
     
-    const groupTitleByKey = new Map<string, any>()
-
-    for (const child of root.children) {
-      const key = groupKeyOf(child.groupTitle)
-      if (!groups.has(key)) {
-        groups.set(key, [])
-        groupOrder.push(key)
-        groupTitleByKey.set(key, child.groupTitle)
-      }
-      groups.get(key)!.push(child)
-    }
-
-    
-     
-    const normI18n = (v: any): any => {
-      if (v === null || v === undefined || v === '') return undefined
-      if (typeof v === 'object') return v
-      return { fr: v }
-    }
-
-    item.megaMenu = groupOrder.map((groupKey) => {
-      const items = groups.get(groupKey)!
-      const originalTitle = groupTitleByKey.get(groupKey)
-      return {
-        title: normI18n(originalTitle),
-        icon: items[0]?.icon || undefined,
-        links: items.map((sub) => ({
-          label: sub.label,
-          href: sub.href,
-          description: normI18n(sub.description),
-          badge: normI18n(sub.badge),
-          psCategoryId: sub.psCategoryId || undefined,
-          psChildren: sub.psChildren?.length ? sub.psChildren.map(pc => ({
-            label: { fr: pc.name },
-            href: pc.href,
-          })) : undefined,
-          showPsChildren: sub.showPsChildren || false,
-        })),
-      }
-    })
+    item.universeTree = universeTree
+    item.megaMenu = columns
   } else if (root.type === 'dropdown' && (root.children.length || root.psChildren?.length)) {
     
     item.isMegaMenu = false
@@ -144,10 +108,70 @@ function apiItemToHeaderFormat(root: ApiMegamenuItem): Record<string, any> {
 
 export function useMegamenu() {
   const { activeLang } = useRouteLang()
+  const { resolvedClientId } = useClientDetection()
+
+  
+  
+  
+  
+  
+  
+  
+  
+  const context = useCookie<string>('menu_ctx', {
+    maxAge: 60 * 60 * 24 * 30,
+    sameSite: 'lax',
+    path: '/',
+  })
+
+  
+  
+  
+  
+  
+  
+  
+  const { data: contextsData } = useFetch<{ contexts: ApiMenuContext[] }>(
+    '/api/megamenu/contexts',
+    {
+      key: computed(() => `megamenu-contexts-${resolvedClientId.value}`),
+      default: () => ({ contexts: [] }),
+    },
+  )
+  const contexts = computed<ApiMenuContext[]>(() => contextsData.value?.contexts ?? [])
+
+  
+  
+  
+  const currentContext = computed(() =>
+    resolveActiveContext(context.value, contexts.value.map(c => c.key))
+  )
+
+  
+
+  const currentContextConfig = computed<ApiMenuContext | undefined>(() =>
+    contexts.value.find(c => c.key === currentContext.value)
+  )
+
+  
+  function setContext(key: string) {
+    context.value = key
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   const { data, status } = useFetch<{ items: ApiMegamenuItem[] }>('/api/megamenu', {
     key: 'megamenu',
-    query: { lang: activeLang },
-    watch: [activeLang],
+    query: computed(() => ({ lang: activeLang.value, context: currentContext.value })),
+    watch: [activeLang, currentContext],
     default: () => ({ items: [] }),
   })
 
@@ -155,10 +179,29 @@ export function useMegamenu() {
   const builderOverride = useState<Record<string, any>[] | null>('megamenu_builder_override', () => null)
 
   
+  
+  
+  
+  const lastGoodItems = useState<Record<string, any>[] | null>('megamenu_resolved', () => null)
+  watch(
+    () => data.value?.items,
+    (items) => { if (items?.length) lastGoodItems.value = items.map(apiItemToHeaderFormat) },
+    { immediate: true },
+  )
+
+  
+  
+  
+  
+  const dirty = useState<boolean>('megamenu_dirty', () => false)
+
+  
   const menuItems = computed(() => {
     if (builderOverride.value?.length) return builderOverride.value
-    if (!data.value?.items?.length) return []
-    return data.value.items.map(apiItemToHeaderFormat)
+    if (data.value?.items?.length) return data.value.items.map(apiItemToHeaderFormat)
+    
+    if (lastGoodItems.value?.length) return lastGoodItems.value
+    return []
   })
 
   
@@ -168,11 +211,13 @@ export function useMegamenu() {
     } else {
       builderOverride.value = []
     }
+    dirty.value = false
   }
 
   
   function setBuilderItems(items: Record<string, any>[]) {
     builderOverride.value = [...items]
+    dirty.value = true
   }
 
   
@@ -191,20 +236,29 @@ export function useMegamenu() {
     if (data.value?.items?.length) {
       builderOverride.value = data.value.items.map(apiItemToHeaderFormat)
     }
+    dirty.value = false
   }
 
   
   function clearBuilderOverride() {
     builderOverride.value = null
+    dirty.value = false
   }
 
   return {
     menuItems,
     status,
     builderOverride,
+    dirty,
     loadIntoBuilder,
     setBuilderItems,
     syncToDb,
     clearBuilderOverride,
+    
+    context,
+    contexts,
+    currentContext,
+    currentContextConfig,
+    setContext,
   }
 }

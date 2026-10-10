@@ -1,16 +1,16 @@
 <template>
   <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-5">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Description</h2>
+      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.product_description.title', 'Description') }}</h2>
       <span class="text-[10px] uppercase tracking-wide text-gray-400">Rich text</span>
     </div>
 
     <div>
-      <label class="block text-xs font-medium text-gray-500 mb-1">Description courte</label>
+      <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.product_description.short_desc', 'Description courte') }}</label>
       <textarea
         v-model="model.descriptionShort"
         rows="3"
-        placeholder="Résumé affiché sur la fiche produit, les listings et les réseaux sociaux."
+        :placeholder="t('hub.ui.product_description.short_desc_ph', 'Résumé affiché sur la fiche produit, les listings et les réseaux sociaux.')"
         class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/40"
       />
       <p class="text-[10px] text-gray-400 mt-1">{{ (model.descriptionShort || '').length }} / 800</p>
@@ -18,7 +18,7 @@
 
     <div>
       <div class="flex items-center justify-between mb-1">
-        <label class="text-xs font-medium text-gray-500">Description longue</label>
+        <label class="text-xs font-medium text-gray-500">{{ t('hub.ui.product_description.long_desc', 'Description longue') }}</label>
         <div class="flex items-center gap-1">
           <button
             v-for="tool in toolbar"
@@ -33,7 +33,7 @@
           <button
             type="button"
             @mousedown.prevent="promptLink"
-            title="Lien"
+            :title="t('hub.ui.product_description.link_title', 'Lien')"
             class="text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-300 font-mono border border-transparent hover:border-gray-200 dark:hover:border-slate-700 transition-colors"
           >
             🔗
@@ -62,18 +62,19 @@
         v-else
         v-model="model.description"
         rows="14"
-        placeholder="<p>Description complète en HTML…</p>"
+        :placeholder="t('hub.ui.product_description.html_ph', '<p>Description complète en HTML…</p>')"
         class="w-full text-xs font-mono border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-950 rounded-lg px-3 py-3 resize-y focus:outline-none focus:ring-2 focus:ring-primary-500/40"
       />
 
       <p class="text-[10px] text-gray-400 mt-1">
-        {{ plainTextLength }} caractères — bascule <span class="font-semibold">HTML</span> pour éditer le markup brut.
+        {{ t('hub.ui.product_description.chars_before', '{count} caractères — bascule', { count: plainTextLength }) }} <span class="font-semibold">HTML</span> {{ t('hub.ui.product_description.chars_after', 'pour éditer le markup brut.') }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 interface DescriptionForm {
   descriptionShort: string
   description: string
@@ -84,15 +85,15 @@ const model = defineModel<DescriptionForm>({ required: true })
 const mode = ref<'wysiwyg' | 'html'>('wysiwyg')
 const editorEl = ref<HTMLElement | null>(null)
 
-const toolbar = [
-  { cmd: 'bold', label: 'Gras (Ctrl+B)', icon: 'B' },
-  { cmd: 'italic', label: 'Italique (Ctrl+I)', icon: 'I' },
-  { cmd: 'formatBlock', value: 'H2', label: 'Titre H2', icon: 'H2' },
-  { cmd: 'formatBlock', value: 'H3', label: 'Titre H3', icon: 'H3' },
-  { cmd: 'insertUnorderedList', label: 'Liste à puces', icon: '•' },
-  { cmd: 'insertOrderedList', label: 'Liste numérotée', icon: '1.' },
-  { cmd: 'removeFormat', label: 'Effacer format', icon: '⟲' },
-]
+const toolbar = computed(() => [
+  { cmd: 'bold', label: t('hub.ui.product_description.tb_bold', 'Gras (Ctrl+B)'), icon: 'B' },
+  { cmd: 'italic', label: t('hub.ui.product_description.tb_italic', 'Italique (Ctrl+I)'), icon: 'I' },
+  { cmd: 'formatBlock', value: 'H2', label: t('hub.ui.product_description.tb_h2', 'Titre H2'), icon: 'H2' },
+  { cmd: 'formatBlock', value: 'H3', label: t('hub.ui.product_description.tb_h3', 'Titre H3'), icon: 'H3' },
+  { cmd: 'insertUnorderedList', label: t('hub.ui.product_description.tb_bullets', 'Liste à puces'), icon: '•' },
+  { cmd: 'insertOrderedList', label: t('hub.ui.product_description.tb_numbered', 'Liste numérotée'), icon: '1.' },
+  { cmd: 'removeFormat', label: t('hub.ui.product_description.tb_clear', 'Effacer format'), icon: '⟲' },
+])
 
 function exec(cmd: string, value?: string) {
   if (typeof document === 'undefined') return
@@ -103,7 +104,7 @@ function exec(cmd: string, value?: string) {
 
 function promptLink() {
   if (typeof document === 'undefined') return
-  const url = window.prompt('URL du lien', 'https://')
+  const url = window.prompt(t('hub.ui.product_description.link_prompt', 'URL du lien'), 'https://')
   if (!url) return
   editorEl.value?.focus()
   document.execCommand('createLink', false, url)

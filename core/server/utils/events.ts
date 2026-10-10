@@ -1,194 +1,202 @@
 
 
-import { sql } from 'drizzle-orm'
-import { usePocPg } from '../db/drizzle-pg'
+import type { H3Event } from 'h3'
+import { useClientDb } from './db'
+import { withTransaction } from './db-pg-adapter'
 import type { EventRecord, EventRegistration, EventStatus, EventType } from '~/types/event'
 
-function asArray<T = any>(result: any): T[] {
-  return (result as T[]) ?? []
-}
-function firstOf<T = any>(result: any): T | null {
-  return asArray<T>(result)[0] ?? null
+const ID_LANG_REPLI = 1
+const TYPES: ReadonlySet<string> = new Set(['online', 'irl', 'hybrid'])
+const STATUTS: ReadonlySet<string> = new Set(['draft', 'published', 'cancelled', 'finished'])
+
+function clientIdOf(event: H3Event): string {
+  return String((useRuntimeConfig(event) as any).clientId || '')
 }
 
-function toIsoOrEmpty(v: any): string {
+function iso(v: any): string {
   if (!v) return ''
-  if (v instanceof Date) return v.toISOString()
-  return String(v)
+  return v instanceof Date ? v.toISOString() : String(v)
+}
+
+function texteOuNull(v: unknown, max: number): string | null {
+  const s = String(v ?? '').trim()
+  return s ? s.slice(0, max) : null
+}
+
+export function descriptionVersHtml(v: unknown): string | null {
+  const s = String(v ?? '').trim()
+  if (!s) return null
+  if (/<[a-z][\s\S]*>/i.test(s)) return s
+  const esc = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return esc.split(/\n{2,}/).map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')
+}
+
+export function slugEvenement(title: string, date: string): string {
+  const base = String(title || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+  const jour = /^\d{4}-\d{2}-\d{2}/.test(date) ? date.slice(0, 10) : ''
+  return [base || 'evenement', jour].filter(Boolean).join('-').slice(0, 96)
 }
 
 function mapEvent(r: any): EventRecord {
   return {
-    id:            String(r.id_event),
-    title:         String(r.title || ''),
-    description:   String(r.description || ''),
-    date:          toIsoOrEmpty(r.date_start),
-    endDate:       r.date_end ? toIsoOrEmpty(r.date_end) : undefined,
-    type:          (r.type as EventType) || 'online',
-    capacity:      Number(r.capacity || 0),
-    registrations: Number(r.registrations_count || 0),
-    status:        (r.status as EventStatus) || 'draft',
-    location:      r.location ? String(r.location) : undefined,
-    meetingUrl:    r.meeting_url ? String(r.meeting_url) : undefined,
-    coverImage:    r.cover_image ? String(r.cover_image) : undefined,
-    clientId:      r.client_id ? String(r.client_id) : undefined,
-    createdAt:     toIsoOrEmpty(r.date_add),
+    id:               String(r.id_event),
+    slug:             String(r.slug || ''),
+    title:            String(r.title || ''),
+    description:      String(r.description_html || ''),
+    date:             iso(r.start_at),
+    endDate:          r.end_at ? iso(r.end_at) : undefined,
+    type:             (r.type as EventType) || 'irl',
+    capacity:         Number(r.max_participants || 0),
+    registrations:    Number(r.registered_count || 0),
+    status:           (r.status as EventStatus) || 'draft',
+    registrationOpen: Number(r.registration_open) === 1,
+    venueName:        r.venue_name || undefined,
+    venueAddress:     r.venue_address || undefined,
+    postcode:         r.postcode || undefined,
+    city:             r.city || undefined,
+    meetingUrl:       r.meeting_url || undefined,
+    coverImage:       r.cover_image_url || undefined,
+    createdAt:        iso(r.date_add),
   }
 }
 
-function mapRegistration(r: any): EventRegistration {
-  return {
-    id:        String(r.id_registration),
-    eventId:   String(r.id_event),
-    name:      String(r.name || ''),
-    email:     String(r.email || ''),
-    phone:     r.phone ? String(r.phone) : undefined,
-    createdAt: toIsoOrEmpty(r.date_add),
-  }
+const SELECT_EVENT = `
+  SELECT e.*, el.title, el.description_html,
+         (SELECT COALESCE(SUM(r.attendees_count), 0) FROM cs_event_registration r
+           WHERE r.id_event = e.id_event AND r.status = 'confirmed') AS registered_count
+    FROM cs_event e
+LEFT JOIN cs_event_lang el ON el.id_event = e.id_event AND el.id_lang = ${ID_LANG_REPLI}`
+
+export async function listEventsAdmin(event: H3Event): Promise<EventRecord[]> {
+  const rows = await useClientDb(event).query<any>(
+    `${SELECT_EVENT} WHERE e.client_id = ? ORDER BY e.start_at ASC, e.position ASC`,
+    [clientIdOf(event)],
+  )
+  return rows.map(mapEvent)
 }
 
-export async function readEvents(): Promise<EventRecord[]> {
-  try {
-    const result = asArray<any>(await usePocPg().execute(sql`
-      SELECT * FROM cs_main.cs_events ORDER BY date_start ASC
-    `))
-    return result.map(mapEvent)
-  } catch {
-    return []
-  }
-}
-
-export async function getEventById(id: string | number): Promise<EventRecord | null> {
+export async function getEventAdmin(event: H3Event, id: string | number): Promise<EventRecord | null> {
   const n = Number(id)
-  if (!Number.isFinite(n) || n <= 0) return null
-  const row = await usePocPg().execute(sql`
-    SELECT * FROM cs_main.cs_events WHERE id_event = ${n} LIMIT 1
-  `).then(firstOf<any>)
-  return row ? mapEvent(row) : null
+  if (!Number.isInteger(n) || n <= 0) return null
+  const rows = await useClientDb(event).query<any>(
+    `${SELECT_EVENT} WHERE e.client_id = ? AND e.id_event = ? LIMIT 1`,
+    [clientIdOf(event), n],
+  )
+  return rows[0] ? mapEvent(rows[0]) : null
 }
 
-export async function createEvent(input: Partial<EventRecord>): Promise<EventRecord> {
-  const ins: any = await usePocPg().execute(sql`
-    INSERT INTO cs_main.cs_events
-        (title, description, date_start, date_end, type, capacity,
-         registrations_count, status, location, meeting_url, cover_image,
-         client_id, date_add, date_upd)
-     VALUES (
-       ${String(input.title || '').trim()},
-       ${String(input.description || '').trim()},
-       ${input.date || null},
-       ${input.endDate || null},
-       ${(input.type as string) || 'online'},
-       ${Number(input.capacity || 0)},
-       0,
-       ${(input.status as string) || 'draft'},
-       ${input.location || null},
-       ${input.meetingUrl || null},
-       ${input.coverImage || null},
-       ${input.clientId || null},
-       NOW(), NOW()
-     )
-     RETURNING id_event
-  `)
-  const newId = Number((ins as any[])?.[0]?.id_event ?? 0)
-  if (!newId) throw new Error('INSERT cs_events KO')
-  const row = await getEventById(newId)
-  if (!row) throw new Error('Event créé mais introuvable')
+function colonnes(input: Partial<EventRecord>): Record<string, unknown> {
+  const c: Record<string, unknown> = {}
+  if (input.type !== undefined && TYPES.has(String(input.type))) c.type = input.type
+  if (input.status !== undefined && STATUTS.has(String(input.status))) c.status = input.status
+  if (input.date !== undefined && input.date) c.start_at = input.date
+  if (input.endDate !== undefined) c.end_at = input.endDate || null
+  if (input.capacity !== undefined) c.max_participants = Number(input.capacity) > 0 ? Math.floor(Number(input.capacity)) : null
+  if (input.registrationOpen !== undefined) c.registration_open = input.registrationOpen ? 1 : 0
+  if (input.venueName !== undefined) c.venue_name = texteOuNull(input.venueName, 128)
+  if (input.venueAddress !== undefined) c.venue_address = texteOuNull(input.venueAddress, 255)
+  if (input.postcode !== undefined) c.postcode = texteOuNull(input.postcode, 16)
+  if (input.city !== undefined) c.city = texteOuNull(input.city, 96)
+  if (input.meetingUrl !== undefined) c.meeting_url = texteOuNull(input.meetingUrl, 512)
+  if (input.coverImage !== undefined) c.cover_image_url = texteOuNull(input.coverImage, 512)
+  return c
+}
+
+export async function createEvent(event: H3Event, input: Partial<EventRecord>): Promise<EventRecord> {
+  const clientId = clientIdOf(event)
+  const title = String(input.title || '').trim().slice(0, 255)
+  const db = useClientDb(event)
+
+  const base = slugEvenement(title, String(input.date || ''))
+  const pris = new Set((await db.query<{ slug: string }>(
+    `SELECT slug FROM cs_event WHERE client_id = ? AND (slug = ? OR slug LIKE ?)`,
+    [clientId, base, `${base}-%`],
+  )).map((r) => r.slug))
+  let slug = base
+  for (let i = 2; pris.has(slug); i++) slug = `${base.slice(0, 90)}-${i}`
+
+  const cols = { type: 'irl', status: 'draft', ...colonnes(input), client_id: clientId, slug }
+  const noms = Object.keys(cols)
+  const id = await withTransaction(db, async (tx) => {
+    const ins = await tx.query<{ id_event: number }>(
+      `INSERT INTO cs_event (${noms.join(', ')}) VALUES (${noms.map(() => '?').join(', ')}) RETURNING id_event`,
+      noms.map((k) => (cols as any)[k]),
+    )
+    const idEvent = Number(ins[0]?.id_event || 0)
+    if (!idEvent) throw new Error('INSERT cs_event KO')
+    await tx.run(
+      `INSERT INTO cs_event_lang (id_event, id_lang, title, description_html) VALUES (?, ?, ?, ?)`,
+      [idEvent, ID_LANG_REPLI, title, descriptionVersHtml(input.description)],
+    )
+    return idEvent
+  })
+  const row = await getEventAdmin(event, id)
+  if (!row) throw new Error('Événement créé mais introuvable')
   return row
 }
 
-export async function updateEvent(id: string | number, patch: Partial<EventRecord>): Promise<EventRecord | null> {
-  const n = Number(id)
-  if (!Number.isFinite(n) || n <= 0) return null
-  const sets: any[] = []
-  if (patch.title !== undefined)       sets.push(sql`title = ${String(patch.title)}`)
-  if (patch.description !== undefined) sets.push(sql`description = ${String(patch.description)}`)
-  if (patch.date !== undefined)        sets.push(sql`date_start = ${patch.date}`)
-  if (patch.endDate !== undefined)     sets.push(sql`date_end = ${patch.endDate || null}`)
-  if (patch.type !== undefined)        sets.push(sql`type = ${patch.type}`)
-  if (patch.capacity !== undefined)    sets.push(sql`capacity = ${Number(patch.capacity)}`)
-  if (patch.status !== undefined)      sets.push(sql`status = ${patch.status}`)
-  if (patch.location !== undefined)    sets.push(sql`location = ${patch.location || null}`)
-  if (patch.meetingUrl !== undefined)  sets.push(sql`meeting_url = ${patch.meetingUrl || null}`)
-  if (patch.coverImage !== undefined)  sets.push(sql`cover_image = ${patch.coverImage || null}`)
-  if (patch.clientId !== undefined)    sets.push(sql`client_id = ${patch.clientId || null}`)
-  if (!sets.length) return getEventById(n)
-  sets.push(sql`date_upd = NOW()`)
-  await usePocPg().execute(sql`
-    UPDATE cs_main.cs_events SET ${sql.join(sets, sql`, `)} WHERE id_event = ${n}
-  `)
-  return getEventById(n)
+export async function updateEvent(event: H3Event, id: string | number, patch: Partial<EventRecord>): Promise<EventRecord | null> {
+  const existing = await getEventAdmin(event, id)
+  if (!existing) return null
+  const n = Number(existing.id)
+  const cols = colonnes(patch)
+  const db = useClientDb(event)
+  await withTransaction(db, async (tx) => {
+    const noms = Object.keys(cols)
+    if (noms.length) {
+      await tx.run(
+        `UPDATE cs_event SET ${noms.map((k) => `${k} = ?`).join(', ')}, date_upd = now()
+          WHERE id_event = ? AND client_id = ?`,
+        [...noms.map((k) => cols[k]), n, clientIdOf(event)],
+      )
+    }
+    if (patch.title !== undefined || patch.description !== undefined) {
+      await tx.run(
+        `INSERT INTO cs_event_lang (id_event, id_lang, title, description_html) VALUES (?, ?, ?, ?)
+         ON CONFLICT (id_event, id_lang) DO UPDATE SET title = EXCLUDED.title, description_html = EXCLUDED.description_html`,
+        [
+          n, ID_LANG_REPLI,
+          String(patch.title ?? existing.title).trim().slice(0, 255),
+          patch.description !== undefined ? descriptionVersHtml(patch.description) : (existing.description || null),
+        ],
+      )
+    }
+  })
+  return getEventAdmin(event, n)
 }
 
-export async function deleteEvent(id: string | number): Promise<boolean> {
-  const n = Number(id)
-  if (!Number.isFinite(n) || n <= 0) return false
-  const d = usePocPg()
-  await d.execute(sql`DELETE FROM cs_main.cs_event_registrations WHERE id_event = ${n}`)
-  await d.execute(sql`DELETE FROM cs_main.cs_events              WHERE id_event = ${n}`)
+export async function deleteEvent(event: H3Event, id: string | number): Promise<boolean> {
+  const existing = await getEventAdmin(event, id)
+  if (!existing) return false
+  const n = Number(existing.id)
+  await withTransaction(useClientDb(event), async (tx) => {
+    await tx.run(`DELETE FROM cs_event_registration WHERE id_event = ?`, [n])
+    await tx.run(`DELETE FROM cs_event_lang WHERE id_event = ?`, [n])
+    await tx.run(`DELETE FROM cs_event WHERE id_event = ? AND client_id = ?`, [n, clientIdOf(event)])
+  })
   return true
 }
 
-export async function incrementEventCount(id: string | number, delta = 1): Promise<void> {
-  const n = Number(id)
-  if (!Number.isFinite(n) || n <= 0) return
-  await usePocPg().execute(sql`
-    UPDATE cs_main.cs_events SET registrations_count = registrations_count + ${delta}, date_upd = NOW()
-     WHERE id_event = ${n}
-  `)
-}
-
-export async function readRegistrations(): Promise<EventRegistration[]> {
-  try {
-    const result = asArray<any>(await usePocPg().execute(sql`
-      SELECT * FROM cs_main.cs_event_registrations ORDER BY date_add DESC
-    `))
-    return result.map(mapRegistration)
-  } catch {
-    return []
-  }
-}
-
-export async function listRegistrationsForEvent(eventId: string | number): Promise<EventRegistration[]> {
-  const n = Number(eventId)
-  if (!Number.isFinite(n) || n <= 0) return []
-  const result = asArray<any>(await usePocPg().execute(sql`
-    SELECT * FROM cs_main.cs_event_registrations WHERE id_event = ${n} ORDER BY date_add DESC
-  `))
-  return result.map(mapRegistration)
-}
-
-export async function isAlreadyRegistered(eventId: string | number, email: string): Promise<boolean> {
-  const n = Number(eventId)
-  if (!Number.isFinite(n) || n <= 0) return false
-  const row = await usePocPg().execute(sql`
-    SELECT id_registration FROM cs_main.cs_event_registrations
-     WHERE id_event = ${n} AND email = ${email.toLowerCase()}
-     LIMIT 1
-  `).then(firstOf<{ id_registration: number }>)
-  return !!row
-}
-
-export interface CreateRegistrationInput {
-  eventId: string | number
-  name: string
-  email: string
-  phone?: string
-}
-
-export async function createRegistration(input: CreateRegistrationInput): Promise<EventRegistration> {
-  const n = Number(input.eventId)
-  if (!Number.isFinite(n) || n <= 0) throw new Error('eventId invalide')
-  const ins: any = await usePocPg().execute(sql`
-    INSERT INTO cs_main.cs_event_registrations (id_event, name, email, phone, date_add)
-     VALUES (${n}, ${input.name.trim()}, ${input.email.trim().toLowerCase()},
-             ${input.phone?.trim() || null}, NOW())
-     RETURNING id_registration
-  `)
-  const newId = Number((ins as any[])?.[0]?.id_registration ?? 0)
-  if (!newId) throw new Error('INSERT cs_event_registrations KO')
-  const row = await usePocPg().execute(sql`
-    SELECT * FROM cs_main.cs_event_registrations WHERE id_registration = ${newId} LIMIT 1
-  `).then(firstOf<any>)
-  return mapRegistration(row)
+export async function listRegistrations(event: H3Event, id: string | number): Promise<EventRegistration[] | null> {
+  const existing = await getEventAdmin(event, id)
+  if (!existing) return null
+  const rows = await useClientDb(event).query<any>(
+    `SELECT id_registration, id_event, name, email, phone, attendees_count, note, status, date_add
+       FROM cs_event_registration WHERE id_event = ? ORDER BY date_add DESC`,
+    [Number(existing.id)],
+  )
+  return rows.map((r) => ({
+    id:             String(r.id_registration),
+    eventId:        String(r.id_event),
+    name:           String(r.name || ''),
+    email:          String(r.email || ''),
+    phone:          r.phone || undefined,
+    attendeesCount: Number(r.attendees_count || 1),
+    note:           r.note || undefined,
+    status:         String(r.status || ''),
+    createdAt:      iso(r.date_add),
+  }))
 }

@@ -13,9 +13,9 @@
             <slot />
           </div>
           <div class="sticky bottom-0 bg-white dark:bg-slate-900 px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-end gap-2">
-            <button @click="$emit('update:modelValue', false)" class="text-xs px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">Annuler</button>
+            <button @click="$emit('update:modelValue', false)" class="text-xs px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">{{ t('hub.ui.create_modal.cancel', 'Annuler') }}</button>
             <button @click="$emit('submit')" :disabled="loading" class="text-xs px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium">
-              {{ loading ? 'Création…' : 'Créer' }}
+              {{ loading ? t('hub.ui.create_modal.creating', 'Création…') : t('hub.ui.create_modal.create', 'Créer') }}
             </button>
           </div>
         </div>
@@ -25,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
+
 defineProps<{ modelValue: boolean; title: string; loading?: boolean }>()
 defineEmits<{ 'update:modelValue': [value: boolean]; submit: [] }>()
 </script>

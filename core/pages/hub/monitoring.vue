@@ -6,6 +6,8 @@ definePageMeta({
   ssr: false
 })
 
+const { t } = useHubT()
+
 interface LifecycleInfo {
   status: 'new' | 'active'
   first_seen: string
@@ -138,9 +140,9 @@ function ageLabel(firstSeen: string): string {
                     border-gray-200 dark:border-slate-800">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">Monitoring</h1>
+          <h1 class="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">{{ t('hub.ui.monitoring.title', 'Monitoring') }}</h1>
           <p v-if="lastRefreshLabel" class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">
-            Mise a jour : {{ lastRefreshLabel }}
+            {{ t('hub.ui.monitoring.updated', 'Mise a jour : {time}', { time: lastRefreshLabel }) }}
           </p>
         </div>
         <button
@@ -154,7 +156,7 @@ function ageLabel(firstSeen: string): string {
                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
           </svg>
-          Actualiser
+          {{ t('hub.ui.monitoring.refresh', 'Actualiser') }}
         </button>
       </div>
     </header>
@@ -163,15 +165,15 @@ function ageLabel(firstSeen: string): string {
 
       
       <div v-if="pending && !data" class="text-center py-20">
-        <p class="text-gray-500 dark:text-slate-500 text-sm">Chargement...</p>
+        <p class="text-gray-500 dark:text-slate-500 text-sm">{{ t('hub.ui.monitoring.loading', 'Chargement...') }}</p>
       </div>
 
       
       <div v-else-if="error" class="rounded-2xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/5 p-6">
-        <p class="text-red-600 dark:text-red-400 font-medium">Erreur de chargement</p>
-        <p class="text-sm text-red-500/70 mt-1">{{ error.message || 'Impossible de recuperer les donnees.' }}</p>
+        <p class="text-red-600 dark:text-red-400 font-medium">{{ t('hub.ui.monitoring.load_error', 'Erreur de chargement') }}</p>
+        <p class="text-sm text-red-500/70 mt-1">{{ error.message || t('hub.ui.monitoring.load_error_detail', 'Impossible de recuperer les donnees.') }}</p>
         <button @click="refresh" class="mt-4 px-4 py-2 rounded-xl text-sm font-medium bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/20 transition-colors">
-          Reessayer
+          {{ t('hub.ui.monitoring.retry', 'Reessayer') }}
         </button>
       </div>
 
@@ -186,7 +188,7 @@ function ageLabel(firstSeen: string): string {
             </div>
             <div>
               <p class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white tabular-nums">{{ counts.critical }}</p>
-              <p class="text-xs font-medium text-gray-500 dark:text-slate-500">Critique</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-slate-500">{{ t('hub.ui.monitoring.critical', 'Critique') }}</p>
             </div>
           </div>
           <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 flex items-center gap-4 shadow-sm">
@@ -195,7 +197,7 @@ function ageLabel(firstSeen: string): string {
             </div>
             <div>
               <p class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white tabular-nums">{{ counts.warning }}</p>
-              <p class="text-xs font-medium text-gray-500 dark:text-slate-500">Attention</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-slate-500">{{ t('hub.ui.monitoring.warning', 'Attention') }}</p>
             </div>
           </div>
           <div class="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 flex items-center gap-4 shadow-sm">
@@ -204,7 +206,7 @@ function ageLabel(firstSeen: string): string {
             </div>
             <div>
               <p class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white tabular-nums">{{ counts.ok }}</p>
-              <p class="text-xs font-medium text-gray-500 dark:text-slate-500">OK</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-slate-500">{{ t('hub.ui.monitoring.ok', 'OK') }}</p>
             </div>
           </div>
         </div>
@@ -213,10 +215,10 @@ function ageLabel(firstSeen: string): string {
         <div v-if="data.lifecycle" class="flex items-center gap-2 flex-wrap">
           <button
             v-for="f in [
-              { key: 'all', label: 'Tout' },
-              { key: 'new', label: 'Nouveau', count: lc.new },
-              { key: 'persistent', label: 'Persistant', count: lc.active },
-              { key: 'resolved', label: 'Resolu', count: lc.resolved_today },
+              { key: 'all', label: t('hub.ui.monitoring.f_all', 'Tout') },
+              { key: 'new', label: t('hub.ui.monitoring.f_new', 'Nouveau'), count: lc.new },
+              { key: 'persistent', label: t('hub.ui.monitoring.f_persistent', 'Persistant'), count: lc.active },
+              { key: 'resolved', label: t('hub.ui.monitoring.f_resolved', 'Resolu'), count: lc.resolved_today },
             ]" :key="f.key"
             @click="activeFilter = f.key as FilterMode"
             class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
@@ -247,9 +249,9 @@ function ageLabel(firstSeen: string): string {
                     :class="section.severity === 'critical'
                       ? 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
                       : 'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400'">
-                {{ section.severity === 'critical' ? 'Critique' : 'Attention' }}
+                {{ section.severity === 'critical' ? t('hub.ui.monitoring.critical', 'Critique') : t('hub.ui.monitoring.warning', 'Attention') }}
               </span>
-              <span class="ml-auto text-xs text-gray-500 dark:text-slate-500">{{ section.items.length }} el.</span>
+              <span class="ml-auto text-xs text-gray-500 dark:text-slate-500">{{ t('hub.ui.monitoring.items_count', '{n} el.', { n: section.items.length }) }}</span>
             </div>
             <div class="space-y-1.5">
               <div v-for="(item, idx) in section.items" :key="idx"
@@ -263,11 +265,11 @@ function ageLabel(firstSeen: string): string {
                   <p class="text-sm font-semibold text-gray-800 dark:text-slate-200">{{ item.label }}</p>
                   <span v-if="item.lifecycle?.status === 'new'"
                         class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400">
-                    NOUVEAU
+                    {{ t('hub.ui.monitoring.badge_new', 'NOUVEAU') }}
                   </span>
                   <span v-else-if="item.lifecycle?.status === 'active'"
                         class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400">
-                    depuis {{ ageLabel(item.lifecycle.first_seen) }}
+                    {{ t('hub.ui.monitoring.since', 'depuis {age}', { age: ageLabel(item.lifecycle.first_seen) }) }}
                   </span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 break-all whitespace-pre-wrap leading-relaxed">{{ item.detail }}</p>
@@ -281,8 +283,8 @@ function ageLabel(firstSeen: string): string {
             <summary class="flex items-center gap-3 px-5 py-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
               <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ section.title }}</h2>
-              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">OK</span>
-              <span class="ml-auto text-xs text-gray-500 dark:text-slate-500">{{ section.items.length }} el.</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">{{ t('hub.ui.monitoring.ok', 'OK') }}</span>
+              <span class="ml-auto text-xs text-gray-500 dark:text-slate-500">{{ t('hub.ui.monitoring.items_count', '{n} el.', { n: section.items.length }) }}</span>
               <svg class="w-4 h-4 text-gray-500 dark:text-slate-500 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
               </svg>
@@ -302,7 +304,7 @@ function ageLabel(firstSeen: string): string {
           <div v-if="data.resolved_today?.length" class="rounded-2xl border border-emerald-200 dark:border-emerald-500/30 bg-white dark:bg-slate-900/50 p-5 shadow-sm">
             <div class="flex items-center gap-3 mb-4">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Resolus aujourd'hui</h2>
+              <h2 class="text-sm font-bold text-gray-900 dark:text-white">{{ t('hub.ui.monitoring.resolved_today', 'Resolus aujourd\'hui') }}</h2>
               <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
                 {{ data.resolved_today.length }}
               </span>
@@ -313,25 +315,25 @@ function ageLabel(firstSeen: string): string {
                 <div class="flex items-center gap-2 flex-wrap">
                   <p class="text-sm font-semibold text-gray-800 dark:text-slate-200">{{ item.label }}</p>
                   <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 line-through">
-                    RESOLU
+                    {{ t('hub.ui.monitoring.badge_resolved', 'RESOLU') }}
                   </span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{{ item.detail }}</p>
                 <p class="text-[10px] text-gray-400 dark:text-slate-600 mt-1 font-mono">
-                  Resolu : {{ item.resolved_at }}
+                  {{ t('hub.ui.monitoring.resolved_at', 'Resolu : {date}', { date: item.resolved_at }) }}
                 </p>
               </div>
             </div>
           </div>
           <div v-else class="text-center py-12">
-            <p class="text-gray-500 dark:text-slate-500 text-sm">Aucun probleme resolu aujourd'hui.</p>
+            <p class="text-gray-500 dark:text-slate-500 text-sm">{{ t('hub.ui.monitoring.none_resolved', 'Aucun probleme resolu aujourd\'hui.') }}</p>
           </div>
         </template>
 
         
         <div v-if="filteredSections.length === 0 && activeFilter !== 'resolved'" class="text-center py-12">
           <p class="text-gray-500 dark:text-slate-500 text-sm">
-            {{ activeFilter === 'new' ? 'Aucun nouveau probleme.' : activeFilter === 'persistent' ? 'Aucun probleme persistant.' : 'Aucune donnee.' }}
+            {{ activeFilter === 'new' ? t('hub.ui.monitoring.none_new', 'Aucun nouveau probleme.') : activeFilter === 'persistent' ? t('hub.ui.monitoring.none_persistent', 'Aucun probleme persistant.') : t('hub.ui.monitoring.no_data', 'Aucune donnee.') }}
           </p>
         </div>
 

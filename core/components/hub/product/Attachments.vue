@@ -3,7 +3,7 @@
   <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-4">
     <div class="flex items-center justify-between">
       <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">
-        Fiches techniques & pièces jointes
+        {{ t('hub.ui.product_attachments.title', 'Fiches techniques & pièces jointes') }}
         <span v-if="attachments.length" class="ml-1 text-xs text-gray-400 font-normal">({{ attachments.length }})</span>
       </h2>
       <span class="text-[10px] uppercase tracking-wide text-gray-400">
@@ -41,10 +41,10 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
         </svg>
         <p class="text-sm font-medium text-gray-700 dark:text-slate-200">
-          Glisse un fichier ici, ou <span class="text-primary-600 dark:text-primary-400">clique pour choisir</span>
+          {{ t('hub.ui.product_attachments.drop_before', 'Glisse un fichier ici, ou') }} <span class="text-primary-600 dark:text-primary-400">{{ t('hub.ui.product_attachments.drop_click', 'clique pour choisir') }}</span>
         </p>
         <p class="text-[11px] text-gray-400">
-          PDF, Word, Excel, images ou ZIP — 20 Mo max
+          {{ t('hub.ui.product_attachments.accepted', 'PDF, Word, Excel, images ou ZIP — 20 Mo max') }}
         </p>
       </label>
 
@@ -63,9 +63,9 @@
     <p v-if="uploadError" class="text-xs text-red-600 font-medium">{{ uploadError }}</p>
 
     
-    <div v-if="loading" class="text-xs text-gray-400">Chargement des pièces jointes…</div>
+    <div v-if="loading" class="text-xs text-gray-400">{{ t('hub.ui.product_attachments.loading', 'Chargement des pièces jointes…') }}</div>
     <div v-else-if="!attachments.length" class="text-xs text-gray-400 italic">
-      Aucune pièce jointe pour ce produit.
+      {{ t('hub.ui.product_attachments.empty', 'Aucune pièce jointe pour ce produit.') }}
     </div>
     <ul v-else class="space-y-2">
       <li
@@ -94,7 +94,7 @@
                 'text-[10px] font-mono shrink-0 pt-1',
                 (a.name || '').length >= 32 ? 'text-amber-600 font-bold' : 'text-gray-400',
               ]"
-              :title="(a.name || '').length >= 32 ? 'Limite 32 caractères atteinte (contrainte DB PrestaShop)' : ''"
+              :title="(a.name || '').length >= 32 ? t('hub.ui.product_attachments.limit_32', 'Limite 32 caractères atteinte (contrainte DB PrestaShop)') : ''"
             >
               {{ (a.name || '').length }}/32
             </span>
@@ -115,7 +115,7 @@
             target="_blank"
             rel="noopener noreferrer"
             class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-            title="Télécharger (lien boutique direct)"
+            :title="t('hub.ui.product_attachments.download_title', 'Télécharger (lien boutique direct)')"
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -124,7 +124,7 @@
           <button
             type="button"
             class="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-600 transition-colors"
-            title="Supprimer la pièce jointe"
+            :title="t('hub.ui.product_attachments.delete_title', 'Supprimer la pièce jointe')"
             @click="onDelete(a)"
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -153,6 +153,7 @@ interface Attachment {
 const props = defineProps<{ productId: number }>()
 
 const { currentLangId, currentLang } = useHubLang()
+const { t } = useHubT()
 
 const attachments = ref<Attachment[]>([])
 const loading = ref(true)
@@ -201,12 +202,12 @@ async function load() {
 
 async function uploadOne(file: File) {
   if (file.size > 20 * 1024 * 1024) {
-    uploadError.value = `Fichier trop lourd : ${file.name} (max 20 Mo)`
+    uploadError.value = t('hub.ui.product_attachments.too_big', 'Fichier trop lourd : {name} (max 20 Mo)', { name: file.name })
     return
   }
   uploadError.value = null
   uploading.value = true
-  uploadingLabel.value = `Envoi de ${file.name}…`
+  uploadingLabel.value = t('hub.ui.product_attachments.sending', 'Envoi de {name}…', { name: file.name })
   try {
     const fd = new FormData()
     fd.append('file', file)
@@ -219,7 +220,7 @@ async function uploadOne(file: File) {
       body: fd,
     })
   } catch (err: any) {
-    uploadError.value = err?.data?.message || err?.message || 'Upload échoué'
+    uploadError.value = err?.data?.message || err?.message || t('hub.ui.product_attachments.upload_failed', 'Upload échoué')
   } finally {
     uploading.value = false
   }
@@ -246,7 +247,7 @@ function onFileChange(e: Event) {
 }
 
 async function onDelete(a: Attachment) {
-  if (!confirm(`Supprimer "${a.name || a.file_name}" ?`)) return
+  if (!confirm(t('hub.ui.product_attachments.confirm_delete', 'Supprimer "{name}" ?', { name: a.name || a.file_name }))) return
   try {
     await $fetch(`/api/bo/products/${props.productId}/attachments`, {
       method: 'DELETE',
@@ -254,7 +255,7 @@ async function onDelete(a: Attachment) {
     })
     attachments.value = attachments.value.filter((x) => x.id_attachment !== a.id_attachment)
   } catch (err: any) {
-    uploadError.value = err?.data?.message || err?.message || 'Suppression échouée'
+    uploadError.value = err?.data?.message || err?.message || t('hub.ui.product_attachments.delete_failed', 'Suppression échouée')
   }
 }
 
@@ -271,7 +272,7 @@ async function onRenameAttachment(a: Attachment, newName: string) {
     })
   } catch (err: any) {
     a.name = prev
-    uploadError.value = err?.data?.message || err?.message || 'Renommage échoué'
+    uploadError.value = err?.data?.message || err?.message || t('hub.ui.product_attachments.rename_failed', 'Renommage échoué')
   }
 }
 
@@ -280,9 +281,9 @@ watch(() => props.productId, load)
 watch(currentLangId, (n, o) => { if (n !== o && !loading.value) load() })
 
 function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
+  if (bytes < 1024) return t('hub.ui.product_attachments.size_b', '{value} o', { value: bytes })
+  if (bytes < 1024 * 1024) return t('hub.ui.product_attachments.size_kb', '{value} Ko', { value: (bytes / 1024).toFixed(1) })
+  return t('hub.ui.product_attachments.size_mb', '{value} Mo', { value: (bytes / (1024 * 1024)).toFixed(1) })
 }
 
 function mimeShort(mime: string): string {

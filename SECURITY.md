@@ -52,19 +52,19 @@ CodeMyShop ships with secure defaults, but you must:
 - [ ] Run PostgreSQL bound to localhost or VPN, never public
 - [ ] Enable PostgreSQL backups (the Ansible playbook configures S3-compatible backups)
 - [ ] Rotate the admin password from the seeded default
-- [ ] Subscribe to the [release feed](https://github.com/codemyshop/codemyshop/releases.atom) for security patches
+- [ ] Subscribe to the [release feed](https://github.com/synedre/codemyshop/releases.atom) for security patches
 - [ ] Apply security patches within 14 days
 
 ## Supply chain
 
 - **Dependencies**: pinned in `package.json` and `package-lock.json`. We avoid wildcard versions.
 - **CI**: GitHub Actions runs `npm audit` on every push.
-- **Container images**: every `ghcr.io/codemyshop/codemyshop:vX.Y.Z` is signed with [cosign](https://docs.sigstore.dev/cosign/overview/) using keyless OIDC (no static private key — the signing identity is the GitHub Actions workflow itself). Each image also ships a [CycloneDX](https://cyclonedx.org/) SBOM as a cosign attestation. See **Verifying releases** below.
+- **Container images**: every `ghcr.io/synedre/codemyshop:vX.Y.Z` is signed with [cosign](https://docs.sigstore.dev/cosign/overview/) using keyless OIDC (no static private key — the signing identity is the GitHub Actions workflow itself). Each image also ships a [CycloneDX](https://cyclonedx.org/) SBOM as a cosign attestation. See **Verifying releases** below.
 - **No telemetry**: CodeMyShop does not phone home. Period.
 
 ## Verifying releases
 
-You can independently verify that a `ghcr.io/codemyshop/codemyshop` image was built by our official GitHub Actions workflow (and not tampered with) before running it.
+You can independently verify that a `ghcr.io/synedre/codemyshop` image was built by our official GitHub Actions workflow (and not tampered with) before running it.
 
 ### Prerequisite
 
@@ -74,9 +74,9 @@ Install [cosign](https://docs.sigstore.dev/cosign/system_config/installation/) (
 
 ```bash
 cosign verify \
-  --certificate-identity-regexp '^https://github\.com/codemyshop/codemyshop/\.github/workflows/docker\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
+  --certificate-identity-regexp '^https://github\.com/synedre/codemyshop/\.github/workflows/docker\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/codemyshop/codemyshop:0.1.6
+  ghcr.io/synedre/codemyshop:0.1.6
 ```
 
 A successful verification prints the certificate transparency log entry and exits 0. If the image was retagged or rebuilt by anyone other than our workflow, this command fails.
@@ -88,7 +88,7 @@ A successful verification prints the certificate transparency log entry and exit
 ```bash
 cosign download attestation \
   --predicate-type https://cyclonedx.org/bom \
-  ghcr.io/codemyshop/codemyshop:0.1.6 \
+  ghcr.io/synedre/codemyshop:0.1.6 \
   | jq -r '.payload' | base64 -d | jq '.predicate' > codemyshop-sbom.json
 ```
 

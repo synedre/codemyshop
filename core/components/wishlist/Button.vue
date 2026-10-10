@@ -81,7 +81,7 @@
             </div>
 
             <div class="flex justify-between items-center mt-5">
-              <NuxtLink v-if="loggedIn && lists.length" to="/favoris" class="text-xs text-gray-500 hover:text-primary-600 underline">
+              <NuxtLink v-if="loggedIn && lists.length" :to="localePath('/favoris')" class="text-xs text-gray-500 hover:text-primary-600 underline">
                 {{ t('wishlist.cta_manage') }}
               </NuxtLink>
               <button @click="open = false" class="ml-auto px-4 py-2 text-sm text-gray-600 hover:text-gray-900">
@@ -104,6 +104,7 @@ const props = withDefaults(defineProps<{
   attributeId: 0,
   variant: 'icon',
 })
+const { localePath } = useLocalePath()
 
 const { t } = useT()
 const { loggedIn } = useCustomerAuth()

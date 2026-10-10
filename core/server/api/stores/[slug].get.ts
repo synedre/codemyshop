@@ -1,14 +1,19 @@
 
 
 import { useClientDb } from '../../utils/db'
+import { resolveIdLang } from '../../utils/lang'
+import { buildStorePath, getStoreLocatorPath } from '../../utils/store-path'
+import { getStoreAdvisorBySlug } from '../../utils/store-advisor'
 
 export default defineEventHandler(async (event) => {
   const db = useClientDb(event)
   const cfg = useRuntimeConfig(event)
   const clientId = String((cfg as any).clientId || '')
   const slug = String(getRouterParam(event, 'slug') || '').trim()
-  const lang = String(getQuery(event).lang || 'fr')
-  const idLang = lang === 'en' ? 2 : 1
+  
+  
+  
+  const idLang = await resolveIdLang(event)
 
   if (!slug) throw createError({ statusCode: 400, statusMessage: 'slug required' })
 
@@ -28,13 +33,21 @@ export default defineEventHandler(async (event) => {
   const r = rows[0]
   if (!r) throw createError({ statusCode: 404, statusMessage: 'Store not found' })
 
-  let hours: Record<string, string> | null = null
+  let hours: Record<string, unknown> | null = null
   if (r.hours_json) { try { hours = JSON.parse(r.hours_json) } catch {} }
+
+  const locatorPath = await getStoreLocatorPath(db)
+  
+  
+  
+  
+  const advisor = await getStoreAdvisorBySlug(db, clientId, slug, idLang)
 
   return {
     store: {
       id: Number(r.id_store),
       slug: String(r.slug),
+      path: buildStorePath(locatorPath, r.slug),
       name: String(r.name),
       addressLine1: String(r.address_line1),
       addressLine2: r.address_line2,
@@ -53,6 +66,10 @@ export default defineEventHandler(async (event) => {
       description: r.description,
       metaTitle: r.meta_title,
       metaDescription: r.meta_description,
+      
+      
+      
+      ...(advisor ? { advisor } : {}),
     },
   }
 })

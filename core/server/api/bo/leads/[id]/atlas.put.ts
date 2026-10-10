@@ -2,19 +2,23 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const ALLOWED_VERTICAL = new Set([
   'bacchus', 'ceres', 'poseidon', 'hephaistos', 'hermes',
   'hors-cible', 'a-classer',
 ])
 const ALLOWED_TIER = new Set(['t1', 't2', 't3', 'veille', 'ecarte', 'a-classer'])
 const ALLOWED_STATUS = new Set([
-  'nouveau', 'qualifie', 'veille', 'pret-contact', 'ecarte',
+  'nouveau', 'qualifie', 'veille', 'pret-contact', 'contacte', 'ecarte',
 ])
 const ALLOWED_RISK = new Set([
+  'a-verifier',
   'aucun', 'voisin-example-shop', 'client-aude-connu', 'client-ac-connu',
 ])
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!Number.isFinite(id) || id <= 0) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid id' })

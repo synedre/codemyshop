@@ -1,6 +1,7 @@
 
 
 import { listSectionsWithLang, type SectionWithLangRow } from '~/modules/homepage-section/server/utils/homepage-section'
+import { resolveVariantForServing } from '~/modules/homepage-section/server/utils/homepage-variant'
 import { listBlocksForSections, type BlockWithLangRow } from '~/modules/homepage-block/server/utils/homepage-block'
 
 function extraOf(b: BlockWithLangRow): Record<string, any> {
@@ -10,9 +11,13 @@ function extraOf(b: BlockWithLangRow): Record<string, any> {
 export default defineEventHandler(async (event) => {
   const { resolveIdLang } = await import('~/server/utils/lang')
   const idLang = await resolveIdLang(event)
+  
+  
+  
+  const { code: variantCode } = await resolveVariantForServing(event)
 
   try {
-    const sections = await listSectionsWithLang(idLang, true, { event })
+    const sections = await listSectionsWithLang(idLang, true, variantCode, { event })
     if (!sections.length) return { homepage: {}, sections: null }
 
     const sectionIds = sections.map((s) => s.id_section)

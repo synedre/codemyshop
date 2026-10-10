@@ -36,7 +36,7 @@
         />
         <button
           type="submit"
-          :disabled="!canSubmit || state === 'sending' || state === 'success'"
+          :disabled="state === 'sending' || state === 'success'"
           class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-xs font-medium tracking-wide transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {{ ctaLabel || t('footer.newsletter.cta') }}
@@ -55,22 +55,26 @@
     </form>
 
     
-    <p
-      v-if="state === 'success'"
-      class="text-[11px] text-emerald-400 leading-relaxed"
-    >
-      {{ t('footer.newsletter.success') }}
-    </p>
-    <p
-      v-else-if="state === 'error'"
-      class="text-[11px] text-rose-400 leading-relaxed"
-    >
-      {{ errorMessage || t('footer.newsletter.error') }}
-    </p>
+    <div aria-live="polite">
+      <p
+        v-if="state === 'success'"
+        class="text-[11px] text-emerald-400 leading-relaxed"
+      >
+        {{ t('footer.newsletter.success') }}
+      </p>
+      <p
+        v-else-if="state === 'error'"
+        class="text-[11px] text-rose-400 leading-relaxed"
+      >
+        {{ errorMessage || t('footer.newsletter.error') }}
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { newsletterBlocker } from '~/utils/newsletter-form'
+
 const props = defineProps<{
   title?: string
   description?: string
@@ -88,14 +92,19 @@ const honeypot  = ref('')
 const state     = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
 const errorMessage = ref('')
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const canSubmit = computed(
-  () => EMAIL_RE.test(email.value.trim()) && consent.value === true,
-)
+const blocker = computed(() => newsletterBlocker(email.value, consent.value))
 
 async function submit() {
-  if (!canSubmit.value || state.value === 'sending') return
+  if (state.value === 'sending') return
+  
+  const missing = blocker.value
+  if (missing) {
+    state.value = 'error'
+    errorMessage.value = missing === 'consent'
+      ? t('footer.newsletter.consent_required', 'Merci de cocher la case de consentement pour vous inscrire.')
+      : t('footer.newsletter.email_invalid', 'Merci de saisir une adresse email valide.')
+    return
+  }
   state.value = 'sending'
   errorMessage.value = ''
   try {

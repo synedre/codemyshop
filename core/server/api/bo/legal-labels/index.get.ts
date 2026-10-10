@@ -2,7 +2,10 @@
 
 import { listLegalLabelsAll } from '~/enterprise/vertical-food/product-food/server/utils/product-food'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const rows = await listLegalLabelsAll(1, { event })
 
   const enriched = rows.map((r) => {

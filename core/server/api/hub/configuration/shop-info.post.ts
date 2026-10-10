@@ -7,6 +7,9 @@ const WHITELIST_KEYS = new Set([
   'PS_SHOP_NAME',
   'PS_SHOP_SIRET',
   'PS_SHOP_SIREN',
+  'PS_SHOP_VAT_NUMBER',
+  'PS_SHOP_DETAILS',
+  'PS_INVOICE_LEGAL_FREE_TEXT',
   'PS_SHOP_PHONE',
   'PS_SHOP_EMAIL',
   'PS_SHOP_ADDR1',
@@ -21,6 +24,9 @@ function validate(name: string, value: string): string | null {
   if (!value) return null
   if (name === 'PS_SHOP_SIRET' && !/^\d{14}$/.test(value)) return 'SIRET doit faire 14 chiffres'
   if (name === 'PS_SHOP_SIREN' && !/^\d{9}$/.test(value)) return 'SIREN doit faire 9 chiffres'
+  if (name === 'PS_SHOP_VAT_NUMBER' && !/^[A-Z]{2}[0-9A-Z]{2,13}$/.test(value)) return 'N° de TVA invalide (ex. FR12345678901)'
+  if (name === 'PS_SHOP_DETAILS' && value.length > 500) return 'Mentions trop longues (max 500 caractères)'
+  if (name === 'PS_INVOICE_LEGAL_FREE_TEXT' && value.length > 1000) return 'Mentions trop longues (max 1000 caractères)'
   if (name === 'PS_SHOP_COUNTRY_ID' && !/^\d+$/.test(value)) return 'ID pays doit être un entier'
   if (name === 'PS_SHOP_EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Email invalide'
   if (name === 'PS_AC_TENANT_AUDIENCE' && value.length > 2000) return 'Brief audience trop long (max 2000 caractères)'

@@ -3,7 +3,9 @@
 import { upsertWaTemplate } from '~/enterprise/base/smartproject/server/utils/smartproject'
 import { getSession } from '~/server/utils/session'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<any>(event)
   if (!body || !body.title || !String(body.title).trim()) {
     return { success: false, error: 'Le titre est requis.' }

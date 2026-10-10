@@ -2,7 +2,10 @@
 
 import { createSmartLead } from '~/enterprise/base/smartlead/server/utils/smartlead'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ firstname: string; lastname: string; email: string; phone?: string; company?: string; type?: string; note?: string }>(event)
   if (!body.email?.trim()) throw createError({ statusCode: 400, message: 'Email requis' })
 

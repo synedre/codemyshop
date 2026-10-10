@@ -5,8 +5,8 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Transcr&eacute;ation IA</h1>
-          <p class="text-xs text-gray-400 mt-0.5">Produits, articles de blog et cat&eacute;gories &mdash; adapt&eacute;s &agrave; chaque march&eacute;</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.marketing_localization.title', 'Transcréation IA') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.marketing_localization.subtitle', 'Produits, articles de blog et catégories — adaptés à chaque marché') }}</p>
         </div>
         <div class="flex items-center gap-2">
           <span v-for="loc in LOCALES" :key="loc.locale" class="text-lg" :title="loc.label">{{ loc.flag }}</span>
@@ -42,7 +42,7 @@
       
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
         <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">
-          1. S&eacute;lectionnez {{ contentType === 'product' ? 'un produit' : contentType === 'article' ? 'un article' : 'une cat&eacute;gorie' }}
+          {{ contentType === 'product' ? t('hub.ui.marketing_localization.select_product', '1. Sélectionnez un produit') : contentType === 'article' ? t('hub.ui.marketing_localization.select_article', '1. Sélectionnez un article') : t('hub.ui.marketing_localization.select_category', '1. Sélectionnez une catégorie') }}
         </h2>
 
         
@@ -52,7 +52,7 @@
 
         
         <div v-else-if="!items.length" class="text-sm text-gray-400 py-6 text-center">
-          {{ contentType === 'product' ? 'Aucun produit (module ac_productextra requis)' : contentType === 'article' ? 'Aucun article de blog' : 'Aucune cat\u00e9gorie' }}
+          {{ contentType === 'product' ? t('hub.ui.marketing_localization.empty_product', 'Aucun produit (module ac_productextra requis)') : contentType === 'article' ? t('hub.ui.marketing_localization.empty_article', 'Aucun article de blog') : t('hub.ui.marketing_localization.empty_category', 'Aucune catégorie') }}
         </div>
 
         
@@ -93,34 +93,34 @@
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
             <div class="flex items-center gap-2 mb-3">
               <span class="text-lg">\ud83c\uddeb\ud83c\uddf7</span>
-              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200">Texte original (FR)</h3>
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200">{{ t('hub.ui.marketing_localization.original_text', 'Texte original (FR)') }}</h3>
               <span class="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full"
                     :class="contentType === 'product' ? 'bg-gray-100 dark:bg-slate-800 text-gray-500' : contentType === 'article' ? 'bg-primary-50 text-primary-600' : 'bg-amber-50 text-amber-600'">
-                {{ contentType === 'product' ? 'Produit' : contentType === 'article' ? 'Article' : 'Cat\u00e9gorie' }}
+                {{ contentType === 'product' ? t('hub.ui.marketing_localization.type_product', 'Produit') : contentType === 'article' ? t('hub.ui.marketing_localization.type_article', 'Article') : t('hub.ui.marketing_localization.type_category', 'Catégorie') }}
               </span>
             </div>
             <div class="space-y-3">
               <div>
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                  {{ contentType === 'article' ? 'Titre' : 'Nom' }}
+                  {{ contentType === 'article' ? t('hub.ui.marketing_localization.field_title', 'Titre') : t('hub.ui.marketing_localization.field_name', 'Nom') }}
                 </p>
                 <p class="text-sm text-gray-800 dark:text-slate-100 font-medium">{{ selectedItem.name }}</p>
               </div>
               <div v-if="sourceText">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                  {{ contentType === 'article' ? 'Contenu' : 'Description' }}
+                  {{ contentType === 'article' ? t('hub.ui.marketing_localization.field_content', 'Contenu') : t('hub.ui.marketing_localization.field_description', 'Description') }}
                 </p>
                 <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">{{ sourceText }}</p>
               </div>
               <div v-else class="text-xs text-gray-400 italic py-4">
-                Pas de contenu textuel disponible.
+                {{ t('hub.ui.marketing_localization.no_text', 'Pas de contenu textuel disponible.') }}
               </div>
             </div>
           </div>
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">2. Transcr&eacute;er vers&hellip;</h3>
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">{{ t('hub.ui.marketing_localization.transcreate_to', '2. Transcréer vers…') }}</h3>
             <div class="grid grid-cols-2 gap-3">
               <button
                 v-for="loc in targetLocales"
@@ -137,7 +137,7 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
                 <span v-else class="text-lg">{{ loc.flag }}</span>
-                {{ generating === loc.locale ? 'G\u00e9n\u00e9ration\u2026' : results[loc.locale] ? '\u2713 ' + loc.label : loc.label }}
+                {{ generating === loc.locale ? t('hub.ui.marketing_localization.generating', 'Génération…') : results[loc.locale] ? '\u2713 ' + loc.label : loc.label }}
               </button>
             </div>
           </div>
@@ -149,7 +149,7 @@
             <svg class="w-14 h-14 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
             </svg>
-            <p class="text-sm font-medium text-gray-400">Les transcr&eacute;ations appara&icirc;tront ici</p>
+            <p class="text-sm font-medium text-gray-400">{{ t('hub.ui.marketing_localization.results_here', 'Les transcréations apparaîtront ici') }}</p>
           </div>
 
           <div
@@ -167,7 +167,7 @@
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
                   </svg>
-                  {{ copiedLocale === locale ? 'Copi\u00e9 !' : 'Copier' }}
+                  {{ copiedLocale === locale ? t('hub.ui.marketing_localization.copied', 'Copié !') : t('hub.ui.marketing_localization.copy', 'Copier') }}
                 </button>
               </div>
             </div>
@@ -175,7 +175,7 @@
               <p class="text-sm text-gray-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{{ res.transcreated }}</p>
             </div>
             <div v-if="res.culturalNotes.length" class="px-5 pb-3">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Notes culturelles</p>
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ t('hub.ui.marketing_localization.cultural_notes', 'Notes culturelles') }}</p>
               <ul class="space-y-1.5">
                 <li v-for="(note, i) in res.culturalNotes" :key="i" class="flex items-start gap-2">
                   <span class="w-4 h-4 rounded-full bg-primary-100 text-primary-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{{ i + 1 }}</span>
@@ -184,7 +184,7 @@
               </ul>
             </div>
             <div v-if="res.adaptations.length" class="px-5 pb-4 border-t border-gray-50 pt-3">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Adaptations</p>
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ t('hub.ui.marketing_localization.adaptations', 'Adaptations') }}</p>
               <div class="flex flex-wrap gap-2">
                 <span v-for="(adapt, i) in res.adaptations" :key="i" class="text-xs bg-gray-50 text-gray-600 px-2.5 py-1 rounded-lg border border-gray-100 dark:border-slate-800">{{ adapt }}</span>
               </div>
@@ -202,6 +202,8 @@
 import type { TranscreationResult } from '~/server/api/ai/transcreate.post'
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+
+const { t } = useHubT()
 
 type ContentType = 'product' | 'article' | 'category'
 
@@ -224,11 +226,11 @@ interface Article {
   nuxtUrl: string; category: string
 }
 
-const CONTENT_TABS = [
-  { id: 'product'  as ContentType, icon: '\ud83d\udce6', label: 'Produits' },
-  { id: 'article'  as ContentType, icon: '\u270d\ufe0f', label: 'Articles' },
-  { id: 'category' as ContentType, icon: '\ud83d\udcc1', label: 'Cat\u00e9gories' },
-]
+const CONTENT_TABS = computed(() => [
+  { id: 'product'  as ContentType, icon: '\ud83d\udce6', label: t('hub.ui.marketing_localization.tab_products', 'Produits') },
+  { id: 'article'  as ContentType, icon: '\u270d\ufe0f', label: t('hub.ui.marketing_localization.tab_articles', 'Articles') },
+  { id: 'category' as ContentType, icon: '\ud83d\udcc1', label: t('hub.ui.marketing_localization.tab_categories', 'Catégories') },
+])
 
 const LOCALES = [
   { locale: 'fr', label: 'Fran\u00e7ais', flag: '\ud83c\uddeb\ud83c\uddf7' },
@@ -260,7 +262,7 @@ const items = computed<ContentItem[]>(() => {
       return products.value.map(p => ({
         id:       p.id_product,
         name:     p.name,
-        subtitle: `${p.category_name || 'Sans cat\u00e9gorie'} \u00b7 ${formatPrice(p.price)}`,
+        subtitle: `${p.category_name || t('hub.ui.marketing_localization.no_category', 'Sans catégorie')} \u00b7 ${formatPrice(p.price)}`,
         text:     stripHtml(p.description || p.description_short || ''),
         image:    p.img_url,
       }))
@@ -268,7 +270,7 @@ const items = computed<ContentItem[]>(() => {
       return articles.value.map(a => ({
         id:       a.id,
         name:     a.title,
-        subtitle: a.category || 'Blog',
+        subtitle: a.category || t('hub.ui.marketing_localization.blog', 'Blog'),
         text:     a.excerpt || '',
         image:    a.coverImage,
       }))
@@ -276,7 +278,7 @@ const items = computed<ContentItem[]>(() => {
       return categories.value.map(c => ({
         id:       c.id,
         name:     c.name,
-        subtitle: `ID ${c.id} \u00b7 ${c.productCount ?? '?'} produits`,
+        subtitle: t('hub.ui.marketing_localization.cat_subtitle', 'ID {id} · {count} produits', { id: c.id, count: c.productCount ?? '?' }),
         text:     stripHtml(c.description || c.meta_description || ''),
       }))
     default:

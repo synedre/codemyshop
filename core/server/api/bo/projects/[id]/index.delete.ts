@@ -2,7 +2,10 @@
 
 import { deleteSmartProject } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id || id <= 0) {
     throw createError({ statusCode: 400, message: 'id projet invalide' })

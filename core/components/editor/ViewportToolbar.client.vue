@@ -7,19 +7,20 @@ const {
   orientation, toggleOrientation, canRotate,
   currentWidth, currentHeight,
 } = useEditorViewport()
+const { t: tHub } = useHubT()
 
-const buttons: Array<{ id: ViewportMode; label: string }> = [
-  { id: 'mobile',  label: 'Mobile' },
-  { id: 'tablet',  label: 'Tablette' },
-  { id: 'desktop', label: 'Desktop' },
-]
+const buttons = computed<Array<{ id: ViewportMode; label: string }>>(() => [
+  { id: 'mobile',  label: tHub('hub.ui.editor_viewport_toolbar.mobile', 'Mobile') },
+  { id: 'tablet',  label: tHub('hub.ui.editor_viewport_toolbar.tablet', 'Tablette') },
+  { id: 'desktop', label: tHub('hub.ui.editor_viewport_toolbar.desktop', 'Desktop') },
+])
 </script>
 
 <template>
   <div
     class="sticky top-0 z-[100] flex items-center justify-center gap-1 py-2 px-4 bg-gray-50/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
     role="toolbar"
-    aria-label="Mode d'affichage"
+    :aria-label="tHub('hub.ui.editor_viewport_toolbar.display_mode', 'Mode d\'affichage')"
   >
     <button
       v-for="b in buttons"
@@ -59,8 +60,8 @@ const buttons: Array<{ id: ViewportMode; label: string }> = [
     <button
       v-if="canRotate"
       type="button"
-      :aria-label="`Passer en ${orientation === 'portrait' ? 'paysage' : 'portrait'}`"
-      :title="orientation === 'portrait' ? 'Basculer en paysage' : 'Basculer en portrait'"
+      :aria-label="orientation === 'portrait' ? tHub('hub.ui.editor_viewport_toolbar.switch_landscape', 'Passer en paysage') : tHub('hub.ui.editor_viewport_toolbar.switch_portrait', 'Passer en portrait')"
+      :title="orientation === 'portrait' ? tHub('hub.ui.editor_viewport_toolbar.toggle_landscape', 'Basculer en paysage') : tHub('hub.ui.editor_viewport_toolbar.toggle_portrait', 'Basculer en portrait')"
       class="ml-2 inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-all"
       @click="toggleOrientation"
     >

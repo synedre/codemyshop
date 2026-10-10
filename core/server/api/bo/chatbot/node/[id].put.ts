@@ -2,7 +2,9 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idNode = Number(getRouterParam(event, 'id'))
   if (!idNode || isNaN(idNode)) throw createError({ statusCode: 400, message: 'id invalide' })
 

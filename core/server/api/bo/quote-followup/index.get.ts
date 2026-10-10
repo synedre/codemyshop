@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   const ageMinDays = Math.max(0, Number(q.ageMinDays) || 0)
   const ageMaxDays = Math.min(365, Number(q.ageMaxDays) || 90)

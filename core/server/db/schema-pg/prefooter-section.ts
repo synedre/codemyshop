@@ -35,7 +35,7 @@ export const prefooterSectionLangVaisseau = vaisseauMereAcSchema.table(
     idSection: integer('id_section').notNull(),
     idLang: integer('id_lang').notNull(),
     title: varchar('title', { length: 255 }),
-    subtitle: varchar('subtitle', { length: 512 }),
+    subtitle: varchar('subtitle', { length: 1024 }),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.idSection, t.idLang] }),

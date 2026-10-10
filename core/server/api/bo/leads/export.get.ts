@@ -2,7 +2,10 @@
 
 import { listSmartLeadsForExport } from '~/enterprise/base/smartlead/server/utils/smartlead'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const rows = await listSmartLeadsForExport({ event })
 
   const headers = ['ID', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Société', 'SIRET', 'Type', 'Statut', 'Source', 'Note', 'Créé le']

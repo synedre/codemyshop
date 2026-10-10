@@ -1,11 +1,14 @@
 
 
 import { removeCouponFromCart, getCartFromDb } from '~/server/utils/cart-db'
+import { assertCartAccess } from '~/server/utils/cart-proof'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<any>(event)
   const { cartId, clientId } = body || {}
   if (!cartId) throw createError({ statusCode: 400, message: 'cartId requis' })
+
+  await assertCartAccess(event, cartId)
 
   const ctx = clientId ? { clientId: String(clientId) } : { event }
   await removeCouponFromCart(Number(cartId), ctx)

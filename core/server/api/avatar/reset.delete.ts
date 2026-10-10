@@ -1,11 +1,12 @@
 
 
+import { resolveClientId } from '~/server/utils/db'
 export default defineEventHandler(async (event) => {
   const config    = useRuntimeConfig()
   const visitorId = getCookie(event, 'ac_visitor_id')
 
   if (visitorId) {
-    const clientId = config.aiClientId ?? 'ac-hub'
+    const clientId = String(config.aiClientId || resolveClientId())
     const storage  = useStorage('avatars')
     await storage.removeItem(`${clientId}:${visitorId}`)
   }

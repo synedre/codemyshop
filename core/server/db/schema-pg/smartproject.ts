@@ -33,6 +33,14 @@ export const smartproject = vaisseauMereAcSchema.table(
     dateAdd: timestamp('date_add', { mode: 'date', precision: 0 }).notNull(),
     dateUpd: timestamp('date_upd', { mode: 'date', precision: 0 }).notNull(),
     isArchived: smallint('is_archived').notNull().default(0),
+    
+    cartSentAt:        timestamp('cart_sent_at', { mode: 'date', precision: 0 }),
+    cartSentBy:        varchar('cart_sent_by', { length: 128 }),
+    cartToken:         varchar('cart_token', { length: 64 }),
+    cartIdCart:        integer('cart_id_cart'),
+    cartConsumedAt:      timestamp('cart_consumed_at', { mode: 'date', precision: 0 }),
+    cartIsNewCustomer:   smallint('cart_is_new_customer').notNull().default(0),
+    cartEmailCustomBody: text('cart_email_custom_body'),
   },
 )
 

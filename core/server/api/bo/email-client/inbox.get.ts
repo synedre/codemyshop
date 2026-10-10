@@ -2,6 +2,7 @@
 
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 
 interface MessageRow {
@@ -23,6 +24,7 @@ interface MessageRow {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const query = getQuery(event)
   const folder = (String(query.folder || 'inbox')).toLowerCase()
   if (folder !== 'inbox' && folder !== 'sent' && folder !== 'draft') {

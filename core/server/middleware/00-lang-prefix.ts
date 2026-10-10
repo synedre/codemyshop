@@ -1,5 +1,7 @@
 
 
+import { retiredLocaleOfPath, resolveRetiredTarget } from '~/server/utils/i18n-retired'
+
 const LANG_PREFIX_RE = /^\/([a-z]{2})(\/.*)?$/
 
 const KNOWN_LANGS = new Set([
@@ -9,7 +11,11 @@ const KNOWN_LANGS = new Set([
 
 const RESERVED_PREFIXES = new Set(['bo', 'ma'])
 
-export default defineEventHandler((event) => {
+const LEGACY_PRODUCT_WITH_LANG_RE = /^\/([a-z]{2})\/(\d+)-[^/]+\.html$/
+const LEGACY_CATEGORY_WITH_LANG_RE = /^\/([a-z]{2})\/(\d+)-[^/]+\/?$/
+const LEGACY_BLOG_WITH_LANG_RE     = /^\/([a-z]{2})\/blog\/(\d+)_[^/]+\.html$/
+
+export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   const path = url.pathname
 
@@ -27,8 +33,45 @@ export default defineEventHandler((event) => {
   if (!KNOWN_LANGS.has(lang) || RESERVED_PREFIXES.has(lang)) return
 
   
-  if (lang === 'fr') {
-    return sendRedirect(event, rest + url.search, 301)
+  
+  
+  
+  
+  const pub = useRuntimeConfig(event).public as any
+  const retiredIso = path.startsWith('/api/') ? null : retiredLocaleOfPath(path, pub)
+  if (retiredIso) {
+    const target = await resolveRetiredTarget(event, path, retiredIso, pub)
+    if (!target) throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+    return sendRedirect(event, target + url.search, 301)
+  }
+
+  
+  
+  
+  
+  
+  const defaultLocale = ((useRuntimeConfig(event).public as any)?.i18nDefaultLocale as string) || 'fr'
+  if (lang === defaultLocale) {
+    
+    
+    
+    
+    
+    if (
+      LEGACY_PRODUCT_WITH_LANG_RE.test(path) ||
+      LEGACY_BLOG_WITH_LANG_RE.test(path) ||
+      LEGACY_CATEGORY_WITH_LANG_RE.test(path)
+    ) {
+      return
+    }
+    
+    
+    
+    
+    
+    
+    event.context._rootPrefixStrip = rest + url.search
+    return
   }
 
   

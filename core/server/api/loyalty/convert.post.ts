@@ -135,7 +135,8 @@ export default defineEventHandler(async (event): Promise<LoyaltyConvertResponse>
   const reference = `debit_${points}pts_${Math.round(valueEur)}eur_${code}`
   await db.run(
     `INSERT INTO cs_loyalty_transaction (id_customer, type, points, id_cart_rule, reference, date_add)
-     VALUES (?, 'debit', ?, ?, ?, NOW())`,
+     VALUES (?, 'debit', ?, ?, ?, NOW())
+     RETURNING id_ac_loyalty_transaction`,
     [session.customerId, -Math.abs(points), idCartRule, reference],
   )
 

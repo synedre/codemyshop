@@ -8,6 +8,7 @@ import { resolveClientId } from '~/server/utils/db'
 import { getTopOpportunities, type GscOpportunity } from '~/server/services/gsc'
 import { getClientConfigJson } from '~/internal/clientconfig/server/utils/clientconfig'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 function normalize(s: string): string {
   return s.toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -56,6 +57,7 @@ interface DescendantToken {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id || Number.isNaN(id)) {
     throw createError({ statusCode: 400, message: 'Invalid category id' })

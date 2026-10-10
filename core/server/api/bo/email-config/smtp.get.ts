@@ -2,7 +2,10 @@
 
 import { loadEmailConfig } from '~/server/utils/email-config'
 
-export default defineEventHandler(async () => {
+import { requireEmployeeSession } from '~/server/utils/session'
+
+export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const cfg = await loadEmailConfig()
   return {
     config: {

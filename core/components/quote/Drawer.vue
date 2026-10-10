@@ -1,5 +1,7 @@
 
 <script setup lang="ts">
+const { localePath } = useLocalePath()
+const { t } = useT()
 const { isOpen, close } = useQuoteDrawer()
 const { items, updateQuantity, removeFromQuote, totalItems } = useQuoteCart()
 
@@ -44,16 +46,16 @@ watch(isOpen, (val) => {
             id="quote-drawer-title"
             class="text-base font-bold text-gray-900 flex items-center gap-2"
           >
-            Mon devis
+            {{ t('quote.title', 'Mon devis') }}
             <span
               v-if="totalItems"
               class="text-xs font-semibold text-gray-400"
-            >({{ totalItems }} article{{ totalItems > 1 ? 's' : '' }})</span>
+            >({{ totalItems }} {{ t('quote.item', 'article') }}{{ totalItems > 1 ? 's' : '' }})</span>
           </h2>
           <button
             type="button"
             class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-            aria-label="Fermer le devis"
+            :aria-label="t('quote.close', 'Fermer le devis')"
             @click="close"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -65,7 +67,7 @@ watch(isOpen, (val) => {
         
         <div class="px-5 py-3 border-b border-gray-100 shrink-0 bg-amber-50">
           <p class="text-xs text-amber-700">
-            Les prix seront communiqués dans votre devis personnalisé.
+            {{ t('quote.price_notice', 'Les prix seront communiqués dans votre devis personnalisé.') }}
           </p>
         </div>
 
@@ -90,7 +92,7 @@ watch(isOpen, (val) => {
                   {{ item.name }}
                 </h3>
                 <p v-if="item.reference" class="text-[10px] text-gray-400 mt-0.5">
-                  Réf. {{ item.reference }}
+                  {{ t('quote.ref', 'Réf.') }} {{ item.reference }}
                 </p>
                 <div class="flex items-center justify-between mt-2">
                   <div class="flex items-center border border-gray-200 rounded-md">
@@ -127,8 +129,8 @@ watch(isOpen, (val) => {
             <svg class="w-14 h-14 mx-auto text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
             </svg>
-            <p class="text-gray-500 text-sm mb-1">Votre devis est vide</p>
-            <p class="text-xs text-gray-400">Ajoutez des produits pour demander un devis</p>
+            <p class="text-gray-500 text-sm mb-1">{{ t('quote.empty_title', 'Votre devis est vide') }}</p>
+            <p class="text-xs text-gray-400">{{ t('quote.empty_hint', 'Ajoutez des produits pour demander un devis') }}</p>
           </div>
         </div>
 
@@ -138,22 +140,22 @@ watch(isOpen, (val) => {
           class="border-t border-gray-100 px-5 py-4 shrink-0 bg-gray-50/50"
         >
           <p class="text-xs text-gray-500 mb-3">
-            {{ totalItems }} article{{ totalItems > 1 ? 's' : '' }} dans votre demande
+            {{ totalItems }} {{ t('quote.item', 'article') }}{{ totalItems > 1 ? 's' : '' }} {{ t('quote.in_request', 'dans votre demande') }}
           </p>
 
           <NuxtLink
-            to="/devis"
+            :to="localePath('/devis')"
             class="block w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm text-center transition-colors"
             @click="close"
           >
-            Demander un devis
+            {{ t('quote.submit', 'Demander un devis') }}
           </NuxtLink>
           <button
             type="button"
             class="block w-full mt-2 py-2 text-center text-xs text-gray-500 hover:text-primary-600 transition-colors"
             @click="close"
           >
-            Continuer ma sélection
+            {{ t('quote.continue', 'Continuer ma sélection') }}
           </button>
         </footer>
       </aside>

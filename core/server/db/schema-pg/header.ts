@@ -25,16 +25,30 @@ export const headerVaisseau = vaisseauMereAcSchema.table(
     topbarShowLanguages: integer('topbar_show_languages').notNull().default(0),
     topbarAlign: varchar('topbar_align', { length: 16 }).notNull().default('left'),
     contactEmail: varchar('contact_email', { length: 255 }),
+    
+    
+    contactPhone: varchar('contact_phone', { length: 64 }),
     featShowSearch: integer('feat_show_search').notNull().default(0),
     featShowWishlist: integer('feat_show_wishlist').notNull().default(0),
     featShowLogin: integer('feat_show_login').notNull().default(1),
     featShowContact: integer('feat_show_contact').notNull().default(0),
     featShowCart: integer('feat_show_cart').notNull().default(0),
+    
+    
+    
+    
+    featShowQuoteButton: integer('feat_show_quote_button').notNull().default(1),
     featShowBlogLink: integer('feat_show_blog_link').notNull().default(0),
     featShowContactLink: integer('feat_show_contact_link').notNull().default(0),
     featShowGiftcardLink: integer('feat_show_giftcard_link').notNull().default(0),
     featShowStoresLink: integer('feat_show_stores_link').notNull().default(0),
     featStickyHeader: integer('feat_sticky_header').notNull().default(0),
+    
+    
+    
+    
+    
+    featStaticHeader: integer('feat_static_header').notNull().default(0),
     featHeaderLayout: varchar('feat_header_layout', { length: 16 }).notNull().default('stacked'),
     navBgColor: varchar('nav_bg_color', { length: 9 }),
     navTextColor: varchar('nav_text_color', { length: 9 }),
@@ -55,6 +69,9 @@ export const headerLangVaisseau = vaisseauMereAcSchema.table(
     logoAlt: varchar('logo_alt', { length: 255 }),
     logoText: varchar('logo_text', { length: 128 }),
     topbarMessage: text('topbar_message'),
+    topbarMessageMobile: text('topbar_message_mobile'),
+    
+    contactPhone: varchar('contact_phone', { length: 64 }),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.idHeader, t.idLang] }),
@@ -94,3 +111,24 @@ export type HeaderPgRow = typeof headerVaisseau.$inferSelect
 export type HeaderLangPgRow = typeof headerLangVaisseau.$inferSelect
 export type HeaderLocalePgRow = typeof headerLocaleVaisseau.$inferSelect
 export type HeaderLocaleLangPgRow = typeof headerLocaleLangVaisseau.$inferSelect
+
+export const headerLinkVaisseau = vaisseauMereAcSchema.table(
+  'cs_header_link',
+  {
+    idHeaderLink: serial('id_header_link').primaryKey(),
+    clientId: varchar('client_id', { length: 64 }).notNull(),
+    slot: varchar('slot', { length: 24 }).notNull(),
+    label: varchar('label', { length: 64 }).notNull(),
+    href: varchar('href', { length: 512 }).notNull(),
+    icon: varchar('icon', { length: 32 }),
+    position: integer('position').notNull().default(0),
+    active: integer('active').notNull().default(1),
+    dateAdd: timestamp('date_add', { mode: 'date' }).notNull().defaultNow(),
+    dateUpd: timestamp('date_upd', { mode: 'date' }).notNull().defaultNow(),
+  },
+  (t) => ({
+    idxClientSlotActive: index('idx_ps_ac_header_link_client_slot_active').on(t.clientId, t.slot, t.active),
+  }),
+)
+
+export type HeaderLinkPgRow = typeof headerLinkVaisseau.$inferSelect

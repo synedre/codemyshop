@@ -2,7 +2,10 @@
 
 import { createLot } from '~/enterprise/vertical-food/lot/server/utils/lot'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     lotNumber: string
     idProduct: number

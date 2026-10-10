@@ -5,15 +5,15 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Studio Social · Shorts IA</h1>
-          <p class="text-xs text-gray-400 mt-0.5">Générez des scripts vidéo 60s adaptés à votre avatar client</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.marketing_studio.title', 'Studio Social · Shorts IA') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.marketing_studio.subtitle', 'Générez des scripts vidéo 60s adaptés à votre avatar client') }}</p>
         </div>
         <span
           class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
           :class="hasApiKey ? 'bg-success-100 text-success-700' : 'bg-amber-100 text-amber-700'"
         >
           <span class="w-1.5 h-1.5 rounded-full" :class="hasApiKey ? 'bg-success-400' : 'bg-amber-400'" />
-          {{ hasApiKey ? 'Claude IA actif' : 'Mode démo' }}
+          {{ hasApiKey ? tHub('hub.ui.marketing_studio.ai_active', 'Claude IA actif') : tHub('hub.ui.marketing_studio.demo_mode', 'Mode démo') }}
         </span>
       </div>
     </header>
@@ -26,7 +26,7 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Source du contenu</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ tHub('hub.ui.marketing_studio.content_source', 'Source du contenu') }}</h2>
 
             
             <div class="flex gap-2 mb-4">
@@ -51,7 +51,7 @@
                 <div v-for="i in 3" :key="i" class="h-10 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
               </div>
               <div v-else-if="!products.length" class="text-xs text-gray-400 py-4 text-center">
-                Aucun produit disponible (module ac_productextra requis)
+                {{ tHub('hub.ui.marketing_studio.no_product', 'Aucun produit disponible (module ac_productextra requis)') }}
               </div>
               <div
                 v-for="p in products.slice(0, 10)"
@@ -86,7 +86,7 @@
                 <div v-for="i in 3" :key="i" class="h-10 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
               </div>
               <div v-else-if="!events.length" class="text-xs text-gray-400 py-4 text-center">
-                Aucun événement publié
+                {{ tHub('hub.ui.marketing_studio.no_event', 'Aucun événement publié') }}
               </div>
               <div
                 v-for="ev in events"
@@ -119,7 +119,7 @@
               <textarea
                 v-model="newsContent"
                 rows="5"
-                placeholder="Décrivez votre actualité, promotion, lancement produit… L’IA adaptera le script."
+                :placeholder="tHub('hub.ui.marketing_studio.news_ph', 'Décrivez votre actualité, promotion, lancement produit… L’IA adaptera le script.')"
                 class="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white dark:bg-slate-900 resize-none"
               />
             </div>
@@ -127,7 +127,7 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">Ton & Style</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3">{{ tHub('hub.ui.marketing_studio.tone_style', 'Ton & Style') }}</h2>
             <div class="grid grid-cols-2 gap-2">
               <button
                 v-for="t in TONES"
@@ -162,7 +162,7 @@
             <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
             </svg>
-            {{ generating ? 'Génération en cours…' : 'Générer le script Short' }}
+            {{ generating ? tHub('hub.ui.marketing_studio.generating', 'Génération en cours…') : tHub('hub.ui.marketing_studio.generate', 'Générer le script Short') }}
           </button>
         </div>
 
@@ -174,8 +174,8 @@
             <svg class="w-16 h-16 mb-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
               <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg>
-            <p class="text-sm font-medium text-gray-400">Le script apparaîtra ici</p>
-            <p class="text-xs text-gray-300 mt-1">Choisissez une source et générez</p>
+            <p class="text-sm font-medium text-gray-400">{{ tHub('hub.ui.marketing_studio.script_here', 'Le script apparaîtra ici') }}</p>
+            <p class="text-xs text-gray-300 mt-1">{{ tHub('hub.ui.marketing_studio.choose_source', 'Choisissez une source et générez') }}</p>
           </div>
 
           <template v-else>
@@ -220,7 +220,7 @@
 
             
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-              <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Directions visuelles</h3>
+              <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{{ tHub('hub.ui.marketing_studio.visual_dirs', 'Directions visuelles') }}</h3>
               <ol class="space-y-2">
                 <li
                   v-for="(d, i) in script.visualDirections"
@@ -247,7 +247,7 @@
 
             
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-              <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Exporter</h3>
+              <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{{ tHub('hub.ui.marketing_studio.export', 'Exporter') }}</h3>
               <div class="grid grid-cols-3 gap-2">
 
                 
@@ -259,7 +259,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
                   </svg>
                   <span class="text-xs text-gray-500 group-hover:text-primary-600 font-medium transition-colors">
-                    {{ copied ? 'Copié !' : 'Copier' }}
+                    {{ copied ? tHub('hub.ui.marketing_studio.copied', 'Copié !') : tHub('hub.ui.marketing_studio.copy', 'Copier') }}
                   </span>
                 </button>
 
@@ -282,7 +282,7 @@
                   <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                   </svg>
-                  <span class="text-xs text-gray-500 group-hover:text-blue-600 font-medium transition-colors">Email</span>
+                  <span class="text-xs text-gray-500 group-hover:text-blue-600 font-medium transition-colors">{{ tHub('hub.ui.marketing_studio.email', 'Email') }}</span>
                 </button>
               </div>
             </div>
@@ -300,6 +300,8 @@ import type { EventRecord } from '~/types/event'
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
+const { t: tHub } = useHubT()
+
 interface Product {
   id_product: number
   name:       string
@@ -309,23 +311,23 @@ interface Product {
   description_short?: string
 }
 
-const SOURCES = [
-  { value: 'product' as const, label: 'Produit',     icon: '🛍️' },
-  { value: 'event'   as const, label: 'Événement',   icon: '📅' },
-  { value: 'news'    as const, label: 'Actualité',   icon: '✍️' },
-]
+const SOURCES = computed(() => [
+  { value: 'product' as const, label: tHub('hub.ui.marketing_studio.src_product', 'Produit'), icon: '🛍️' },
+  { value: 'event'   as const, label: tHub('hub.ui.marketing_studio.src_event', 'Événement'), icon: '📅' },
+  { value: 'news'    as const, label: tHub('hub.ui.marketing_studio.src_news', 'Actualité'), icon: '✍️' },
+])
 
-const TONES = [
-  { value: 'énergétique et funky',          label: 'Funky',        icon: '🔥', hint: 'TikTok / GenZ' },
-  { value: 'professionnel et expert',        label: 'Pro',          icon: '💼', hint: 'B2B / LinkedIn' },
-  { value: 'tech et enthousiaste',           label: 'Tech',         icon: '🚀', hint: 'Startups / SaaS' }, 
-  { value: 'chaleureux et communautaire',    label: 'Humain',       icon: '🤝', hint: 'Réseaux locaux' },
-]
+const TONES = computed(() => [
+  { value: 'énergétique et funky',          label: 'Funky',        icon: '🔥', hint: tHub('hub.ui.marketing_studio.tone_funky_hint', 'TikTok / GenZ') },
+  { value: 'professionnel et expert',        label: 'Pro',          icon: '💼', hint: tHub('hub.ui.marketing_studio.tone_pro_hint', 'B2B / LinkedIn') },
+  { value: 'tech et enthousiaste',           label: 'Tech',         icon: '🚀', hint: tHub('hub.ui.marketing_studio.tone_tech_hint', 'Startups / SaaS') }, 
+  { value: 'chaleureux et communautaire',    label: tHub('hub.ui.marketing_studio.tone_human', 'Humain'), icon: '🤝', hint: tHub('hub.ui.marketing_studio.tone_human_hint', 'Réseaux locaux') },
+])
 
 const { resolvedClientId } = useClientDetection()
 
 const source      = ref<'product' | 'event' | 'news'>('product')
-const tone        = ref(TONES[0].value)
+const tone        = ref(TONES.value[0].value)
 const newsContent = ref('')
 const generating  = ref(false)
 const copied      = ref(false)
@@ -368,10 +370,9 @@ async function loadProducts() {
 async function loadEvents() {
   eventsLoading.value = true
   try {
-    const res = await $fetch<EventRecord[]>('/api/events', {
-      query: { status: 'published' },
-    })
-    events.value = res
+    
+    const res = await $fetch<EventRecord[]>('/api/hub/events')
+    events.value = res.filter((e) => e.status === 'published')
   } catch {
     
   } finally {
@@ -402,9 +403,9 @@ function selectEvent(ev: EventRecord) {
   const content = [
     `Événement : ${ev.title}`,
     `Date : ${formatDate(ev.date)}`,
-    ev.location ? `Lieu : ${ev.location}` : '',
-    ev.type === 'online' ? 'Format : En ligne' : '',
-    ev.description ? `Description : ${ev.description}` : '',
+    ev.venueName || ev.city ? `Lieu : ${[ev.venueName, ev.city].filter(Boolean).join(', ')}` : '',
+    ev.type === 'online' ? 'Format : En ligne' : ev.type === 'hybrid' ? 'Format : Hybride' : '',
+    ev.description ? `Description : ${ev.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}` : '',
   ].filter(Boolean).join('\n')
   selectedItem.value = { id: ev.id, content }
 }

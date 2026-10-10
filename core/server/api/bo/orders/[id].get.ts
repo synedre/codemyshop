@@ -2,8 +2,10 @@
 
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
   const d = usePocPg()
@@ -23,6 +25,21 @@ export default defineEventHandler(async (event) => {
       ROUND(o.total_products::numeric, 2) AS "totalProducts",
       ROUND(o.total_products_wt::numeric, 2) AS "totalProductsTTC",
       ROUND(o.total_discounts_tax_incl::numeric, 2) AS "totalDiscounts",
+      ROUND(o.total_discounts_tax_excl::numeric, 2) AS "totalDiscountsHT",
+      (SELECT string_agg(ocr.name, ', ' ORDER BY ocr.id_order_cart_rule)
+         FROM cs_main.ps_order_cart_rule ocr
+        WHERE ocr.id_order = o.id_order) AS "discountNames",
+      (SELECT json_agg(json_build_object(
+                'name', ocr.name, 'code', cr.code,
+                'percent', COALESCE(cr.reduction_percent, 0),
+                'excludeSpecial', COALESCE(cr.reduction_exclude_special, 0) <> 0,
+                'restricted', COALESCE(cr.reduction_product, 0) <> 0 OR COALESCE(cr.product_restriction, 0) <> 0,
+                'valueHT', ROUND(ocr.value_tax_excl::numeric, 2),
+                'valueTTC', ROUND(ocr.value::numeric, 2))
+              ORDER BY ocr.id_order_cart_rule)
+         FROM cs_main.ps_order_cart_rule ocr
+         LEFT JOIN cs_main.ps_cart_rule cr ON cr.id_cart_rule = ocr.id_cart_rule
+        WHERE ocr.id_order = o.id_order) AS "discounts",
       ROUND(o.total_wrapping_tax_incl::numeric, 2) AS "totalWrapping",
       o.id_address_delivery AS "addressDeliveryId",
       o.id_address_invoice AS "addressInvoiceId",

@@ -7,3 +7,4 @@ export async function listFoodSpecsForProductIds(...args: any[]): Promise<any> {
 export async function listLegalLabelsAll(...args: any[]): Promise<any> { return undefined }
 export async function upsertLegalLang(...args: any[]): Promise<any> { return undefined }
 export async function upsertLegalParent(...args: any[]): Promise<any> { return undefined }
+export async function upsertPriceDisplayMode(...args: any[]): Promise<any> { return undefined }

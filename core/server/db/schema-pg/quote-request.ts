@@ -37,6 +37,20 @@ export const quoteRequest = vaisseauMereAcSchema.table(
     cityInsee:    varchar('city_insee',    { length: 128 }).notNull().default(''),
     addressInsee: varchar('address_insee', { length: 255 }).notNull().default(''),
     staffSize:    varchar('staff_size',    { length: 128 }).notNull().default(''),
+    
+    
+    
+    
+    gclid: varchar('gclid', { length: 255 }),
+    gbraid: varchar('gbraid', { length: 255 }),
+    wbraid: varchar('wbraid', { length: 255 }),
+    utmSource: varchar('utm_source', { length: 128 }),
+    utmMedium: varchar('utm_medium', { length: 128 }),
+    utmCampaign: varchar('utm_campaign', { length: 255 }),
+    landingUrl: varchar('landing_url', { length: 1024 }),
+    clickAt: timestamp('click_at', { mode: 'date', precision: 0 }),
+    adsUploadedAt: timestamp('ads_uploaded_at', { mode: 'date', precision: 0 }),
+    adsUploadError: varchar('ads_upload_error', { length: 500 }),
     dateAdd: timestamp('date_add', { mode: 'date', precision: 0 }).notNull().defaultNow(),
     dateUpd: timestamp('date_upd', { mode: 'date', precision: 0 }).notNull().defaultNow(),
   },

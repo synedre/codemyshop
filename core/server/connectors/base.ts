@@ -152,6 +152,12 @@ export interface CartItemData {
   
 
   unitLabel?:                    string
+  
+  variantAttributes?:            Array<{ group: string; value: string }>
+  
+  customizationId?:              number
+  
+  customization?:                { kind: string; text: string; colorHex: string; colorLabel?: string; fee: number }
 }
 
 export interface AddressData {
@@ -166,7 +172,13 @@ export interface AddressData {
   postcode:      string
   city:          string
   countryId:     number
+  
+
+  countryIso?:   string
   phone?:        string
+  
+
+  phoneMobile?:  string
   vatNumber?:    string
 }
 
@@ -174,11 +186,19 @@ export interface CarrierData {
   id:            number
   name:          string
   delay:         string
+  
   price:         number
+  
+
+  priceTTC?:     number
+  
+  taxRate?:      number
   freeAbove:     number | null
   active:        boolean
   
   isFree?:       boolean
+  
+  isClickCollect?: boolean
 }
 
 export interface OrderInput {
@@ -200,23 +220,50 @@ export interface OrderData {
   payment:             string
   totalPaidHT:         number
   totalPaidTTC:        number
+  
+
   totalShipping:       number
+  
+
+  totalShippingHT?:    number
+  
+  shippingTaxRate?:    number
   totalProducts:       number
+  
+
+  totalDiscountsHT?:   number
+  
+  totalDiscountsTTC?:  number
+  
+
+  discountLabel?:      string
   items:               OrderItemData[]
   dateAdd:             string
   addressDelivery?:    AddressData
   addressInvoice?:     AddressData
   invoiceNumber?:      string
   invoiceDate?:        string
+  
+
+  vatLines?:           { rate: number; base: number; tax: number }[]
 }
 
 export interface OrderItemData {
   productId:           number
+  
+
+  combinationId?:      number
   name:                string
   reference:           string
   quantity:            number
   priceHT:             number
   priceTTC:            number
+  
+
+  image?:              string
+  
+
+  attributes?:         string[]
   
 
   priceHTBeforeDiscount?: number
@@ -304,6 +351,8 @@ export interface CustomerData {
   active:       boolean
   dateAdd:      string
   newsletter:   boolean
+  
+  birthday?:    string | null
   ordersCount?: number
   totalSpent?:  number
 }
@@ -379,11 +428,12 @@ export interface BaseConnector {
 }
 
 import { PrestashopConnector } from './prestashop'
+import { resolveClientId } from '../utils/db'
 
 const connectorCache = new Map<string, BaseConnector>()
 
 export function getConnector(clientId?: string): BaseConnector {
-  const id = clientId || 'ac-hub'
+  const id = clientId || resolveClientId()
 
   if (connectorCache.has(id)) return connectorCache.get(id)!
 

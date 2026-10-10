@@ -3,9 +3,11 @@
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 import { clearEmailTemplateCache } from '~/server/utils/email-template-loader'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const slug = String(getRouterParam(event, 'slug') || '')
   if (!slug) throw createError({ statusCode: 400, statusMessage: 'slug requis' })
   const body = await readBody(event) as {
@@ -18,6 +20,8 @@ export default defineEventHandler(async (event) => {
     recipient_bcc?: string
     
     priority?:      number
+    
+    attach_invoice?: boolean | number
   }
 
   const sql = getPgClient()
@@ -56,19 +60,24 @@ export default defineEventHandler(async (event) => {
                          || body?.recipient_cc !== undefined
                          || body?.recipient_bcc !== undefined
   const priorityTouched = body?.priority !== undefined && body.priority !== null
-  if (recipientsTouched || priorityTouched) {
+  const attachTouched   = body?.attach_invoice !== undefined && body.attach_invoice !== null
+  if (recipientsTouched || priorityTouched || attachTouched) {
     const to  = body.recipient_to  != null ? String(body.recipient_to ).slice(0, 4096) : null
     const cc  = body.recipient_cc  != null ? String(body.recipient_cc ).slice(0, 4096) : null
     const bcc = body.recipient_bcc != null ? String(body.recipient_bcc).slice(0, 4096) : null
     const prio = priorityTouched
       ? Math.max(0, Math.min(100, Number(body.priority)))
       : null
+    const attach = attachTouched
+      ? (body.attach_invoice ? 1 : 0)
+      : null
     await sql`
       UPDATE ${sql(PG_SCHEMA)}.cs_email_template
-         SET recipient_to  = COALESCE(${to},  recipient_to),
-             recipient_cc  = COALESCE(${cc},  recipient_cc),
-             recipient_bcc = COALESCE(${bcc}, recipient_bcc),
-             priority      = COALESCE(${prio}, priority),
+         SET recipient_to   = COALESCE(${to},  recipient_to),
+             recipient_cc   = COALESCE(${cc},  recipient_cc),
+             recipient_bcc  = COALESCE(${bcc}, recipient_bcc),
+             priority       = COALESCE(${prio}, priority),
+             attach_invoice = COALESCE(${attach}, attach_invoice),
              date_upd = NOW()
        WHERE slug = ${slug}
     `

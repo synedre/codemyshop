@@ -2,9 +2,25 @@
 
 import { useClientDb, useClientDbById } from '~/server/utils/db'
 import { getPsProfileId } from '~/server/utils/roles'
+import { langueNouvelEmploye } from '~/server/utils/employee-lang'
+import { requireEmployeeSession, isSuperAdminSaaS } from '~/server/utils/session'
 import { createHash, randomBytes } from 'node:crypto'
 
 export default defineEventHandler(async (event) => {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const session = requireEmployeeSession(event)
+  if (!session.isAdmin && !isSuperAdminSaaS(session)) {
+    throw createError({ statusCode: 403, message: 'Accès administrateur requis' })
+  }
+
   const body = await readBody<{
     firstname: string; lastname: string; email: string
     role: string; password?: string; clientId?: string
@@ -21,11 +37,22 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Email invalide' })
   }
 
-  const db = body.clientId ? useClientDbById(String(body.clientId)) : useClientDb(event)
+  
+  
+  
+  const asked = (body.clientId ?? '').trim()
+  if (asked && asked !== session.clientId && !isSuperAdminSaaS(session)) {
+    throw createError({
+      statusCode: 403,
+      message: 'Création d\'employé sur une autre boutique — privilège SuperAdmin SaaS requis',
+    })
+  }
+  const db = asked && isSuperAdminSaaS(session) ? useClientDbById(asked) : useClientDb(event)
 
   
+  
   const existing = await db.get<{ id_employee: number }>(
-    `SELECT id_employee FROM ps_employee WHERE email = ? LIMIT 1`,
+    `SELECT id_employee FROM ps_employee WHERE LOWER(email) = ? LIMIT 1`,
     [email],
   )
   if (existing) {
@@ -52,9 +79,9 @@ export default defineEventHandler(async (event) => {
            default_tab, active, optin, bo_theme, bo_css, bo_menu, bo_show_screencast,
            stats_date_from, stats_date_to, stats_compare_date_from, stats_compare_date_to,
            stats_compare_option)
-       VALUES (?, 1, ?, ?, ?, ?, NOW(), 1, 1, 0, 'default', 'theme.css', 1, 0,
+       VALUES (?, ?, ?, ?, ?, ?, NOW(), 1, 1, 0, 'default', 'theme.css', 1, 0,
                '0000-00-00', '0000-00-00', '0000-00-00', '0000-00-00', 1)`,
-      [profileId, lastname, firstname, email, hashed],
+      [profileId, await langueNouvelEmploye(db), lastname, firstname, email, hashed],
     )
     
     const secureKey = createHash('md5').update(randomBytes(16)).digest('hex').toUpperCase()

@@ -29,8 +29,7 @@
 <script setup lang="ts">
 const { available, remaining, maxClients } = useAvailability()
 const { t } = useT()
-// Booking URL is tenant-configurable via `runtimeConfig.public.calendlyUrl`.
-// Falls back to the local `/contact` route present on every install.
+
 const calendlyUrl = (useRuntimeConfig().public as any).calendlyUrl as string | undefined
 const ctaHref = calendlyUrl || '/contact'
 const ctaIsExternal = Boolean(calendlyUrl)

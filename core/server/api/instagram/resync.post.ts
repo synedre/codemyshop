@@ -1,4 +1,5 @@
 
+import { errorMessage } from '~/server/utils/redact-url-secrets'
 
 export default defineEventHandler(async (event) => {
   const storage = useStorage('cache')
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
       purged++
     }
   } catch (err: any) {
-    console.warn('[instagram/resync] cache purge error:', err?.message)
+    console.warn('[instagram/resync] cache purge error:', errorMessage(err))
   }
 
   
@@ -30,7 +31,7 @@ export default defineEventHandler(async (event) => {
       itemsCount = res?.data?.length ?? 0
     }
   } catch (err: any) {
-    console.warn('[instagram/resync] refetch error:', err?.message)
+    console.warn('[instagram/resync] refetch error:', errorMessage(err))
   }
 
   return {

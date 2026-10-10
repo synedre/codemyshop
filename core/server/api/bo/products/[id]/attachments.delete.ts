@@ -2,7 +2,10 @@
 
 import { deleteAttachment } from '~/server/utils/attachments-db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id || id <= 0) throw createError({ statusCode: 400, message: 'id produit invalide' })
 

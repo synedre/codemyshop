@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: 'id_category requis' })
   }
 
-  const tenant = resolveClientId(event) || 'ac-hub'
+  const tenant = resolveClientId(event)
 
   try {
     const row = await getLatestStatusForCategory(tenant, idCategory, { event })

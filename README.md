@@ -7,23 +7,25 @@
 <h1 align="center">CodeMyShop</h1>
 
 <p align="center">
-  <strong>Open-source e-commerce PaaS for European sovereignty.</strong><br>
-  100% TypeScript stack: Nuxt 4 + Drizzle + PostgreSQL. AGPL-3.0. 0% commission. Built in France in 2026.
+  <strong>Open-source e-commerce in the age of agentic AI.</strong><br>
+  100% TypeScript stack: Nuxt 4 + Drizzle + PostgreSQL (pgvector). AGPL-3.0. 0% platform tax. Built in France in 2026.
 </p>
 
 <p align="center">
   <a href="https://demo.codemyshop.com"><strong>Live demo →</strong></a> ·
   <a href="https://codemyshop.com"><strong>Website →</strong></a> ·
-  <a href="INSTALL.md"><strong>Install →</strong></a>
+  <a href="INSTALL.md"><strong>Install →</strong></a> ·
+  <a href="https://codemyshop.com/rdv"><strong>Architecture Session →</strong></a>
 </p>
 
 <p align="center">
   <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg" alt="License: AGPL v3"></a>
   <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Nuxt-4-00DC82" alt="Built with Nuxt 4"></a>
   <a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/PostgreSQL-17-336791" alt="PostgreSQL 17"></a>
-  <a href="https://github.com/codemyshop/codemyshop/pkgs/container/codemyshop"><img src="https://img.shields.io/badge/ghcr.io-codemyshop-2496ED?logo=docker&logoColor=white" alt="Docker image"></a>
-  <a href="https://github.com/codemyshop/codemyshop/actions/workflows/ci.yml"><img src="https://github.com/codemyshop/codemyshop/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
-  <img src="https://img.shields.io/badge/Status-alpha-orange" alt="Status: alpha">
+  <a href="https://github.com/synedre/codemyshop/pkgs/container/codemyshop"><img src="https://img.shields.io/badge/ghcr.io-synedre-2496ED?logo=docker&logoColor=white" alt="Docker image"></a>
+  <a href="https://github.com/synedre/codemyshop/actions/workflows/ci.yml"><img src="https://github.com/synedre/codemyshop/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/synedre/codemyshop"><img src="https://archive.softwareheritage.org/badge/origin/https://github.com/synedre/codemyshop/" alt="Archived | Software Heritage"></a>
+  <img src="https://img.shields.io/badge/Status-production_ready-emerald" alt="Status: production ready">
 </p>
 
 ## Try it in 30 seconds
@@ -33,7 +35,7 @@ A live single-tenant demo (white-labelled as **Monsta Skate Co**) runs at **[dem
 Or run it locally:
 
 ```bash
-docker run --rm -p 3000:3000 ghcr.io/codemyshop/codemyshop:latest
+docker run --rm -p 3000:3000 ghcr.io/synedre/codemyshop:latest
 # → http://localhost:3000
 ```
 
@@ -47,11 +49,12 @@ CodeMyShop has **two distinct personas**. Pick yours and follow the matching pat
 
 ### 🏪 You're a shop owner
 
-You want **one** sovereign e-commerce site for your business. No agency hat, no plans to host other people's shops.
+You want **one** sovereign e-commerce site for your business. No agency lock-in, no plans to host other people's shops.
 
-**What you get** in 5 minutes: a Nuxt 4 storefront + admin hub + AI content + Postgres on your own server.
+**What you get** in 5 minutes: a Nuxt 4 storefront + unified merchant cockpit + AI suite + Postgres on your own sovereign server.
 
-→ Jump to [Quick start (Community, self-host)](#quick-start-community-self-host)
+→ Jump to [Quick start (Community, self-host)](#quick-start-community-self-host)  
+→ Managed option with autonomous agent fleet: [Pro Cloud](#plans) (490 €/mo)  
 → Production hardening: [INSTALL.md](INSTALL.md)
 
 </td>
@@ -63,7 +66,7 @@ You want to host **5-50 e-commerce sites** for your clients on shared infrastruc
 
 **What you get**: container-per-tenant isolation, `bin/init-tenant.sh` scripted onboarding, working multi-tenant `docker-compose` example.
 
-→ Jump to [Multi-tenant (agency / hoster)](#multi-tenant-agency--hoster)
+→ Jump to [Multi-tenant (agency / hoster)](#multi-tenant-agency--hoster)  
 → Full procedure: [INSTALL-MULTI-TENANT.md](INSTALL-MULTI-TENANT.md)
 
 </td>
@@ -72,46 +75,51 @@ You want to host **5-50 e-commerce sites** for your clients on shared infrastruc
 
 ## Why CodeMyShop
 
-- **Sovereign by design** — your code, your data, your server. France-based hosting or self-host. No CLOUD Act exposure.
-- **Modern unified stack** — Nuxt 4 SSR + Drizzle ORM + PostgreSQL with pgvector for AI + Redis cache + nginx. One process, atomic deploys.
-- **Multi-tenant at the deploy layer** — one codebase, N isolated container stacks. The only OSS e-commerce that lets a small agency host 30 clients without 30 forks. (See [§ Multi-tenancy](ARCHITECTURE.md#multi-tenancy) for the design rationale.)
-- **Open-source AGPL-3.0** — auditable, modifiable, forkable. No vendor lock-in. The AGPL clause protects the community from predatory SaaS forks.
-- **Zero commission** — vs 1.5–2 % on Shopify. On €750k of yearly GMV, that's €15k saved.
-- **Built-in AI** — autonomous SEO content generation, enriched product sheets, structured data for LLM visibility.
+- **Sovereign by design** — Your code, your data, your server. Hosted in France (OVHcloud) or self-hosted. Zero exposure to the US CLOUD Act.
+- **Modern unified TypeScript stack** — Nuxt 4 SSR + Nitro + Drizzle ORM + PostgreSQL 17 (pgvector) + Redis + nginx. One process, atomic deploys in a single `git push`.
+- **Agentic AI & Autonomous Fleet Access** — CodeMyShop connects your shop directly to a dedicated autonomous AI agent fleet (33 specialized agents). Your custom requests (landing pages, merchandising rules, UI components, SEO campaigns) are designed, tested, and deployed continuously without agency retainer fees.
+- **Unified Merchant Cockpit & B2B Hub** — Beyond a fast storefront (< 300 ms, PageSpeed 95+): an integrated back-office with B2B buyer accounts (Salesforce replacement), 28-second keyboard Order Pad, dynamic multi-tier pricing matrices, real-time lot/stock traceability, and instant technical catalog search (< 12 ms).
+- **Native Model Context Protocol (MCP)** — Expose catalog, inventory, and analytics via secure MCP servers to pilot your store, Search Console, and Google Ads directly from your own Claude or ChatGPT.
+- **Zero commission** — 0 % platform tax on your sales (vs 1.5–2 % on proprietary platforms). On €750k of yearly GMV, that is €15,000 preserved margins every year.
+- **Open-source AGPL-3.0** — Fully auditable, modifiable, forkable. No vendor lock-in. The AGPL clause defends the community against predatory proprietary SaaS forks.
 
 ## Status
 
-**Alpha — public preview.** Core runtime stable in production on 3 internal tenants. We're publishing the source code under AGPL-3.0 to invite community installations and feedback before launching the Managed plans (Q1 2027).
-
-If you install it and have a working production site → please open an issue or DM. We want 2-3 documented external installations to confirm the install path works end-to-end.
+**Production-ready.** Core runtime active in production across live enterprise tenants (including wholesale B2B at Rungis and high-technicality automotive catalogs). Available as free open-source (Community) and managed sovereign cloud (Pro Cloud / Enterprise Scale).
 
 ## Plans
 
-CodeMyShop is **open-core**. Five tiers — one free self-host (Community) and four hosted Managed plans. **No setup fees, monthly cancellation, no engagement.**
+CodeMyShop follows a clear **open-core & managed sovereign PaaS** model. Three straightforward tiers — one free self-host (Community) and two hosted Managed plans. **No setup fees on Pro Cloud, monthly cancellation, zero vendor lock-in.**
 
-| | **Community** | **Starter** | **Growth** | **Pro** | **Custom** |
-|---|:---:|:---:|:---:|:---:|:---:|
-| **Price** | Free (AGPL-3.0) | **10 €/mo** | **80 €/mo** | **400 €/mo** | **Talk to us** |
-| **Target** | Self-hosters, devs, agencies | Solo founders, < 250 k€ revenue | Growing SMBs, 250 k-500 k€ | Scaling SMBs, 500 k-1.5 M€ | Mid-market, regulated, multi-shop, white-label |
-| **Hosting** | Self-host | Sovereign EU VPS (2 GB) | Sovereign EU VPS (4 GB) | Sovereign EU VPS (8 GB) | Custom (multi-region, dedicated, BYOC) |
-| **Onboarding** | Self-serve docs | Self-serve (~15 min) | Self-serve | Guided | White-glove |
-| **Support** | GitHub | Community Discord | Email 48 h | Email 24 h | 4 h business + 24/7 on-call + SLA 99.9 % |
-| **cs_payment slice** | 0 % (BYO PSP) | 0.25 % | 0.25 % | 0.25 % | Configurable per contract |
+| | **Community** | **Pro Cloud** (Most popular) | **Enterprise Scale** |
+|---|:---:|:---:|:---:|
+| **Price** | **Free** (AGPL-3.0) | **490 € / mo excl. VAT** | **1,200 – 1,800 € / mo excl. VAT** |
+| **Hosting** | Self-host | Managed Sovereign VPS France (OVH, 8 GB dedicated) | Dedicated Sovereign Server (Multi-region available) |
+| **Setup fee** | 0 € | **0 € (Setup included)** | Custom scoping on quote (ERP/data ETL) |
+| **Commitment** | None | **Monthly, cancel anytime** | Annual or monthly flexible |
+| **Target** | Devs, tech teams, agencies, self-hosters | SMBs & e-merchants (500k€ – 1.5M€ revenue) | High-volume merchants, multi-shop, wholesale B2B |
+| **Autonomous Fleet Access (AI Team)** | BYOK generic connectors | **Included (1 active request at a time, 48-72h turnaround)** | **Advanced (Priority parallel multi-request queue)** |
+| **Autonomous Fleet Scope** | — | Storefront, catalog, landing pages, merchandising, SEO | ERP connectors, custom workflows, multi-store architecture |
+| **AI SEO Suite** | Self-configured | Search Console intelligence + automated content | Complete AIO suite + custom LLM knowledge bases |
+| **Maintenance & Security** | Self-managed | Patches CVE < 48h + 24/7 monitoring + daily backups | SLA 99.5% – 99.9% + 24/7 on-call engineering |
+| **Strategic Advisory** | Community GitHub | Asynchronous via Hub (brief, email, audio) | **Monthly strategic video conference** with team |
+| **CodeMyShop Payments** | 0% (BYO PSP) | Optional 0% platform tax | Volume discounts on subscription fee |
 
-Hosted tiers progressively unlock packs by domain: **Growth** adds AI lite (cover gen, basic rewriting), **Pro** adds the full AI pack (Brand DNA), Data pack (telemetry, market intelligence), and SEO pack (GSC console, JSON-LD). **Custom** is the only tier that unlocks the Cercle Elumni community, the Banking & Compliance pack (PSD2/Powens, URSSAF, fiscal audit), and the regulated verticals (Food, Vape, Fashion, Jewelry).
+> **The "1 active request" Kanban rule on Pro Cloud (490 €/mo):**  
+> Clients maintain an unlimited backlog of requests. Our autonomous agents execute **one active request at a time** (typical delivery: 48 to 72 hours). As soon as an evolution is deployed and validated, the next one starts. This delivers ~8 to 12 production evolutions every month without agency retainers. Deep ERP integrations (Sage, Cegid, SAP) and Fractional CTO advisory belong to Enterprise Scale or dedicated advisory contracts.
 
-→ **Full feature matrix and pack details: [core/EDITIONS.md](core/EDITIONS.md)**
-→ Talk to us: [codemyshop.com](https://codemyshop.com)
+→ **Full details & booking:** [codemyshop.com/#investissement](https://codemyshop.com/#investissement)  
+→ **Schedule an Architecture Session (45 min):** [codemyshop.com/rdv](https://codemyshop.com/rdv)
 
 ## Quick start (Community, self-host)
 
 ### Full stack with Docker Compose
 
 The bundled `docker-compose.yml` boots PostgreSQL + Redis + nginx + the
-Nuxt server (pulled from `ghcr.io/codemyshop/codemyshop:latest` by default):
+Nuxt server (pulled from `ghcr.io/synedre/codemyshop:latest` by default):
 
 ```bash
-git clone https://github.com/codemyshop/codemyshop.git
+git clone https://github.com/synedre/codemyshop.git
 cd codemyshop
 cp .env.example .env  # set PG_PASSWORD, REDIS_PASSWORD, NUXT_SECRET
 
@@ -128,7 +136,7 @@ Image tags: `latest`, `0.1.3`, `0.1` (linux/amd64, ~446 MB).
 Prerequisites: Node 22+, PostgreSQL 17+ with `pgvector`, Redis 7+.
 
 ```bash
-git clone https://github.com/codemyshop/codemyshop.git
+git clone https://github.com/synedre/codemyshop.git
 cd codemyshop
 cp .env.example .env
 npm install
@@ -243,8 +251,9 @@ No microservices, no API bridge between two systems: atomic deploy with a single
 | Database | PostgreSQL 17 + pgvector | Mature, sovereign, vector embeddings for AI |
 | Cache | Redis 7 | Sessions, rate limit, ephemeral state |
 | Web server | nginx | Reverse proxy, SSL, static assets, rate limit |
-| AI providers | OpenAI / Anthropic / Mistral | Pluggable, configured via env |
-| Analytics | Matomo (self-hosted) | First-party data, GDPR-friendly |
+| Agentic AI | Autonomous Agent Fleet | 33 specialized agents for autonomous run & build |
+| Model Context Protocol | Native MCP Servers | Secure live bridge for Claude & ChatGPT merchant assistants |
+| Analytics & Ads | GA4 + Google Search Console + Google Ads | Unified acquisition telemetry, AIO indexing, and MCP automation |
 | Process manager | PM2 | Graceful reload, monitoring, log aggregation |
 
 ## Provenance
@@ -253,17 +262,17 @@ Every published image is **signed with [cosign](https://docs.sigstore.dev/cosign
 
 ```bash
 cosign verify \
-  --certificate-identity-regexp '^https://github\.com/codemyshop/codemyshop/\.github/workflows/docker\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
+  --certificate-identity-regexp '^https://github\.com/synedre/codemyshop/\.github/workflows/docker\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/codemyshop/codemyshop:latest
+  ghcr.io/synedre/codemyshop:latest
 ```
 
 → See [SECURITY.md § Verifying releases](SECURITY.md#verifying-releases) for the SBOM-download recipe and full details.
 
 ## Community
 
-- **[GitHub Discussions](https://github.com/codemyshop/codemyshop/discussions)** — questions, ideas, "show what you've built"
-- **[GitHub Issues](https://github.com/codemyshop/codemyshop/issues/new/choose)** — bugs and feature requests (templates provided)
+- **[GitHub Discussions](https://github.com/synedre/codemyshop/discussions)** — questions, ideas, "show what you've built"
+- **[GitHub Issues](https://github.com/synedre/codemyshop/issues/new/choose)** — bugs and feature requests (templates provided)
 - **Discord** — coming soon (we'll open it once there are 5+ active installations to keep the channel alive)
 - **Twitter/X** — [@codemyshop](https://twitter.com/codemyshop) (coming soon)
 

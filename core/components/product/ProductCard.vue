@@ -5,10 +5,13 @@ interface ProductCardData {
   ref?: string | null
   name: string
   
+
   url?: string
   image?: string | null
   
   imageSrcset?: string | null
+  
+  imageThumbnails?: string[]
   
   imageFallback?: string | null
   
@@ -30,6 +33,9 @@ interface ProductCardData {
   caliber?: string
   
 
+  attributes?: string[]
+  
+
   pricePerKgFormatted?: string
   
 
@@ -43,9 +49,30 @@ interface ProductCardData {
   
 
   unitLabel?: string
+  
+
+  stockQuantity?: number
+  
+
+  badges?: Array<{ text: string; variant: 'promo' | 'new' | 'custom' }>
+  
+
+  aliases?: string[]
+  
+
+  rating?: number
+  
+  reviewCount?: number
+  
+
+  brandLogo?: string | null
 }
 
-type BadgeVariant = 'promo' | 'top' | 'new' | 'custom'
+type BadgeVariant = 'promo' | 'top' | 'new' | 'custom' | 'warning'
+
+type CardLayout = 'default' | 'detailed'
+
+type CardPresentation = 'full' | 'minimal' | 'flat'
 
 const props = withDefaults(
   defineProps<{
@@ -53,15 +80,65 @@ const props = withDefaults(
     featured?: boolean
     showWishlist?: boolean
     
+
+    layout?: CardLayout
+    
+    presentation?: CardPresentation
+    
     badge?: { text: string; variant?: BadgeVariant } | null
+    
+
+    priority?: boolean
+    
+
+    lcp?: boolean
+    
+    showImageThumbnails?: boolean
   }>(),
-  { featured: false, showWishlist: true, badge: null },
+  {
+    featured: false,
+    showWishlist: true,
+    badge: null,
+    priority: false,
+    lcp: false,
+    showImageThumbnails: false,
+    layout: undefined,
+    presentation: 'full',
+  },
+)
+
+const isDetailed = computed(
+  () => (props.layout ?? (useRuntimeConfig().public as any).cardLayout) === 'detailed',
+)
+
+const isMinimal = computed(() => props.presentation === 'minimal')
+const isFlat = computed(() => props.presentation === 'flat')
+
+const isShowcase = computed(() => isMinimal.value || isFlat.value)
+
+const effectiveShowWishlist = computed(() => props.showWishlist && !isMinimal.value)
+
+const imgLoading = computed<'eager' | 'lazy'>(() => (props.priority || props.lcp ? 'eager' : 'lazy'))
+const imgFetchPriority = computed<'high' | undefined>(() => (props.lcp ? 'high' : undefined))
+const imageThumbnails = computed(() => props.showImageThumbnails
+  ? (props.product.imageThumbnails ?? []).filter(Boolean).slice(0, 6)
+  : [],
 )
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n)
 
-const { t } = useT()
+const { t, prime } = useT()
+
+prime?.([
+  'product.add_to_cart',
+  'product.add_to_quote',
+  'product.login_to_see_prices',
+  'product.out_of_stock',
+  'product.out_of_stock_short',
+  'catalogue.savings_amount',
+  'catalogue.savings_save',
+])
 const { showPrices, isB2b } = useB2bVisibility()
 const { resolvedClientId } = useClientDetection()
 const { addToCart } = useServerCart(resolvedClientId.value)
@@ -72,7 +149,20 @@ const { open: openQuoteDrawer } = useQuoteDrawer()
 const qty = ref(1)
 function setQty(v: number) { qty.value = Math.max(1, v) }
 
+const isOutOfStock = computed(
+  () => typeof props.product.stockQuantity === 'number' && props.product.stockQuantity <= 0,
+)
+
+const aliasesLabel = computed(() => {
+  const a = props.product.aliases
+  if (!a || !a.length) return ''
+  const shown = a.slice(0, 3)
+  const rest = a.length - shown.length
+  return rest > 0 ? `${shown.join(' · ')} · +${rest}` : shown.join(' · ')
+})
+
 async function quickCart() {
+  if (isOutOfStock.value) return
   const p = props.product
   
   
@@ -127,8 +217,15 @@ const badgeClass = computed(() => {
   if (v === 'promo') return 'bg-red-600 text-white'
   if (v === 'top') return 'bg-primary-600 text-white uppercase tracking-wider'
   if (v === 'new') return 'bg-emerald-600 text-white'
+  
+  if (v === 'warning') return 'bg-amber-400 text-slate-900'
   return 'bg-slate-900 text-white'
 })
+
+function multiBadgeClass(v: 'promo' | 'new' | 'custom'): string {
+  if (v === 'new') return 'bg-primary-600 text-white'
+  return 'bg-red-600 text-white'
+}
 
 const hasPromo = computed(
   () => !!(props.product.pricePromo && props.product.pricePromoRaw != null),
@@ -157,42 +254,82 @@ const displaySavings = computed(() => {
   }
   return p.savingsFormatted
 })
+
+const savingsLabel = computed(() => {
+  const montant = displaySavings.value
+  if (!montant) return ''
+  return isDetailed.value
+    ? t('catalogue.savings_amount', '{amount} de réduction', { amount: montant })
+    : t('catalogue.savings_save', '· Économisez {amount}', { amount: montant })
+})
 </script>
 
 <template>
   
+  
   <div :class="['group relative', featured ? 'lg:h-[800px]' : 'h-full']">
-    <NuxtLink
-      :to="productUrl"
-      class="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-primary-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
+    <div
+      :class="isShowcase
+        ? 'flex h-full flex-col overflow-hidden transition-all'
+        : 'flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-primary-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900'"
     >
       
-      <ClientOnly>
+      <div class="pointer-events-none absolute left-2 top-2 z-10 flex items-center gap-1.5">
+        <ClientOnly>
+          <template v-if="product.badges && product.badges.length > 0 && showPrices">
+            <span
+              v-for="(b, i) in product.badges.slice(0, 2)"
+              :key="i"
+              :class="[
+                'rounded-full px-2.5 py-1 text-xs font-bold uppercase shadow',
+                multiBadgeClass(b.variant),
+              ]"
+            >
+              {{ b.text }}
+            </span>
+          </template>
+          <span
+            v-else-if="effectiveBadge && showPrices"
+            :class="[
+              'rounded-full px-2.5 py-1 text-xs font-bold shadow',
+              badgeClass,
+            ]"
+          >
+            {{ effectiveBadge.text }}
+          </span>
+        </ClientOnly>
         <span
-          v-if="effectiveBadge && showPrices"
-          :class="[
-            'absolute left-2 top-2 z-10 rounded-full px-2.5 py-1 text-xs font-bold shadow',
-            badgeClass,
-          ]"
+          v-if="typeof product.stockQuantity === 'number' && product.stockQuantity <= 0"
+          class="flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-0.5 text-xs font-semibold text-red-700 shadow ring-1 ring-red-200 dark:bg-slate-900/90 dark:text-red-400 dark:ring-red-900"
+          :title="t('catalogue.out_of_stock_full', 'Produit en rupture de stock')"
         >
-          {{ effectiveBadge.text }}
+          <span class="inline-block h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+          {{ t('catalogue.out_of_stock', 'Rupture') }}
         </span>
-      </ClientOnly>
-
-      
-      <div
-        v-if="showWishlist"
-        class="absolute right-2 top-2 z-10"
-        @click.stop
-        @click.prevent
-      >
-        <WishlistButton :product-id="product.id" variant="icon" />
       </div>
 
       
       <div
+        v-if="effectiveShowWishlist"
+        class="absolute right-2 top-2 z-10"
+        @click.stop
+      >
+        <WishlistButton :product-id="product.id" variant="icon" />
+      </div>
+      <img
+        v-else-if="isMinimal && product.brandLogo"
+        :src="product.brandLogo"
+        alt=""
+        class="pointer-events-none absolute right-2 top-2 z-10 h-5 w-auto object-contain"
+        loading="lazy"
+      >
+
+      
+      <div
         :class="[
-          'overflow-hidden bg-white dark:bg-slate-800',
+          // Fond gris : `mix-blend-multiply` sur l'image y fond le blanc des
+          // photos détourées sur fond blanc, comme sur la maquette.
+          isShowcase ? 'overflow-hidden rounded-lg bg-gray-100 dark:bg-slate-800' : 'overflow-hidden bg-white dark:bg-slate-800',
           featured ? 'aspect-[2/1] lg:aspect-auto lg:h-[36rem]' : 'aspect-square',
         ]"
       >
@@ -200,23 +337,27 @@ const displaySavings = computed(() => {
           v-if="featured && product.imageLarge"
           :src="product.imageLarge"
           :srcset="product.imageSrcset"
-          sizes="(min-width: 1024px) 50vw, (min-width: 640px) 66vw, 100vw"
+          :sizes="product.imageSrcset ? '(min-width: 1024px) 50vw, (min-width: 640px) 66vw, 100vw' : undefined"
           :alt="product.name"
           width="600"
           height="450"
           class="h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
+          :class="isShowcase ? 'mix-blend-multiply' : ''"
+          :loading="imgLoading"
+          :fetchpriority="imgFetchPriority"
         />
         <img
           v-else-if="product.image"
           :src="product.image"
           :srcset="product.imageSrcset"
-          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+          :sizes="product.imageSrcset ? '(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw' : undefined"
           :alt="product.name"
           width="300"
           height="300"
           class="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
+          :class="isShowcase ? 'mix-blend-multiply' : ''"
+          :loading="imgLoading"
+          :fetchpriority="imgFetchPriority"
         />
         <div v-else class="flex h-full w-full items-center justify-center text-slate-300">
           <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
@@ -226,36 +367,80 @@ const displaySavings = computed(() => {
       </div>
 
       
-      <div class="flex flex-1 flex-col p-4">
+      <div v-if="imageThumbnails.length" class="flex gap-1.5 px-3 pt-2" aria-hidden="true">
+        <img
+          v-for="(thumbnail, index) in imageThumbnails"
+          :key="thumbnail"
+          :src="thumbnail"
+          alt=""
+          width="40"
+          height="40"
+          :class="[
+            'h-10 w-10 rounded border object-contain p-0.5',
+            index === 0 ? 'border-slate-500 dark:border-slate-400' : 'border-slate-200 dark:border-slate-700',
+          ]"
+          loading="lazy"
+        >
+      </div>
+
+      
+      <div :class="isShowcase ? 'flex flex-1 flex-col pt-3' : 'flex flex-1 flex-col p-4'">
       <h3
         :class="[
-          'mb-2 line-clamp-2 font-semibold text-slate-900 transition-colors group-hover:text-primary-700 dark:text-slate-100 dark:group-hover:text-primary-400',
-          featured ? 'text-lg sm:text-xl' : 'text-sm',
+          isShowcase
+            ? 'mb-1 line-clamp-2 font-normal text-gray-900 transition-colors group-hover:underline dark:text-slate-100'
+            : 'mb-2 line-clamp-2 font-semibold text-slate-900 transition-colors group-hover:text-primary-700 dark:text-slate-100 dark:group-hover:text-primary-400',
+          featured ? 'text-lg sm:text-xl' : isShowcase ? 'text-base' : 'text-sm',
         ]"
       >
-        {{ product.name }}
+        <NuxtLink :to="productUrl" class="after:absolute after:inset-0">{{ product.name }}</NuxtLink>
       </h3>
 
       
       <div
-        v-if="product.format || product.packaging || product.caliber"
-        class="mb-2 flex flex-wrap gap-1"
+        v-if="product.attributes && product.attributes.length > 0"
+        :class="['mb-2 flex flex-wrap gap-1', (isDetailed || isMinimal || isFlat) ? 'order-first' : '']"
+      >
+        <span
+          v-for="attr in product.attributes.slice(0, 3)"
+          :key="attr"
+          :class="[
+            'inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+            (isMinimal || isFlat) ? 'uppercase tracking-wide' : '',
+          ]"
+        >{{ attr }}</span>
+      </div>
+
+      
+      <div
+        v-else-if="product.format || product.packaging || product.caliber"
+        :class="['mb-2 flex flex-wrap gap-1', (isDetailed || isMinimal || isFlat) ? 'order-first' : '']"
       >
         <span
           v-if="product.format"
-          class="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+          class="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
         >{{ product.format }}</span>
         <span
           v-if="product.packaging"
-          class="inline-flex items-center rounded-md bg-primary-50 px-1.5 py-0.5 text-[10px] font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
+          class="inline-flex items-center rounded-md bg-primary-50 px-1.5 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
         >{{ product.packaging }}</span>
         <span
           v-if="product.caliber"
-          class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+          class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
         >{{ product.caliber }}</span>
       </div>
 
-      <p v-if="product.ref" class="mb-2 text-[10px] text-slate-400">{{ t('product.ref') }} {{ product.ref }}</p>
+      
+      <ProductRating
+        v-if="(isDetailed || isMinimal || isFlat) && product.reviewCount"
+        :rating="product.rating"
+        :count="product.reviewCount"
+        class="mb-2"
+      />
+
+      <p v-if="product.ref && !isMinimal" class="mb-2 text-xs text-slate-500">{{ t('product.ref') }} {{ product.ref }}</p>
+      
+      <p v-if="aliasesLabel && !isMinimal" class="-mt-1 mb-2 text-xs text-slate-500">{{ t('product.oe_refs', 'Réf. constructeur') }} {{ aliasesLabel }}</p>
 
       
       <p
@@ -271,22 +456,30 @@ const displaySavings = computed(() => {
             <div class="flex items-baseline gap-2">
               <span
                 :class="[
-                  'font-bold text-primary-700 dark:text-primary-400',
+                  'font-bold',
+                  isDetailed ? 'text-slate-900 dark:text-white' : 'text-primary-700 dark:text-primary-400',
                   featured ? 'text-2xl sm:text-3xl' : 'text-xl',
                 ]"
               >{{ hasPromo && product.pricePerKgPromoFormatted ? product.pricePerKgPromoFormatted : product.pricePerKgFormatted }}</span>
-              <span class="text-xs font-semibold text-primary-700 dark:text-primary-400">{{ product.unitLabel || 'HT/K' }}</span>
+              <span
+                :class="[
+                  'text-xs font-semibold',
+                  isDetailed ? 'text-slate-500 dark:text-slate-400' : 'text-primary-700 dark:text-primary-400',
+                ]"
+              >{{ product.unitLabel || 'HT/K' }}</span>
               <span
                 v-if="hasPromo && product.pricePerKgPromoFormatted"
-                class="text-sm text-red-600 line-through"
+                :class="isDetailed
+                  ? 'text-sm text-slate-500 line-through'
+                  : 'text-sm text-red-600 line-through'"
               >{{ product.pricePerKgFormatted }}</span>
             </div>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              TVA à {{ (product.taxRate ?? 5.5).toString().replace('.', ',') }} %, soit pour {{ qty === 1 ? 'un colis' : `${qty} colis` }} :<br>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <template v-if="product.taxRate">TVA à {{ product.taxRate.toString().replace('.', ',') }} %, soit pour {{ qty === 1 ? 'un colis' : `${qty} colis` }} :<br></template>
               <span class="font-semibold text-slate-700 dark:text-slate-200">{{ displayPrice }} HT</span>
               <template v-if="hasPromo">
-                <span class="ml-1 text-red-600 line-through">{{ displayOriginalPrice }}</span>
-                <span v-if="displaySavings" class="ml-1 font-semibold text-red-600">· Économisez {{ displaySavings }}</span>
+                <span :class="isDetailed ? 'ml-1 text-slate-500 line-through' : 'ml-1 text-red-600 line-through'">{{ displayOriginalPrice }}</span>
+                <span v-if="displaySavings" :class="isDetailed ? 'ml-1 font-semibold text-slate-600 dark:text-slate-300' : 'ml-1 font-semibold text-red-600'">{{ savingsLabel }}</span>
               </template>
             </p>
           </template>
@@ -294,23 +487,28 @@ const displaySavings = computed(() => {
             <div class="flex items-baseline gap-2">
               <span
                 :class="[
-                  'font-bold text-primary-700 dark:text-primary-400',
+                  'font-bold',
+                  isDetailed ? 'text-slate-900 dark:text-white' : 'text-primary-700 dark:text-primary-400',
                   featured ? 'text-xl sm:text-2xl' : 'text-base',
                 ]"
               >{{ displayPrice }}</span>
               <span
                 v-if="hasPromo"
-                class="text-xs text-red-600 line-through"
+                :class="isDetailed
+                  ? 'text-xs text-slate-500 line-through'
+                  : 'text-xs text-red-600 line-through'"
               >{{ displayOriginalPrice }}</span>
-              <span v-if="isB2b" class="text-xs font-normal text-slate-400">HT</span>
+              <span v-if="isB2b" class="text-xs font-normal text-slate-500">HT</span>
               <span
                 v-if="hasPromo && displaySavings"
-                class="text-xs font-semibold text-red-600"
-              >· Économisez {{ displaySavings }}</span>
+                :class="isDetailed
+                  ? 'text-xs font-semibold text-slate-600 dark:text-slate-300'
+                  : 'text-xs font-semibold text-red-600'"
+              >{{ savingsLabel }}</span>
             </div>
           </template>
         </template>
-        <p v-else-if="isB2b" class="mb-1 text-xs italic text-slate-400">{{ t('product.price_on_quote') }}</p>
+        <p v-else-if="isB2b" class="mb-1 text-xs italic text-slate-500">{{ t('product.login_to_see_prices') }}</p>
         <template #fallback>
           <div class="h-6 w-24 rounded bg-slate-100 dark:bg-slate-800 animate-pulse" />
         </template>
@@ -318,41 +516,51 @@ const displaySavings = computed(() => {
 
       
       <div
-        class="mt-auto flex flex-col gap-2 pt-3"
+        v-if="!isMinimal"
+        class="relative z-10 mt-auto flex flex-col gap-2 pt-3"
         @click.stop
-        @click.prevent
       >
-        <div class="flex items-stretch gap-2">
-          <div class="flex shrink-0 items-center rounded-md border border-slate-200 dark:border-slate-700">
+        <div class="flex flex-col items-start gap-1.5 sm:flex-row sm:items-stretch sm:gap-2">
+          <div
+            class="flex shrink-0 items-center rounded-md border border-slate-200 dark:border-slate-700"
+            :class="isOutOfStock ? 'opacity-50' : ''"
+          >
             <button
-              class="flex h-11 w-9 items-center justify-center text-sm text-slate-500 hover:text-slate-800"
+              class="flex h-10 w-9 sm:h-11 items-center justify-center text-sm text-slate-500 hover:text-slate-800 disabled:cursor-not-allowed disabled:hover:text-slate-500"
+              :disabled="isOutOfStock"
               @click="setQty(qty - 1)"
             >−</button>
-            <span class="flex h-11 w-8 items-center justify-center text-sm font-semibold text-slate-900 dark:text-white">{{ qty }}</span>
+            <span class="flex h-10 w-8 sm:h-11 items-center justify-center text-sm font-semibold text-slate-900 dark:text-white">{{ qty }}</span>
             <button
-              class="flex h-11 w-9 items-center justify-center text-sm text-slate-500 hover:text-slate-800"
+              class="flex h-10 w-9 sm:h-11 items-center justify-center text-sm text-slate-500 hover:text-slate-800 disabled:cursor-not-allowed disabled:hover:text-slate-500"
+              :disabled="isOutOfStock"
               @click="setQty(qty + 1)"
             >+</button>
           </div>
           <ClientOnly>
             <button
               v-if="showPrices"
-              class="flex-1 h-11 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-700 whitespace-nowrap"
+              class="w-full sm:w-auto sm:flex-1 sm:min-w-0 h-10 sm:h-11 rounded-lg px-4 text-sm font-semibold transition-colors"
+              :class="isOutOfStock
+                ? 'bg-slate-200 text-slate-500 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400'
+                : 'bg-primary-600 text-white hover:bg-primary-700'"
+              :disabled="isOutOfStock"
+              :title="isOutOfStock ? t('product.out_of_stock') : ''"
               @click="quickCart"
-            >{{ t('product.add_to_cart') }}</button>
+            >{{ isOutOfStock ? t('product.out_of_stock_short') : t('product.add_to_cart') }}</button>
             <button
               v-else
-              class="flex-1 h-11 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-700 whitespace-nowrap"
+              class="w-full sm:w-auto sm:flex-1 sm:min-w-0 h-10 sm:h-11 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
               @click="quickQuote"
             >{{ t('product.add_to_quote') }}</button>
             <template #fallback>
-              <div class="flex-1 h-11 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+              <div class="w-full sm:w-auto sm:flex-1 h-10 sm:h-11 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
             </template>
           </ClientOnly>
         </div>
         <ChatbotProductButton :product-id="product.id" :qty="qty" variant="card" />
       </div>
       </div>
-    </NuxtLink>
+    </div>
   </div>
 </template>

@@ -39,7 +39,8 @@
           {{ heroBadge }}
         </div>
 
-        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-gray-900 dark:text-slate-100 leading-tight mb-5 tracking-tight" v-html="heroTitle" />
+        
+        <component :is="headingTag" class="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-gray-900 dark:text-slate-100 leading-tight mb-5 tracking-tight"><span v-html="heroTitle" /></component>
 
         <p v-if="heroSubtitle" class="text-base text-gray-500 dark:text-slate-400 mb-5 leading-relaxed max-w-xl">
           {{ heroSubtitle }}
@@ -97,7 +98,7 @@
         <div class="flex flex-wrap gap-3 mt-8 justify-center w-full">
           <a
             v-if="hero.cta"
-            :href="available ? hero.cta.href : undefined"
+            :href="available ? ctaHref(hero.cta.href) : undefined"
             :target="available && hero.cta.href.startsWith('http') ? '_blank' : undefined"
             :rel="available && hero.cta.href.startsWith('http') ? 'noopener noreferrer' : undefined"
             :class="available
@@ -122,6 +123,29 @@
   </section>
 
   
+  <section v-else-if="hero.image && hero.bare" class="relative">
+    
+    <component :is="headingTag" class="sr-only"><span v-html="heroTitle" /></component>
+    <component
+      :is="hero.imageHref ? NuxtLinkC : 'div'"
+      :to="hero.imageHref || undefined"
+      class="block"
+      :aria-label="hero.imageHref ? (heroAlt || undefined) : undefined"
+    >
+      <NuxtImg
+        :src="hero.image"
+        :alt="heroAlt"
+        class="w-full h-auto"
+        :sizes="HERO_SIZES"
+        :densities="HERO_DENSITIES"
+        preset="hero"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </component>
+  </section>
+
+  
   <section
     v-else
     class="relative overflow-hidden flex items-center"
@@ -133,11 +157,28 @@
         alt=""
         aria-hidden="true"
         class="absolute inset-0 w-full h-full object-cover"
-        sizes="100vw sm:100vw md:100vw lg:100vw xl:100vw 2xl:100vw"
+        :sizes="HERO_SIZES"
+        :densities="HERO_DENSITIES"
         preset="hero"
         loading="eager"
         fetchpriority="high"
       />
+      
+      <video
+        v-if="playVideo"
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+        :class="videoReady ? 'opacity-100' : 'opacity-0'"
+        :poster="hero.image"
+        autoplay
+        muted
+        loop
+        playsinline
+        aria-hidden="true"
+        @playing="videoReady = true"
+      >
+        <source v-if="hero.videoWebm" :src="hero.videoWebm" type="video/webm">
+        <source :src="hero.video" type="video/mp4">
+      </video>
       <div class="absolute inset-0 bg-black/55" />
     </template>
 
@@ -150,11 +191,12 @@
     />
 
     <div class="relative z-[2] w-full max-w-6xl mx-auto px-4 sm:px-6 py-16">
-      <h1
+      
+      <component
+        :is="headingTag"
         class="text-4xl md:text-5xl font-extrabold leading-tight mb-5 max-w-3xl"
         :class="hero.image ? 'text-white' : 'text-foreground'"
-        v-html="heroTitle"
-      />
+      ><span v-html="heroTitle" /></component>
 
       <p
         v-if="heroSubtitle"
@@ -166,7 +208,7 @@
 
       <a
         v-if="hero.cta"
-        :href="hero.cta.href"
+        :href="ctaHref(hero.cta.href)"
         class="inline-flex items-center gap-2 px-7 py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-btn transition-colors shadow-sm"
       >
         {{ t(hero.cta.label as any) }}
@@ -179,16 +221,62 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import type { HomepageHero } from '~/types/theme'
+import { shouldPlayHeroVideo } from '~/utils/hero-video'
+import { responsiveImagePreloadLink } from '~/utils/image-preload'
 
 const props = defineProps<{
   hero: HomepageHero
   wowEffect?: boolean
+  
+
+  headingTag?: string
 }>()
+
+const headingTag = computed(() => props.headingTag || 'h1')
+
+const HERO_SIZES = 'xs:100vw sm:100vw md:100vw lg:100vw xl:100vw 2xl:100vw'
+const HERO_DENSITIES = 'x1 x2 x3'
+if (import.meta.server && props.hero.image && props.hero.layout !== 'portfolio') {
+  const $img = useImage()
+  const lcp = $img.getSizes(props.hero.image, {
+    preset: 'hero',
+    sizes: HERO_SIZES,
+    densities: HERO_DENSITIES,
+    modifiers: { quality: $img.options.quality },
+  })
+  const link = responsiveImagePreloadLink(lcp)
+  if (link) useHead({ link: [link] })
+}
 
 const { t } = useI18nField()
 const { tokens } = useDesignSystem()
 const { available, remaining, maxClients } = useAvailability()
+const { localePath } = useLocalePath()
+
+function ctaHref(href?: string | null): string | undefined {
+  if (!href) return undefined
+  if (/^(https?:|mailto:|tel:|#)/.test(href)) return href
+  return localePath(href)
+}
+
+const NuxtLinkC = resolveComponent('NuxtLink')
+
+const playVideo = ref(false)
+const videoReady = ref(false)
+onMounted(() => {
+  const ok = shouldPlayHeroVideo({
+    hasVideo: !!props.hero.video && !!props.hero.image && props.hero.layout !== 'portfolio' && !props.hero.bare,
+    wide: window.matchMedia('(min-width: 1024px)').matches,
+    reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    saveData: !!(navigator as any).connection?.saveData,
+  })
+  if (!ok) return
+  const start = () => { playVideo.value = true }
+  if (document.readyState === 'complete') start()
+  else window.addEventListener('load', start, { once: true })
+})
 
 const heroTitle    = computed(() => t(props.hero.title as any))
 const heroSubtitle = computed(() => t(props.hero.subtitle as any))

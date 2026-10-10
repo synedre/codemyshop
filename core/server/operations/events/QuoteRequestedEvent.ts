@@ -10,6 +10,17 @@ export interface QuoteItem {
   quantity: number
 }
 
+export interface QuoteAdAttribution {
+  gclid?: string | null
+  gbraid?: string | null
+  wbraid?: string | null
+  utmSource?: string | null
+  utmMedium?: string | null
+  utmCampaign?: string | null
+  landingUrl?: string | null
+  clickAt?: string | null
+}
+
 export interface QuoteRequestedPayload {
   firstname: string
   lastname: string
@@ -31,6 +42,8 @@ export interface QuoteRequestedPayload {
     addressInsee?: string
     staffSize?:   string
   }
+  
+  attribution?: QuoteAdAttribution | null
 }
 
 export const QUOTE_REQUESTED = 'quote.requested' as const

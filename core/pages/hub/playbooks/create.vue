@@ -5,14 +5,14 @@
         <NuxtLink to="/hub/playbooks" class="text-gray-400 hover:text-gray-600 transition-colors">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
         </NuxtLink>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ editId ? 'Modifier le playbook' : 'Nouveau playbook' }}</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ editId ? tHub('hub.ui.playbooks_create.edit_title', 'Modifier le playbook') : tHub('hub.ui.playbooks_create.new_title', 'Nouveau playbook') }}</h1>
       </div>
       <div class="flex items-center gap-2">
         <button @click="save('draft')" :disabled="saving" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors">
-          Brouillon
+          {{ tHub('hub.ui.playbooks_create.draft', 'Brouillon') }}
         </button>
         <button @click="save('published')" :disabled="saving" class="text-xs px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-          {{ saving ? 'Enregistrement…' : 'Publier' }}
+          {{ saving ? tHub('hub.ui.playbooks_create.saving', 'Enregistrement…') : tHub('hub.ui.playbooks_create.publish', 'Publier') }}
         </button>
       </div>
     </header>
@@ -23,19 +23,19 @@
         
         <div class="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl p-5 space-y-4">
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Titre</label>
-            <input v-model="form.title" @blur="autoSlug" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" placeholder="Ex: Processus de vente B2B" />
+            <label class="block text-xs font-medium text-gray-500 mb-1">{{ tHub('hub.ui.playbooks_create.title', 'Titre') }}</label>
+            <input v-model="form.title" @blur="autoSlug" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" :placeholder="tHub('hub.ui.playbooks_create.title_ph', 'Ex: Processus de vente B2B')" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Slug</label>
+            <label class="block text-xs font-medium text-gray-500 mb-1">{{ tHub('hub.ui.playbooks_create.slug', 'Slug') }}</label>
             <input v-model="form.slug" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 font-mono text-xs dark:bg-slate-900 dark:text-slate-100" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Description</label>
-            <textarea v-model="form.description" rows="2" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" placeholder="Résumé court du playbook" />
+            <label class="block text-xs font-medium text-gray-500 mb-1">{{ tHub('hub.ui.playbooks_create.description', 'Description') }}</label>
+            <textarea v-model="form.description" rows="2" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" :placeholder="tHub('hub.ui.playbooks_create.description_ph', 'Résumé court du playbook')" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Rôles ciblés</label>
+            <label class="block text-xs font-medium text-gray-500 mb-1">{{ tHub('hub.ui.playbooks_create.roles', 'Rôles ciblés') }}</label>
             <div class="flex flex-wrap gap-2 mt-1">
               <button v-for="r in ALL_ROLES" :key="r" @click="toggleRole(r)"
                 class="text-xs px-3 py-1 rounded-full border transition-colors"
@@ -52,10 +52,10 @@
             class="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl p-4">
             <div class="flex items-center justify-between mb-2">
               <select v-model="block.type" class="text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 dark:bg-slate-900 dark:text-slate-100">
-                <option value="heading">Titre</option>
-                <option value="paragraph">Paragraphe</option>
-                <option value="checklist">Checklist</option>
-                <option value="alert">Alerte</option>
+                <option value="heading">{{ tHub('hub.ui.playbooks_create.b_heading', 'Titre') }}</option>
+                <option value="paragraph">{{ tHub('hub.ui.playbooks_create.b_paragraph', 'Paragraphe') }}</option>
+                <option value="checklist">{{ tHub('hub.ui.playbooks_create.b_checklist', 'Checklist') }}</option>
+                <option value="alert">{{ tHub('hub.ui.playbooks_create.b_alert', 'Alerte') }}</option>
               </select>
               <div class="flex items-center gap-1">
                 <button v-if="i > 0" @click="moveBlock(i, -1)" class="p-1 text-gray-400 hover:text-gray-600"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg></button>
@@ -71,37 +71,37 @@
                 <option :value="3">H3</option>
                 <option :value="4">H4</option>
               </select>
-              <input v-model="block.text" class="flex-1 text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" placeholder="Titre de section" />
+              <input v-model="block.text" class="flex-1 text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" :placeholder="tHub('hub.ui.playbooks_create.heading_ph', 'Titre de section')" />
             </div>
 
             
-            <textarea v-if="block.type === 'paragraph'" v-model="block.text" rows="3" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" placeholder="Texte libre…" />
+            <textarea v-if="block.type === 'paragraph'" v-model="block.text" rows="3" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" :placeholder="tHub('hub.ui.playbooks_create.text_ph', 'Texte libre…')" />
 
             
             <div v-if="block.type === 'checklist'" class="space-y-2">
               <div v-for="(item, j) in block.items" :key="j" class="flex items-center gap-2">
                 <input type="checkbox" v-model="item.checked" class="rounded border-gray-300" />
-                <input v-model="item.text" class="flex-1 text-sm border border-gray-200 dark:border-slate-700 rounded px-2 py-1 dark:bg-slate-900 dark:text-slate-100" placeholder="Étape…" />
+                <input v-model="item.text" class="flex-1 text-sm border border-gray-200 dark:border-slate-700 rounded px-2 py-1 dark:bg-slate-900 dark:text-slate-100" :placeholder="tHub('hub.ui.playbooks_create.step_ph', 'Étape…')" />
                 <button @click="block.items.splice(j, 1)" class="text-red-400 hover:text-red-600 text-xs">x</button>
               </div>
-              <button @click="block.items.push({ text: '', checked: false })" class="text-xs text-primary-600 hover:text-primary-700">+ Ajouter une étape</button>
+              <button @click="block.items.push({ text: '', checked: false })" class="text-xs text-primary-600 hover:text-primary-700">{{ tHub('hub.ui.playbooks_create.add_step', '+ Ajouter une étape') }}</button>
             </div>
 
             
             <div v-if="block.type === 'alert'" class="space-y-2">
               <select v-model="block.variant" class="text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 dark:bg-slate-900 dark:text-slate-100">
-                <option value="info">Info</option>
-                <option value="warning">Attention</option>
-                <option value="danger">Danger</option>
+                <option value="info">{{ tHub('hub.ui.playbooks_create.v_info', 'Info') }}</option>
+                <option value="warning">{{ tHub('hub.ui.playbooks_create.v_warning', 'Attention') }}</option>
+                <option value="danger">{{ tHub('hub.ui.playbooks_create.v_danger', 'Danger') }}</option>
               </select>
-              <textarea v-model="block.text" rows="2" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" placeholder="Message d'alerte…" />
+              <textarea v-model="block.text" rows="2" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 dark:bg-slate-900 dark:text-slate-100" :placeholder="tHub('hub.ui.playbooks_create.alert_ph', 'Message d\'alerte…')" />
             </div>
           </div>
 
           
           <div class="flex justify-center">
             <button @click="addBlock" class="text-xs px-4 py-2 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl text-gray-400 hover:border-primary-300 hover:text-primary-500 transition-colors">
-              + Ajouter un bloc
+              {{ tHub('hub.ui.playbooks_create.add_block', '+ Ajouter un bloc') }}
             </button>
           </div>
         </div>
@@ -115,6 +115,7 @@
 <script setup lang="ts">
 
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 const { isOwner } = useRoles()
 const route = useRoute()
@@ -166,7 +167,7 @@ function moveBlock(i: number, dir: number) {
 }
 
 async function save(status: 'draft' | 'published') {
-  if (!form.title.trim()) { error.value = 'Titre requis'; return }
+  if (!form.title.trim()) { error.value = tHub('hub.ui.playbooks_create.err_title', 'Titre requis'); return }
   autoSlug()
   saving.value = true
   error.value = ''
@@ -183,7 +184,7 @@ async function save(status: 'draft' | 'published') {
     const data = await $fetch<any>('/api/bo/playbooks/save', { method: 'POST', body })
     router.push(`/hub/playbooks/${data.slug}`)
   } catch (err: any) {
-    error.value = err?.data?.message || 'Erreur de sauvegarde'
+    error.value = err?.data?.message || tHub('hub.ui.playbooks_create.err_save', 'Erreur de sauvegarde')
   } finally { saving.value = false }
 }
 

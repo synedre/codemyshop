@@ -3,7 +3,10 @@
 import archiver from 'archiver'
 import { PassThrough } from 'stream'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const { ids } = await readBody<{ ids: number[] }>(event)
   if (!ids?.length) throw createError({ statusCode: 400, message: 'IDs required' })
 

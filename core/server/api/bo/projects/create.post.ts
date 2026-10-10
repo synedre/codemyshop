@@ -2,7 +2,10 @@
 
 import { createSmartProject } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody(event) as Record<string, any>
 
   const title = (body.project_title || '').trim()

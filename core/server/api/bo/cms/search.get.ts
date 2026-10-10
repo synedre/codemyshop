@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const query = getQuery(event)
   const q = String(query.q ?? '').trim()
   const limit = Math.min(Math.max(Number(query.limit) || 20, 1), 50)

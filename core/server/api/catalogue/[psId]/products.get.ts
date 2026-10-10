@@ -3,6 +3,7 @@
 import { useClientDb, useClientDbById } from '~/server/utils/db'
 import { resolveIdLang } from '~/server/utils/lang'
 import { buildProductImage } from '~/server/utils/ps-image'
+import { visibiliteSql } from '~/utils/product-visibility'
 
 const fmtEur = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n)
 
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
          JOIN ps_category_product cp ON cp.id_product = p.id_product AND cp.id_category = ?
     LEFT JOIN ps_product_lang pl  ON pl.id_product  = p.id_product AND pl.id_lang  = ? AND pl.id_shop = 1
     LEFT JOIN ps_product_lang plf ON plf.id_product = p.id_product AND plf.id_lang = 1 AND plf.id_shop = 1
-        WHERE p.active = 1 AND ps.active = 1
+        WHERE p.active = 1 AND ps.active = 1 AND ${visibiliteSql('ps', 'catalog')}
         ORDER BY cp.position, pl.name
         LIMIT ?`,
       [psId, idLang, lim],

@@ -9,24 +9,24 @@
       
       <div class="flex items-center justify-between mb-8 gap-4">
         <div>
-          <span class="inline-block text-xs font-semibold text-primary-600 uppercase tracking-widest mb-2">
-            Cluster Sémantique
+          <span class="inline-block text-xs font-semibold text-primary-600 uppercase tracking-widest mb-2 dark:text-primary-400">
+            {{ t('blog.cluster_label', 'Cluster Sémantique') }}
           </span>
           <h2
             id="related-blog-heading"
-            class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight"
+            class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight dark:text-slate-100"
           >
-            Nos conseils liés à
-            <span class="text-primary-600">{{ categoryLabel }}</span>
+            {{ t('blog.related_title', 'Nos conseils liés à') }}
+            <span class="text-primary-600 dark:text-primary-400">{{ categoryLabel }}</span>
           </h2>
         </div>
         <NuxtLink
           v-if="categorySlug"
-          :to="`/blog/${categorySlug}`"
-          class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors shrink-0"
-          :aria-label="`Voir tous les articles sur ${categoryLabel}`"
+          :to="urlCategorie"
+          class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors shrink-0 dark:text-primary-400"
+          :aria-label="t('blog.see_all_articles_on', 'Voir tous les articles sur {label}', { label: categoryLabel })"
         >
-          Voir tous les articles
+          {{ t('blog.see_all_articles', 'Voir tous les articles') }}
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
@@ -35,14 +35,14 @@
 
       
       <div v-if="status === 'pending'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="n in limit" :key="n" class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
-          <div class="h-48 bg-gray-200" />
+        <div v-for="n in limit" :key="n" class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse dark:bg-slate-900 dark:border-slate-800">
+          <div class="h-48 bg-gray-200 dark:bg-slate-700" />
           <div class="p-5 space-y-3">
-            <div class="h-4 bg-gray-200 rounded w-1/3" />
-            <div class="h-5 bg-gray-200 rounded w-full" />
-            <div class="h-5 bg-gray-100 rounded w-4/5" />
-            <div class="h-3 bg-gray-100 rounded w-full mt-2" />
-            <div class="h-3 bg-gray-100 rounded w-3/4" />
+            <div class="h-4 bg-gray-200 rounded w-1/3 dark:bg-slate-700" />
+            <div class="h-5 bg-gray-200 rounded w-full dark:bg-slate-700" />
+            <div class="h-5 bg-gray-100 rounded w-4/5 dark:bg-slate-800" />
+            <div class="h-3 bg-gray-100 rounded w-full mt-2 dark:bg-slate-800" />
+            <div class="h-3 bg-gray-100 rounded w-3/4 dark:bg-slate-800" />
           </div>
         </div>
       </div>
@@ -52,12 +52,12 @@
         <NuxtLink
           v-for="article in articles"
           :key="article.id"
-          :to="article.nuxtUrl"
-          :aria-label="`Lire l'article : ${article.title}`"
-          class="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col"
+          :to="urlArticle(article.nuxtUrl)"
+          :aria-label="t('blog.read_article_aria', 'Lire l\'article : {title}', { title: article.title })"
+          class="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col dark:bg-slate-900 dark:border-slate-800"
         >
           
-          <div class="relative h-48 overflow-hidden bg-gray-100 shrink-0">
+          <div class="relative h-48 overflow-hidden bg-gray-100 shrink-0 dark:bg-slate-800">
             <img
               v-if="article.coverImage"
               :src="article.thumbnailImage || article.coverImage"
@@ -75,23 +75,23 @@
             
             <span
               v-if="article.category"
-              class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-primary-100"
+              class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-primary-100 dark:bg-slate-900/90 dark:text-primary-300 dark:border-primary-500/20"
             >
-              {{ article.category }}
+              {{ badgeLabel(article) }}
             </span>
           </div>
 
           
           <div class="flex flex-col flex-1 p-5">
-            <h3 class="text-base font-bold text-gray-900 line-clamp-2 mb-2 group-hover:text-primary-600 transition-colors leading-snug">
+            <h3 class="text-base font-bold text-gray-900 line-clamp-2 mb-2 group-hover:text-primary-600 transition-colors leading-snug dark:text-slate-100">
               {{ article.title }}
             </h3>
-            <p class="text-sm text-gray-500 line-clamp-3 leading-relaxed flex-1">
+            <p class="text-sm text-gray-500 line-clamp-3 leading-relaxed flex-1 dark:text-slate-400">
               {{ article.excerpt }}
             </p>
-            <time v-if="article.datePublished" :datetime="article.datePublished" class="block mt-2 text-xs text-gray-400">{{ formatDate(article.datePublished) }}</time>
-            <div class="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary-600 group-hover:gap-2.5 transition-all">
-              Lire l'article
+            <time v-if="article.datePublished" :datetime="article.datePublished" class="block mt-2 text-xs text-gray-400 dark:text-slate-500">{{ formatDate(article.datePublished) }}</time>
+            <div class="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary-600 group-hover:gap-2.5 transition-all dark:text-primary-400">
+              {{ t('blog.read_article', 'Lire l\'article') }}
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -103,11 +103,11 @@
       
       <div v-if="categorySlug" class="mt-8 text-center sm:hidden">
         <NuxtLink
-          :to="`/blog/${categorySlug}`"
-          :aria-label="`Voir tous les articles sur ${categoryLabel}`"
-          class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+          :to="urlCategorie"
+          :aria-label="t('blog.see_all_articles_on', 'Voir tous les articles sur {label}', { label: categoryLabel })"
+          class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors dark:text-primary-400"
         >
-          Voir tous les articles sur {{ categoryLabel }}
+          {{ t('blog.see_all_articles_on', 'Voir tous les articles sur {label}', { label: categoryLabel }) }}
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
@@ -119,6 +119,12 @@
 </template>
 
 <script setup lang="ts">
+import { blogHref, blogHrefFromApi } from '~/utils/blog-url'
+import { libelleBadgeRubrique } from '~/utils/blog-related-label'
+
+import { useDisplayTimeZone } from '../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
 interface CmsArticle {
   id:             number
   title:          string
@@ -134,7 +140,7 @@ interface CmsArticle {
 function formatDate(raw: string): string {
   if (!raw) return ''
   const d = new Date(raw.replace(' ', 'T'))
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString('fr-FR', { timeZone: displayTz, day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 const props = withDefaults(defineProps<{
@@ -156,7 +162,23 @@ const displayLabel = computed(() =>
   props.categoryLabel ?? props.categorySlug
 )
 
+function badgeLabel(a: CmsArticle): string {
+  if (a.category === props.categorySlug) return displayLabel.value
+  return libelleBadgeRubrique((a as any).categoryName, a.category, [])
+}
+
 const { activeLang } = useRouteLang()
+
+const { t } = useT()
+
+const blogDefaultLocale = String((useRuntimeConfig().public as any).i18nDefaultLocale || 'fr')
+
+const urlArticle = (nuxtUrl: string) => blogHrefFromApi(nuxtUrl, activeLang.value, blogDefaultLocale)
+
+const urlCategorie = computed(() =>
+  blogHref({ lang: activeLang.value, defaultLocale: blogDefaultLocale, path: props.categorySlug }),
+)
+
 const { data: raw, status } = await useFetch<CmsArticle[]>('/api/cms', {
   query: {
     

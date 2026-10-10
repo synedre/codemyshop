@@ -84,6 +84,32 @@ export async function processCoverQueue(opts: {
         width: COVER_WIDTH,
         height: COVER_HEIGHT,
       })
+      
+      
+      let socialUrl: string | null = null
+      try {
+        const socialPng = await generateCover({
+          title: row.title,
+          tenant: row.tenant,
+          usePhotoBg: true,
+          withAvatar: row.with_avatar === 1,
+          expressionUrl: row.expression_image_url,
+          width: 1080,
+          height: 1080,
+        })
+        const socialSaved = await saveCoverSet({
+          slug: `social-${row.slug}`,
+          siteUrl: tcfg.siteUrl,
+          coverPng: socialPng,
+          width: 1080,
+          height: 1080,
+        })
+        socialUrl = socialSaved.cover.url
+      } catch (e: any) {
+        
+        console.warn(`[covergen] social 1080 KO (id_cms=${row.id_cms}) : ${e?.message ?? e}`)
+      }
+
       await sql`
         UPDATE cs_main.cs_covergen_queue
         SET status = 'done',
@@ -93,6 +119,21 @@ export async function processCoverQueue(opts: {
             date_upd = NOW()
         WHERE id_covergen = ${row.id_covergen}
       `
+
+      
+      
+      try {
+        await sql`
+          UPDATE cs_main.cs_cms_extra
+          SET image = ${saved.cover.url},
+              social_cover_url = ${socialUrl},
+              date_updated = NOW()
+          WHERE id_cms = ${row.id_cms}
+        `
+      } catch (e: any) {
+        console.warn(`[covergen] lien cms_extra KO (id_cms=${row.id_cms}) : ${e?.message ?? e}`)
+      }
+
       result.processed++
       result.items.push({
         id: row.id_covergen,

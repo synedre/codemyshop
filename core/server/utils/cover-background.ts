@@ -2,7 +2,7 @@ import sharp from 'sharp'
 
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY ?? ''
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY ?? ''
-const STATIC_BASE_URL = process.env.AC_STATIC_BASE_URL ?? 'http://ac_nginx/cover-assets'
+const STATIC_BASE_URL = process.env.AC_STATIC_BASE_URL ?? ''
 
 const STOPWORDS_FR = new Set(
   ('le la les un une des de du d l au aux en et ou mais ni car que qui quoi ' +

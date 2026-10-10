@@ -58,7 +58,7 @@ const pillClass = computed(() => {
       </div>
 
       
-      <div class="grid gap-5 lg:grid-cols-2 lg:items-center">
+      <div class="grid gap-5 lg:grid-cols-2 lg:items-start">
         
         <ProductCard
           v-if="featured"

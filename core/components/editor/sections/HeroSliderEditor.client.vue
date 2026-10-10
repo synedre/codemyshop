@@ -3,9 +3,9 @@
   <div class="space-y-3">
     
     <fieldset class="border border-gray-200 rounded-xl p-3 space-y-2">
-      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">Défilement</legend>
+      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{{ tHub('hub.ui.editor_hero_slider_editor.scroll', 'Défilement') }}</legend>
       <div>
-        <label class="field-label">Intervalle (ms)</label>
+        <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.interval', 'Intervalle (ms)') }}</label>
         <input
           :value="localPayload.interval_ms ?? 6000"
           @input="updateField('interval_ms', Number(($event.target as HTMLInputElement).value))"
@@ -16,13 +16,13 @@
     
     <div class="flex items-center justify-between">
       <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-        Slides ({{ slides.length }})
+        {{ tHub('hub.ui.editor_hero_slider_editor.slides_count', 'Slides ({count})', { count: slides.length }) }}
       </span>
       <button @click="addSlide" class="flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700 px-2 py-1 rounded-lg hover:bg-primary-50 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        Slide
+        {{ tHub('hub.ui.editor_hero_slider_editor.slide_btn', 'Slide') }}
       </button>
     </div>
 
@@ -46,10 +46,10 @@
           class="flex-1 flex items-center gap-2 px-1 text-left"
         >
           <span class="text-xs font-semibold text-gray-800 truncate">
-            {{ i18nt(slide.title) || `Slide ${i + 1}` }}
+            {{ i18nt(slide.title) || tHub('hub.ui.editor_hero_slider_editor.slide_n', 'Slide {n}', { n: i + 1 }) }}
           </span>
         </button>
-        <button @click="removeSlide(i)" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Supprimer">
+        <button @click="removeSlide(i)" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" :title="tHub('hub.ui.editor_hero_slider_editor.delete', 'Supprimer')">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
@@ -62,84 +62,85 @@
       
       <div v-if="expandedSlide === i" class="p-3 space-y-3">
         <div>
-          <label class="field-label">Image</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.image', 'Image') }}</label>
+          <EditorExpectedSize :size="mediaDimensionHint('hero-slider', 'image', payload?.variant)" :url="slide.image" />
           <div class="flex gap-2">
             <input :value="slide.image ?? ''" @input="updateSlide(i, 'image', ($event.target as HTMLInputElement).value)"
               type="text" class="field flex-1" placeholder="/static/hero/slide.jpg" />
             <button
-              @click="($refs['slideUpload' + i] as HTMLInputElement)?.click()"
+              @click="slideUploadRefs[i]?.click()"
               :disabled="uploading === 'slide-' + i"
               class="shrink-0 px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-primary-200 text-primary-700 hover:bg-primary-50 disabled:opacity-50 transition-colors"
             >
-              {{ uploading === 'slide-' + i ? '…' : 'Upload' }}
+              {{ uploading === 'slide-' + i ? '…' : tHub('hub.ui.editor_hero_slider_editor.upload', 'Upload') }}
             </button>
-            <input :ref="'slideUpload' + i" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
+            <input :ref="el => { if (el) slideUploadRefs[i] = el as HTMLInputElement }" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
               @change="handleUpload($event, 'slide', i)" />
           </div>
           <p v-if="uploadError && uploading === null" class="text-[10px] text-red-500 mt-1">{{ uploadError }}</p>
           <div v-if="slide.image" class="mt-1.5 h-16 rounded-lg overflow-hidden bg-gray-100">
-            <img :src="slide.image" alt="preview" class="h-full w-full object-cover" />
+            <img :src="slide.image" :alt="tHub('hub.ui.editor_hero_slider_editor.preview', 'Aperçu')" class="h-full w-full object-cover" />
           </div>
         </div>
         <div>
-          <label class="field-label">Sticker (badge)</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.sticker', 'Sticker (badge)') }}</label>
           <EditorI18nField
             :model-value="slide.sticker"
             :langs="langs"
-            placeholder="NOUVEAUTÉ, PROMO…"
+            :placeholder="tHub('hub.ui.editor_hero_slider_editor.sticker_ph', 'NOUVEAUTÉ, PROMO…')"
             @update:model-value="updateSlide(i, 'sticker', $event)"
           />
         </div>
         <div>
-          <label class="field-label">Titre</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.title', 'Titre') }}</label>
           <EditorI18nField
             :model-value="slide.title"
             :langs="langs"
-            placeholder="Titre du slide"
+            :placeholder="tHub('hub.ui.editor_hero_slider_editor.slide_title_ph', 'Titre du slide')"
             @update:model-value="updateSlide(i, 'title', $event)"
           />
         </div>
         <div>
-          <label class="field-label">Sous-titre</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.subtitle', 'Sous-titre') }}</label>
           <EditorI18nField
             :model-value="slide.subtitle"
             :langs="langs"
             type="textarea"
-            placeholder="Description du slide"
+            :placeholder="tHub('hub.ui.editor_hero_slider_editor.slide_desc_ph', 'Description du slide')"
             @update:model-value="updateSlide(i, 'subtitle', $event)"
           />
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="field-label">Bouton (texte)</label>
+            <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.btn_text', 'Bouton (texte)') }}</label>
             <EditorI18nField
               :model-value="slide.cta_label"
               :langs="langs"
-              placeholder="Voir le catalogue"
+              :placeholder="tHub('hub.ui.editor_hero_slider_editor.btn_text_ph', 'Voir le catalogue')"
               @update:model-value="updateSlide(i, 'cta_label', $event)"
             />
           </div>
           <div>
-            <label class="field-label">Bouton (lien)</label>
+            <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.btn_link', 'Bouton (lien)') }}</label>
             <input :value="slide.cta_to ?? ''" @input="updateSlide(i, 'cta_to', ($event.target as HTMLInputElement).value)"
-              type="text" class="field" placeholder="/catalogue" />
+              type="text" class="field" placeholder="/ma-categorie/" />
           </div>
         </div>
       </div>
     </div>
 
-    <p v-if="!slides.length" class="text-xs text-gray-400 text-center py-4">Aucun slide — cliquez sur + Slide</p>
+    <p v-if="!slides.length" class="text-xs text-gray-400 text-center py-4">{{ tHub('hub.ui.editor_hero_slider_editor.empty_slides', 'Aucun slide — cliquez sur + Slide') }}</p>
 
     
     <div class="flex items-center justify-between mt-4">
       <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-        Blocs latéraux ({{ sideBlocks.length }}/2)
+        {{ tHub('hub.ui.editor_hero_slider_editor.side_blocks', 'Blocs latéraux ({count}/2)', { count: sideBlocks.length }) }}
       </span>
       <button v-if="sideBlocks.length < 2" @click="addSideBlock" class="flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700 px-2 py-1 rounded-lg hover:bg-primary-50 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        Bloc
+        {{ tHub('hub.ui.editor_hero_slider_editor.block_btn', 'Bloc') }}
       </button>
     </div>
 
@@ -150,10 +151,10 @@
           class="flex-1 flex items-center gap-2 px-1 text-left"
         >
           <span class="text-xs font-semibold text-gray-800 truncate">
-            {{ block.alt || `Bloc ${i + 1}` }}
+            {{ block.alt || tHub('hub.ui.editor_hero_slider_editor.block_n', 'Bloc {n}', { n: i + 1 }) }}
           </span>
         </button>
-        <button @click="removeSideBlock(i)" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Supprimer">
+        <button @click="removeSideBlock(i)" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" :title="tHub('hub.ui.editor_hero_slider_editor.delete', 'Supprimer')">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
@@ -164,61 +165,61 @@
       </div>
       <div v-if="expandedBlock === i" class="p-3 space-y-3">
         <div>
-          <label class="field-label">Image</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.image', 'Image') }}</label>
           <div class="flex gap-2">
             <input :value="block.image ?? ''" @input="updateSideBlock(i, 'image', ($event.target as HTMLInputElement).value)"
               type="text" class="field flex-1" placeholder="/static/hero/block.jpg" />
             <button
-              @click="($refs['blockUpload' + i] as HTMLInputElement)?.click()"
+              @click="blockUploadRefs[i]?.click()"
               :disabled="uploading === 'block-' + i"
               class="shrink-0 px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-primary-200 text-primary-700 hover:bg-primary-50 disabled:opacity-50 transition-colors"
             >
-              {{ uploading === 'block-' + i ? '…' : 'Upload' }}
+              {{ uploading === 'block-' + i ? '…' : tHub('hub.ui.editor_hero_slider_editor.upload', 'Upload') }}
             </button>
-            <input :ref="'blockUpload' + i" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
+            <input :ref="el => { if (el) blockUploadRefs[i] = el as HTMLInputElement }" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
               @change="handleUpload($event, 'block', i)" />
           </div>
           <div v-if="block.image" class="mt-1.5 h-16 rounded-lg overflow-hidden bg-gray-100">
-            <img :src="block.image" alt="preview" class="h-full w-full object-cover" />
+            <img :src="block.image" :alt="tHub('hub.ui.editor_hero_slider_editor.preview', 'Aperçu')" class="h-full w-full object-cover" />
           </div>
         </div>
         <div>
-          <label class="field-label">Alt</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.alt', 'Alt') }}</label>
           <input :value="block.alt ?? ''" @input="updateSideBlock(i, 'alt', ($event.target as HTMLInputElement).value)"
-            type="text" class="field" placeholder="Texte alternatif" />
+            type="text" class="field" :placeholder="tHub('hub.ui.editor_hero_slider_editor.alt_ph', 'Texte alternatif')" />
         </div>
         <div>
-          <label class="field-label">Sticker (badge)</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.sticker', 'Sticker (badge)') }}</label>
           <EditorI18nField
             :model-value="block.sticker"
             :langs="langs"
-            placeholder="NOUVEAUTÉ…"
+            :placeholder="tHub('hub.ui.editor_hero_slider_editor.sticker_short_ph', 'NOUVEAUTÉ…')"
             @update:model-value="updateSideBlock(i, 'sticker', $event)"
           />
         </div>
         <div>
-          <label class="field-label">Titre</label>
+          <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.title', 'Titre') }}</label>
           <EditorI18nField
             :model-value="block.title"
             :langs="langs"
-            placeholder="Titre du bloc"
+            :placeholder="tHub('hub.ui.editor_hero_slider_editor.block_title_ph', 'Titre du bloc')"
             @update:model-value="updateSideBlock(i, 'title', $event)"
           />
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="field-label">Bouton (texte)</label>
+            <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.btn_text', 'Bouton (texte)') }}</label>
             <EditorI18nField
               :model-value="block.cta_label"
               :langs="langs"
-              placeholder="Je découvre"
+              :placeholder="tHub('hub.ui.editor_hero_slider_editor.block_btn_ph', 'Je découvre')"
               @update:model-value="updateSideBlock(i, 'cta_label', $event)"
             />
           </div>
           <div>
-            <label class="field-label">Lien</label>
+            <label class="field-label">{{ tHub('hub.ui.editor_hero_slider_editor.link', 'Lien') }}</label>
             <input :value="block.to ?? ''" @input="updateSideBlock(i, 'to', ($event.target as HTMLInputElement).value)"
-              type="text" class="field" placeholder="/grossiste/oriental" />
+              type="text" class="field" placeholder="/ma-categorie/ma-sous-categorie" />
           </div>
         </div>
       </div>
@@ -228,6 +229,7 @@
 
 <script setup lang="ts">
 import type { ClientLang } from '~/server/api/client-langs.get'
+import { mediaDimensionHint } from '~/utils/section-media-dimensions'
 
 const props = defineProps<{
   payload: any
@@ -239,6 +241,7 @@ const emit = defineEmits<{
 }>()
 
 const { t: i18nt } = useI18nField()
+const { t: tHub } = useHubT()
 
 const localPayload = computed(() => props.payload ?? { interval_ms: 6000, slides: [], side_blocks: [] })
 const slides = computed(() => localPayload.value.slides ?? [])
@@ -247,6 +250,9 @@ const expandedSlide = ref<number | null>(null)
 const expandedBlock = ref<number | null>(null)
 const uploading = ref<string | null>(null)
 const uploadError = ref('')
+
+const slideUploadRefs: Record<number, HTMLInputElement> = {}
+const blockUploadRefs: Record<number, HTMLInputElement> = {}
 
 async function handleUpload(e: Event, target: 'slide' | 'block', index: number) {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -267,7 +273,7 @@ async function handleUpload(e: Event, target: 'slide' | 'block', index: number) 
       else updateSideBlock(index, 'image', res.url)
     }
   } catch (err: any) {
-    uploadError.value = err?.data?.message || err?.message || 'Erreur upload'
+    uploadError.value = err?.data?.message || err?.message || tHub('hub.ui.editor_hero_slider_editor.upload_error', 'Erreur upload')
   } finally {
     uploading.value = null
     ;(e.target as HTMLInputElement).value = ''

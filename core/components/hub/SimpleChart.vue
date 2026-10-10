@@ -4,7 +4,7 @@
       :viewBox="`0 0 ${W} ${H}`"
       class="w-full"
       :style="`height: ${H}px`"
-      aria-label="Graphique d'évolution du chiffre d'affaires"
+      :aria-label="t('hub.ui.simple_chart.aria', 'Graphique d\'évolution du chiffre d\'affaires')"
       role="img"
     >
       
@@ -87,6 +87,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 export interface ChartPoint { label: string; value: number }
 
 const props = defineProps<{

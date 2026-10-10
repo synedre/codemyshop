@@ -5,6 +5,8 @@ interface ProductRow {
   ref?: string | null
   ean13?: string | null
   name: string
+  
+
   url?: string
   image?: string | null
   imageSrcset?: string | null
@@ -17,6 +19,9 @@ interface ProductRow {
   caliber?: string
   totalWeightKg?: number
   pricePerKgFormatted?: string
+  
+
+  stockQuantity?: number
 }
 
 const props = defineProps<{ product: ProductRow }>()
@@ -24,8 +29,19 @@ const props = defineProps<{ product: ProductRow }>()
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n)
 
-const { t } = useT()
+const { t, prime } = useT()
+
+prime?.([
+  'common.price_ht_suffix',
+  'product.add_short',
+  'product.on_quote',
+  'product.out_of_stock',
+  'product.out_of_stock_short',
+  'product.to_quote_short',
+])
 const { showPrices, isB2b } = useB2bVisibility()
+
+const isFood = ((useRuntimeConfig().public as any)?.vertical || '') === 'food'
 const { resolvedClientId } = useClientDetection()
 const { addToCart } = useServerCart(resolvedClientId.value)
 const { open: openCartDrawer } = useCartDrawer()
@@ -34,6 +50,10 @@ const { open: openQuoteDrawer } = useQuoteDrawer()
 
 const qty = ref(1)
 function setQty(v: number) { qty.value = Math.max(1, v) }
+
+const isOutOfStock = computed(
+  () => typeof props.product.stockQuantity === 'number' && props.product.stockQuantity <= 0,
+)
 
 const modalOpen = ref(false)
 const modalImages = ref<number[]>([])
@@ -62,6 +82,7 @@ async function openGallery() {
 const productUrl = computed(() => props.product.url || `/produit/${props.product.id}`)
 
 async function quickCart() {
+  if (isOutOfStock.value) return
   const p = props.product
   await addToCart(
     {
@@ -115,7 +136,7 @@ const weightLabel = computed(() => {
         <img
           :src="product.image"
           :srcset="product.imageSrcset"
-          sizes="48px"
+          :sizes="product.imageSrcset ? '48px' : undefined"
           :alt="product.name"
           class="h-12 w-12 cursor-zoom-in rounded-md object-contain bg-white p-1 dark:bg-slate-800"
           loading="lazy"
@@ -150,12 +171,12 @@ const weightLabel = computed(() => {
     </td>
 
     
-    <td class="px-3 py-2 font-mono text-xs text-slate-500 dark:text-slate-400">
+    <td v-if="isFood" class="px-3 py-2 font-mono text-xs text-slate-500 dark:text-slate-400">
       {{ product.ean13 || '—' }}
     </td>
 
     
-    <td class="px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
+    <td v-if="isFood" class="px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
       {{ product.netWeight || '—' }}
     </td>
 
@@ -164,7 +185,7 @@ const weightLabel = computed(() => {
       <ClientOnly>
         <template v-if="showPrices">
           <span class="text-sm font-semibold text-primary-700 dark:text-primary-400">{{ displayPrice }}</span>
-          <span class="ml-1 text-[10px] text-slate-400">{{ t('common.price_ht_suffix') }}</span>
+          <span v-if="isFood" class="ml-1 text-[10px] text-slate-400">{{ t('common.price_ht_suffix') }}</span>
         </template>
         <span v-else-if="isB2b" class="text-xs italic text-slate-400">{{ t('product.on_quote') }}</span>
         <template #fallback>
@@ -174,35 +195,45 @@ const weightLabel = computed(() => {
     </td>
 
     
-    <td class="px-3 py-2 text-right text-xs text-slate-500 dark:text-slate-400">
+    <td v-if="isFood" class="px-3 py-2 text-right text-xs text-slate-500 dark:text-slate-400">
       {{ product.pricePerKgFormatted ? `${product.pricePerKgFormatted} /kg` : '—' }}
     </td>
 
     
-    <td class="px-3 py-2 text-right text-xs text-slate-500 dark:text-slate-400">
+    <td v-if="isFood" class="px-3 py-2 text-right text-xs text-slate-500 dark:text-slate-400">
       {{ weightLabel }}
     </td>
 
     
-    <td v-if="isB2b" class="px-3 py-2">
+    <td class="px-3 py-2">
       <div class="flex items-center justify-end gap-2">
-        <div class="flex items-center rounded-md border border-slate-200 dark:border-slate-700">
+        <div
+          class="flex items-center rounded-md border border-slate-200 dark:border-slate-700"
+          :class="isOutOfStock ? 'opacity-50' : ''"
+        >
           <button
-            class="flex h-10 w-9 items-center justify-center text-sm text-slate-500 hover:text-slate-800"
+            class="flex h-10 w-9 items-center justify-center text-sm text-slate-500 hover:text-slate-800 disabled:cursor-not-allowed disabled:hover:text-slate-500"
+            :disabled="isOutOfStock"
             @click="setQty(qty - 1)"
           >−</button>
           <span class="flex h-10 w-10 items-center justify-center text-sm font-semibold text-slate-900 dark:text-white">{{ qty }}</span>
           <button
-            class="flex h-10 w-9 items-center justify-center text-sm text-slate-500 hover:text-slate-800"
+            class="flex h-10 w-9 items-center justify-center text-sm text-slate-500 hover:text-slate-800 disabled:cursor-not-allowed disabled:hover:text-slate-500"
+            :disabled="isOutOfStock"
             @click="setQty(qty + 1)"
           >+</button>
         </div>
         <ClientOnly>
           <button
             v-if="showPrices"
-            class="h-10 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+            class="h-10 rounded-lg px-4 text-sm font-semibold transition-colors"
+            :class="isOutOfStock
+              ? 'bg-slate-200 text-slate-500 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400'
+              : 'bg-primary-600 text-white hover:bg-primary-700'"
+            :disabled="isOutOfStock"
+            :title="isOutOfStock ? t('product.out_of_stock') : ''"
             @click="quickCart"
-          >{{ t('product.add_short') }}</button>
+          >{{ isOutOfStock ? t('product.out_of_stock_short') : t('product.add_short') }}</button>
           <button
             v-else
             class="h-10 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
@@ -214,7 +245,6 @@ const weightLabel = computed(() => {
         </ClientOnly>
       </div>
     </td>
-    <td v-else class="px-3 py-2" />
   </tr>
 
   

@@ -1,6 +1,7 @@
 
 
-import { replyConversation } from '~/server/utils/chatbot-engine'
+import { replyConversation, toChatbotHttpError } from '~/server/utils/chatbot-engine'
+import { resolveIdLang } from '~/server/utils/lang'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event) as {
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const dto = await replyConversation({ conversationId, conversationToken, message }, { event })
+    const dto = await replyConversation({ conversationId, conversationToken, message, idLang: await resolveIdLang(event) }, { event })
     
     
     
@@ -39,7 +40,6 @@ export default defineEventHandler(async (event) => {
       },
     }
   } catch (err: any) {
-    console.error('[chatbot/reply] ', err?.message)
-    throw createError({ statusCode: 400, statusMessage: err?.message || 'Erreur réponse' })
+    throw toChatbotHttpError(err, 'reply')
   }
 })

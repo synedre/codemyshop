@@ -4,20 +4,20 @@
 
     
     <fieldset class="border border-gray-200 rounded-xl p-3 space-y-2">
-      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">CTA bouton</legend>
+      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{{ tHub('hub.ui.editor_instagram_editor.cta_legend', 'CTA bouton') }}</legend>
       <div>
-        <label class="field-label">Lien Instagram</label>
+        <label class="field-label">{{ tHub('hub.ui.editor_instagram_editor.ig_link', 'Lien Instagram') }}</label>
         <input
           :value="localPayload.url ?? ''"
-          type="url" class="field" placeholder="https://instagram.com/example_fruits_secs"
+          type="url" class="field" placeholder="https://instagram.com/ma_boutique"
           @input="updateField('url', ($event.target as HTMLInputElement).value)"
         >
       </div>
       <div>
-        <label class="field-label">Handle (@)</label>
+        <label class="field-label">{{ tHub('hub.ui.editor_instagram_editor.handle', 'Handle (@)') }}</label>
         <input
           :value="localPayload.handle ?? ''"
-          type="text" class="field" placeholder="@example_fruits_secs"
+          type="text" class="field" placeholder="@ma_boutique"
           @input="updateField('handle', ($event.target as HTMLInputElement).value)"
         >
       </div>
@@ -25,23 +25,23 @@
 
     
     <fieldset class="border border-gray-200 rounded-xl p-3 space-y-2">
-      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">Connexion API</legend>
+      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{{ tHub('hub.ui.editor_instagram_editor.api_legend', 'Connexion API') }}</legend>
 
       <div v-if="statusLoading" class="flex items-center gap-2 text-xs text-gray-500 py-2">
         <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
-        Vérification…
+        {{ tHub('hub.ui.editor_instagram_editor.checking', 'Vérification…') }}
       </div>
 
       <div v-else-if="!status?.connected" class="rounded-lg bg-amber-50 border border-amber-200 p-2.5">
-        <p class="text-xs font-semibold text-amber-800 mb-1">Non connecté</p>
+        <p class="text-xs font-semibold text-amber-800 mb-1">{{ tHub('hub.ui.editor_instagram_editor.not_connected', 'Non connecté') }}</p>
         <p class="text-[11px] text-amber-700 leading-snug">
-          {{ status?.reason || 'Token Instagram Graph API absent ou invalide.' }}
+          {{ status?.reason || tHub('hub.ui.editor_instagram_editor.api_key_missing', 'Token Instagram Graph API absent ou invalide.') }}
         </p>
         <p class="text-[10px] text-amber-600 mt-1.5 leading-snug">
-          Générer via <code class="font-mono">./scripts/instagram-token-setup.sh</code> puis coller dans <code class="font-mono">.env</code> du VPS tenant.
+          {{ tHub('hub.ui.editor_instagram_editor.gen_via', 'Générer via') }} <code class="font-mono">./scripts/instagram-token-setup.sh</code> {{ tHub('hub.ui.editor_instagram_editor.paste_in', 'puis coller dans') }} <code class="font-mono">.env</code> {{ tHub('hub.ui.editor_instagram_editor.tenant_vps', 'du VPS tenant.') }}
         </p>
       </div>
 
@@ -54,7 +54,7 @@
             <p class="text-xs font-semibold text-emerald-800 truncate">
               @{{ status.username }}
             </p>
-            <p class="text-[10px] text-emerald-600 truncate">ID: {{ status.userId }}</p>
+            <p class="text-[10px] text-emerald-600 truncate">{{ tHub('hub.ui.editor_instagram_editor.id_label', 'ID: {id}', { id: status.userId }) }}</p>
           </div>
         </div>
 
@@ -64,33 +64,32 @@
           :class="expiryClass"
         >
           <p class="font-semibold">
-            <template v-if="status.daysRemaining! > 7">Token valide</template>
-            <template v-else-if="status.daysRemaining! > 0">⚠️ Rotation imminente</template>
-            <template v-else>❌ Token expiré</template>
+            <template v-if="status.daysRemaining! > 7">{{ tHub('hub.ui.editor_instagram_editor.api_key_valid', 'Token valide') }}</template>
+            <template v-else-if="status.daysRemaining! > 0">{{ tHub('hub.ui.editor_instagram_editor.rotation_soon', '⚠️ Rotation imminente') }}</template>
+            <template v-else>{{ tHub('hub.ui.editor_instagram_editor.api_key_expired', '❌ Token expiré') }}</template>
           </p>
           <p>
-            Expire le <strong>{{ expiryFormatted }}</strong>
+            {{ tHub('hub.ui.editor_instagram_editor.expires_on', 'Expire le') }} <strong>{{ expiryFormatted }}</strong>
             <span v-if="status.daysRemaining !== null">
-              ({{ status.daysRemaining > 0 ? `${status.daysRemaining}j restants` : 'expiré' }})
+              ({{ status.daysRemaining > 0 ? tHub('hub.ui.editor_instagram_editor.days_left', '{n}j restants', { n: status.daysRemaining }) : tHub('hub.ui.editor_instagram_editor.expired', 'expiré') }})
             </span>
           </p>
           <p v-if="status.daysRemaining! <= 7" class="mt-1 opacity-80">
-            Re-générer via <code class="font-mono">./scripts/instagram-token-setup.sh</code>
+            {{ tHub('hub.ui.editor_instagram_editor.regen_via', 'Re-générer via') }} <code class="font-mono">./scripts/instagram-token-setup.sh</code>
           </p>
         </div>
 
         <div v-else class="rounded-lg bg-gray-50 border border-gray-200 p-2.5 text-[11px] text-gray-600 leading-snug">
-          Expiration inconnue (creds APP_ID/APP_SECRET absents côté Nuxt).
+          {{ tHub('hub.ui.editor_instagram_editor.expiry_unknown', 'Expiration inconnue (creds APP_ID/APP_SECRET absents côté Nuxt).') }}
         </div>
       </div>
     </fieldset>
 
     
     <fieldset class="border border-gray-200 rounded-xl p-3 space-y-2">
-      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">Cache feed</legend>
+      <legend class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{{ tHub('hub.ui.editor_instagram_editor.cache_legend', 'Cache feed') }}</legend>
       <p class="text-[11px] text-gray-500 leading-snug">
-        Le feed est mis en cache 1&nbsp;h. Lance une re-sync manuelle si tu viens de
-        publier un post et veux qu'il apparaisse tout de suite.
+        {{ tHub('hub.ui.editor_instagram_editor.cache_help', 'Le feed est mis en cache 1 h. Lance une re-sync manuelle si tu viens de publier un post et veux qu\'il apparaisse tout de suite.') }}
       </p>
       <button
         type="button"
@@ -108,7 +107,7 @@
         <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
         </svg>
-        {{ resyncLoading ? 'Re-sync en cours…' : 'Re-sync depuis Instagram' }}
+        {{ resyncLoading ? tHub('hub.ui.editor_instagram_editor.resync_running', 'Re-sync en cours…') : tHub('hub.ui.editor_instagram_editor.resync_btn', 'Re-sync depuis Instagram') }}
       </button>
 
       <div
@@ -117,10 +116,10 @@
         :class="resyncResult.ok ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'"
       >
         <template v-if="resyncResult.ok">
-          ✓ {{ resyncResult.refetchedItems }} posts rafraîchis, cache purgé ({{ resyncResult.purgedKeys }} entrées).
+          {{ tHub('hub.ui.editor_instagram_editor.resync_ok', '✓ {items} posts rafraîchis, cache purgé ({keys} entrées).', { items: resyncResult.refetchedItems, keys: resyncResult.purgedKeys }) }}
         </template>
         <template v-else>
-          ✗ Re-sync échouée.
+          {{ tHub('hub.ui.editor_instagram_editor.resync_fail', '✗ Re-sync échouée.') }}
         </template>
       </div>
     </fieldset>
@@ -143,6 +142,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ 'update:payload': [value: any] }>()
+const { t: tHub } = useHubT()
 
 const localPayload = computed(() => props.payload || {})
 

@@ -1,6 +1,7 @@
 
 
 import type { ResolvedPilier } from './tenant-piliers'
+import { invalidateCategoryTreeMemos } from './memo-ttl'
 
 export interface CategoryPathInfo {
   
@@ -8,6 +9,14 @@ export interface CategoryPathInfo {
   
 
   pilier: string | null
+}
+
+const PATH_MAP_TTL = 60 * 1000
+const pathMapCache = new Map<string, { map: Map<number, CategoryPathInfo>; ts: number }>()
+
+export function invalidateCategoryPathCache(): void {
+  pathMapCache.clear()
+  invalidateCategoryTreeMemos()
 }
 
 export async function buildCategoryPathMap(
@@ -18,17 +27,34 @@ export async function buildCategoryPathMap(
 ): Promise<Map<number, CategoryPathInfo>> {
   if (!ids.length) return new Map()
 
-  const rows = await db.query<{ id_category: number; id_parent: number; link_rewrite: string }>(
-    `SELECT c.id_category, c.id_parent,
+  
+  
+  
+  const piliersKey = piliersConfig.map(p => `${p.idCategory}:${p.slug}`).join(',')
+  const cacheKey = `${db.clientId}:${idLang}:${piliersKey}`
+  const now = Date.now()
+  const hit = pathMapCache.get(cacheKey)
+  if (hit && now - hit.ts < PATH_MAP_TTL) {
+    return hit.map
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  const rows = await db.query<{ id_category: number; id_parent: number; active: number; link_rewrite: string }>(
+    `SELECT c.id_category, c.id_parent, c.active,
             COALESCE(cl.link_rewrite, clf.link_rewrite) AS link_rewrite
        FROM ps_category c
   LEFT JOIN ps_category_lang cl  ON cl.id_category  = c.id_category AND cl.id_lang = ? AND cl.id_shop = 1
-  LEFT JOIN ps_category_lang clf ON clf.id_category = c.id_category AND clf.id_lang = 1 AND clf.id_shop = 1
-      WHERE c.active = 1`,
+  LEFT JOIN ps_category_lang clf ON clf.id_category = c.id_category AND clf.id_lang = 1 AND clf.id_shop = 1`,
     [idLang],
   )
-  const byId = new Map<number, { id_parent: number; link_rewrite: string }>()
-  for (const r of rows) byId.set(r.id_category, { id_parent: r.id_parent, link_rewrite: r.link_rewrite })
+  const byId = new Map<number, { id_parent: number; link_rewrite: string; active: boolean }>()
+  for (const r of rows) byId.set(r.id_category, { id_parent: r.id_parent, link_rewrite: r.link_rewrite, active: Number(r.active) === 1 })
 
   const pilierById = new Map<number, ResolvedPilier>()
   for (const p of piliersConfig) pilierById.set(p.idCategory, p)
@@ -46,6 +72,10 @@ export async function buildCategoryPathMap(
 
     
     
+    
+    
+    
+    
     const chainLeafFirst: string[] = []
     let cursor: number | null = id
     const guard = new Set<number>()
@@ -55,14 +85,13 @@ export async function buildCategoryPathMap(
       if (pilierById.has(cursor)) { pilierMatch = pilierById.get(cursor)!; break }
       const row = byId.get(cursor)
       if (!row) break
-      chainLeafFirst.push(row.link_rewrite)
+      
+      
+      if (row.active && row.link_rewrite) chainLeafFirst.push(row.link_rewrite)
       cursor = row.id_parent
     }
     
-    
-    const segments = pilierMatch?.truncate
-      ? chainLeafFirst.slice(0, pilierMatch.truncate).reverse()
-      : chainLeafFirst.slice().reverse()
+    const segments = chainLeafFirst.slice().reverse()
     const info: CategoryPathInfo = {
       path: segments.join('/'),
       pilier: pilierMatch?.slug ?? null,
@@ -71,8 +100,13 @@ export async function buildCategoryPathMap(
     return info
   }
 
+  
+  
+  
+  
   const out = new Map<number, CategoryPathInfo>()
-  for (const id of ids) out.set(id, resolve(id))
+  for (const id of byId.keys()) out.set(id, resolve(id))
+  pathMapCache.set(cacheKey, { map: out, ts: now })
   return out
 }
 

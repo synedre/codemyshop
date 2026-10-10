@@ -2,7 +2,10 @@
 
 import { getPlaybookBySlug } from '~/modules/playbook/server/utils/playbook'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const slug = getRouterParam(event, 'slug')
   if (!slug) throw createError({ statusCode: 400, message: 'Slug requis' })
 

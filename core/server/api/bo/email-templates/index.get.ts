@@ -2,9 +2,11 @@
 
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const sql = getPgClient()
   const rows = await sql<any[]>`
     SELECT

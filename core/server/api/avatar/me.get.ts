@@ -1,6 +1,7 @@
 
 
 import type { VisitorAvatar } from '~/types/avatar'
+import { resolveClientId } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const config    = useRuntimeConfig()
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'No visitor profile found' })
   }
 
-  const clientId = config.aiClientId ?? 'ac-hub'
+  const clientId = String(config.aiClientId || resolveClientId())
   const storage  = useStorage('avatars')
   const key      = `${clientId}:${visitorId}`
 

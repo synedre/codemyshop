@@ -3,22 +3,19 @@
 import { useClientDb } from './db'
 import { verifySiret, isEmailFormat } from './siret-verify'
 import { randomBytes } from 'node:crypto'
+import { t, tFormat } from './i18n'
+import {
+  type ChatNode, type ChatTree,
+  DEFAULT_SCENARIO, productEntryKeys, resolveCurrentNode, resolveProductScenario, startKeyFor,
+} from './chatbot-tree'
 
 interface Ctx { event: any }
 
-export interface ChatNode {
-  nodeKey:       string
-  type:          'buttons' | 'text'
-  capture?:      string
-  nextQuestion?: string
-  terminal:      boolean
-  scenarioRoot?: string
-  question:      string
-  recapLabel?:   string
-  options?:      Array<{ label: string; nextKey: string; position: number }>
+export class ChatbotError extends Error {
+  constructor(public code: string, message: string, public statusCode = 400) {
+    super(message)
+  }
 }
-
-export type ChatTree = Record<string, ChatNode>
 
 export interface BotMessageDTO {
   conversationId:    number
@@ -41,14 +38,16 @@ function genToken(): string {
 }
 
 interface CachedTree { tree: ChatTree; loadedAt: number }
-const TREE_CACHE = new WeakMap<object, CachedTree>()
+
+const TREE_CACHE = new WeakMap<object, Map<number, CachedTree>>()
 
 const TREE_TTL_MS = 60 * 1000
 
 async function loadTree(db: any, idLang = 1): Promise<ChatTree> {
-  const cached = TREE_CACHE.get(db)
+  const cached = TREE_CACHE.get(db)?.get(idLang)
   if (cached && Date.now() - cached.loadedAt < TREE_TTL_MS) return cached.tree
 
+  
   
   const nodes = await db.query<any>(
     `SELECT n.id_node, n.node_key, n.type, n.capture, n.next_question,
@@ -56,8 +55,11 @@ async function loadTree(db: any, idLang = 1): Promise<ChatTree> {
             COALESCE(nl.question, '')   AS question,
             COALESCE(nl.recap_label,'') AS recap_label
        FROM cs_main.cs_chatbot_node n
-  LEFT JOIN cs_main.cs_chatbot_node_lang nl
-         ON nl.id_node = n.id_node AND nl.id_lang = ?
+  LEFT JOIN LATERAL (
+            SELECT question, recap_label FROM cs_main.cs_chatbot_node_lang
+             WHERE id_node = n.id_node
+             ORDER BY (id_lang = ?) DESC, id_lang ASC LIMIT 1
+          ) nl ON TRUE
       ORDER BY n.position ASC, n.id_node ASC`,
     [idLang],
   )
@@ -66,8 +68,11 @@ async function loadTree(db: any, idLang = 1): Promise<ChatTree> {
     `SELECT o.id_option, o.id_node, o.position, o.next_node_key,
             COALESCE(ol.label_text, '') AS label_text
        FROM cs_main.cs_chatbot_option o
-  LEFT JOIN cs_main.cs_chatbot_option_lang ol
-         ON ol.id_option = o.id_option AND ol.id_lang = ?
+  LEFT JOIN LATERAL (
+            SELECT label_text FROM cs_main.cs_chatbot_option_lang
+             WHERE id_option = o.id_option
+             ORDER BY (id_lang = ?) DESC, id_lang ASC LIMIT 1
+          ) ol ON TRUE
       ORDER BY o.id_node ASC, o.position ASC`,
     [idLang],
   )
@@ -96,8 +101,28 @@ async function loadTree(db: any, idLang = 1): Promise<ChatTree> {
       options:       optsByNode.get(idNode),
     }
   }
-  TREE_CACHE.set(db, { tree, loadedAt: Date.now() })
+  if (!TREE_CACHE.has(db)) TREE_CACHE.set(db, new Map())
+  TREE_CACHE.get(db)!.set(idLang, { tree, loadedAt: Date.now() })
   return tree
+}
+
+export function toChatbotHttpError(err: any, where: string) {
+  const known = err instanceof ChatbotError
+  console.error(`[chatbot/${where}]`, known ? err.code : 'CHATBOT_INTERNAL', err?.message)
+  return createError({
+    statusCode: known ? err.statusCode : 500,
+    statusMessage: known ? err.code : 'CHATBOT_INTERNAL',
+    data: { code: known ? err.code : 'CHATBOT_INTERNAL' },
+  })
+}
+
+export async function currentStepFor(
+  ctx: Ctx, currentKey: string, scenario: string, idLang = 1,
+): Promise<{ type: 'buttons' | 'text', options: string[] }> {
+  const tree = await loadTree(useClientDb(ctx.event), idLang)
+  const r = resolveCurrentNode(tree, currentKey, scenario || DEFAULT_SCENARIO)
+  if (!r) return { type: 'text', options: [] }
+  return { type: r.node.type, options: (r.node.options || []).map((o) => o.label) }
 }
 
 export function invalidateChatbotTreeCache(db: any) { TREE_CACHE.delete(db) }
@@ -129,21 +154,38 @@ export async function persistAnswer(
   return idAnswer
 }
 
-const SCENARIO_ROOTS = ['global', 'product', 'order', 'human'] as const
-function pickRoot(input?: string): string {
-  if (input && (SCENARIO_ROOTS as readonly string[]).includes(input)) return input
-  return 'global'
+function pickRoot(tree: ChatTree, input?: string): string {
+  if (input && Object.values(tree).some((n) => n.scenarioRoot === input)) return input
+  return DEFAULT_SCENARIO
 }
 
 function rootStartKey(tree: ChatTree, scenario: string): string {
-  for (const k of Object.keys(tree)) {
-    if (tree[k].scenarioRoot === scenario) return k
-  }
-  if (tree['global']) return 'global'
-  
-  const firstKey = Object.keys(tree)[0]
-  if (!firstKey) throw new Error('[chatbot-engine] arbre vide en DB — seed manquant ?')
-  return firstKey
+  const key = startKeyFor(tree, scenario)
+  if (!key) throw new ChatbotError('CHATBOT_TREE_EMPTY', '[chatbot-engine] arbre vide en DB — seed manquant ?', 503)
+  return key
+}
+
+async function presetProductQty(
+  idConversation: number, idProduct: number, qty: number, qtyNode: ChatNode, idLang: number, ctx: Ctx,
+): Promise<void> {
+  const db = useClientDb(ctx.event)
+  const qtyStr = String(qty)
+  await upsertProductCol(idConversation, idProduct, 'qty', qtyStr, ctx)
+  const bubble = tFormat(await t('chatbot.chatbot_user_qty_msg', idLang, 'Qté visée : {qty}'), { qty: qtyStr })
+  await db.query(
+    `INSERT INTO cs_main.cs_chatbot_message
+       (id_conversation, role, content, type, date_add)
+     VALUES (?, 'user', ?, 'text', NOW())`,
+    [idConversation, bubble],
+  )
+  await persistAnswer(db, idConversation, qtyNode.nodeKey, qtyNode.question, qtyNode.recapLabel || null, qtyStr, idLang)
+}
+
+async function sendNode(idConversation: number, token: string, node: ChatNode, ctx: Ctx, idLang: number): Promise<BotMessageDTO> {
+  const q = await renderQuestionPlaceholders(idConversation, node.question, ctx, idLang)
+  const rendered: ChatNode = q === node.question ? node : { ...node, question: q }
+  await persistBotMessage(idConversation, rendered, ctx)
+  return toBotDTO(idConversation, token, rendered)
 }
 
 export interface StartOpts {
@@ -161,18 +203,15 @@ export async function startConversation(opts: StartOpts, ctx: Ctx): Promise<BotM
   const db = useClientDb(ctx.event)
   const idLang = opts.idLang || 1
   const tree = await loadTree(db, idLang)
-  const root = pickRoot(opts.scenario)
+  const root = pickRoot(tree, opts.scenario)
   let startKey = rootStartKey(tree, root)
   
   
-  const skipQty = root === 'product'
-    && Number(opts.initialQty || 0) > 1
-    && tree['product_q2_freq']
-    && tree['product_q1_qty']
-  if (skipQty) startKey = 'product_q2_freq'
+  const entry = productEntryKeys(tree, root)
+  const skipQty = Boolean(opts.productId && entry?.afterQtyKey && Number(opts.initialQty || 0) > 1)
+  if (skipQty && entry?.afterQtyKey) startKey = entry.afterQtyKey
 
   const node = tree[startKey]
-  if (!node) throw new Error(`[chatbot-engine] start node "${startKey}" introuvable`)
 
   const token = genToken()
 
@@ -201,29 +240,65 @@ export async function startConversation(opts: StartOpts, ctx: Ctx): Promise<BotM
   
   
   
-  if (skipQty && opts.productId) {
-    const qtyStr = String(opts.initialQty)
-    await upsertProductCol(idConversation, opts.productId, 'qty', qtyStr, ctx)
-    await db.query(
-      `INSERT INTO cs_main.cs_chatbot_message
-         (id_conversation, role, content, type, date_add)
-       VALUES (?, 'user', ?, 'text', NOW())`,
-      [idConversation, `Qté visée : ${qtyStr}`],
-    )
-    const qtyNode = tree['product_q1_qty']
-    await persistAnswer(
-      db, idConversation, 'product_q1_qty',
-      qtyNode?.question || '',
-      qtyNode?.recapLabel || null,
-      qtyStr, idLang,
-    )
+  if (skipQty && opts.productId && entry) {
+    await presetProductQty(idConversation, opts.productId, Number(opts.initialQty), tree[entry.qtyKey], idLang, ctx)
+  }
+
+  return sendNode(idConversation, token, node, ctx, idLang)
+}
+
+export interface AddProductOpts {
+  conversationId:    number
+  conversationToken: string
+  productId:         number
+  initialQty?:       number | null
+  
+  isCustomer:        boolean
+  idLang?:           number
+}
+
+export async function addProductToConversation(opts: AddProductOpts, ctx: Ctx): Promise<BotMessageDTO> {
+  const db = useClientDb(ctx.event)
+  const idLang = opts.idLang || 1
+  const conv = await db.get<any>(
+    `SELECT id_conversation, status, conversation_token, scenario_root, human_takeover
+       FROM cs_main.cs_chatbot_conversation
+      WHERE id_conversation = ? LIMIT 1`,
+    [opts.conversationId],
+  )
+  if (!conv) throw new ChatbotError('CHATBOT_CONVERSATION_NOT_FOUND', 'Conversation introuvable', 404)
+  if (String(conv.conversation_token) !== opts.conversationToken) {
+    throw new ChatbotError('CHATBOT_INVALID_TOKEN', 'Token invalide', 403)
+  }
+  if (conv.status === 'closed') throw new ChatbotError('CHATBOT_CONVERSATION_CLOSED', 'Conversation déjà clôturée')
+
+  const tree = await loadTree(db, idLang)
+  let scenario = String(conv.scenario_root || DEFAULT_SCENARIO)
+  let entry = productEntryKeys(tree, scenario)
+  if (!entry) {
+    scenario = resolveProductScenario(opts.isCustomer)
+    entry = productEntryKeys(tree, scenario)
+  }
+  if (!entry) {
+    throw new ChatbotError('CHATBOT_TREE_INCOMPLETE', `[chatbot-engine] aucun tunnel produit avec une étape quantité (scénario "${scenario}")`, 503)
   }
 
   
-  const renderedQuestion = await renderQuestionPlaceholders(idConversation, node.question, ctx, idLang)
-  const renderedNode: ChatNode = renderedQuestion === node.question ? node : { ...node, question: renderedQuestion }
-  await persistBotMessage(idConversation, renderedNode, ctx)
-  return toBotDTO(idConversation, token, renderedNode)
+  
+  scenario = tree[entry.qtyKey]?.scenarioRoot ?? scenario
+
+  const skipQty = Boolean(entry.afterQtyKey && Number(opts.initialQty || 0) > 1)
+  const startKey = skipQty && entry.afterQtyKey ? entry.afterQtyKey : entry.qtyKey
+  await db.run(
+    `UPDATE cs_main.cs_chatbot_conversation
+        SET product_id_context = ?, current_node_key = ?, scenario_root = ?, date_upd = NOW()
+      WHERE id_conversation = ?`,
+    [opts.productId, startKey, scenario, opts.conversationId],
+  )
+  if (skipQty) {
+    await presetProductQty(opts.conversationId, opts.productId, Number(opts.initialQty), tree[entry.qtyKey], idLang, ctx)
+  }
+  return sendNode(opts.conversationId, opts.conversationToken, tree[startKey], ctx, idLang)
 }
 
 export interface ReplyOpts {
@@ -235,17 +310,18 @@ export interface ReplyOpts {
 
 export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotMessageDTO> {
   const db = useClientDb(ctx.event)
-  let tree = await loadTree(db, opts.idLang || 1)
+  const idLang = opts.idLang || 1
+  let tree = await loadTree(db, idLang)
 
   const conv = await db.get<any>(
-    `SELECT id_conversation, conversation_token, current_node_key, status, human_takeover
+    `SELECT id_conversation, conversation_token, current_node_key, scenario_root, status, human_takeover
        FROM cs_main.cs_chatbot_conversation
       WHERE id_conversation = ? LIMIT 1`,
     [opts.conversationId],
   )
-  if (!conv) throw new Error('Conversation introuvable')
-  if (String(conv.conversation_token) !== opts.conversationToken) throw new Error('Token invalide')
-  if (conv.status === 'closed') throw new Error('Conversation déjà clôturée')
+  if (!conv) throw new ChatbotError('CHATBOT_CONVERSATION_NOT_FOUND', 'Conversation introuvable', 404)
+  if (String(conv.conversation_token) !== opts.conversationToken) throw new ChatbotError('CHATBOT_INVALID_TOKEN', 'Token invalide', 403)
+  if (conv.status === 'closed') throw new ChatbotError('CHATBOT_CONVERSATION_CLOSED', 'Conversation déjà clôturée')
 
   
   
@@ -254,7 +330,7 @@ export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotM
   
   if (conv.human_takeover) {
     const userMessageTk = (opts.message || '').trim().slice(0, 2000)
-    if (!userMessageTk) throw new Error('Message vide')
+    if (!userMessageTk) throw new ChatbotError('CHATBOT_EMPTY_MESSAGE', 'Message vide')
     await db.query(
       `INSERT INTO cs_main.cs_chatbot_message
          (id_conversation, role, content, type, date_add)
@@ -278,12 +354,37 @@ export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotM
     }
   }
 
-  const currentKey = String(conv.current_node_key || '')
-  const currentNode = tree[currentKey]
-  if (!currentNode) throw new Error(`Node courant "${currentKey}" introuvable`)
-
   const userMessage = (opts.message || '').trim().slice(0, 2000)
-  if (!userMessage) throw new Error('Message vide')
+  if (!userMessage) throw new ChatbotError('CHATBOT_EMPTY_MESSAGE', 'Message vide')
+
+  
+  
+  
+  const scenario = String(conv.scenario_root || DEFAULT_SCENARIO)
+  const resolved = resolveCurrentNode(tree, String(conv.current_node_key || ''), scenario)
+  if (!resolved) throw new ChatbotError('CHATBOT_TREE_EMPTY', '[chatbot-engine] arbre vide en DB — seed manquant ?', 503)
+  if (resolved.recovered) {
+    console.warn('[chatbot-engine] étape courante absente, reprise à la racine', {
+      idConversation: opts.conversationId, lost: conv.current_node_key, resumeAt: resolved.key,
+    })
+    await db.query(
+      `INSERT INTO cs_main.cs_chatbot_message
+         (id_conversation, role, content, type, date_add)
+       VALUES (?, 'user', ?, 'text', NOW())`,
+      [opts.conversationId, userMessage],
+    )
+    await db.run(
+      `UPDATE cs_main.cs_chatbot_conversation
+          SET current_node_key = ?, unread_for_admin = TRUE, last_message_at = NOW(), date_upd = NOW()
+        WHERE id_conversation = ?`,
+      [resolved.key, opts.conversationId],
+    )
+    const intro = await t('chatbot.chatbot_resume_msg', idLang, 'Reprenons depuis le début :')
+    return sendNode(opts.conversationId, opts.conversationToken,
+      { ...resolved.node, question: `${intro}|NL||NL|${resolved.node.question}` }, ctx, idLang)
+  }
+  const currentKey = resolved.key
+  const currentNode = resolved.node
 
   
   
@@ -308,7 +409,7 @@ export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotM
     currentNode.question,
     currentNode.recapLabel || null,
     userMessage,
-    opts.idLang || 1,
+    idLang,
   )
 
   
@@ -357,7 +458,8 @@ export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotM
       return node.options[0]?.nextKey || null
     }
     if (node.nextQuestion) return node.nextQuestion
-    return currentTree['human_q1_subject'] ? 'human_q1_subject' : Object.keys(currentTree)[0] || null
+    
+    return startKeyFor(currentTree, scenario)
   }
 
   
@@ -367,7 +469,7 @@ export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotM
   let nextNode: ChatNode | undefined = nextKey ? tree[nextKey] : undefined
   if (!nextNode) {
     invalidateChatbotTreeCache(db)
-    tree = await loadTree(db, opts.idLang || 1)
+    tree = await loadTree(db, idLang)
     const refreshedCurrent = tree[currentKey]
     nextKey = deriveFromNode(refreshedCurrent, tree)
     nextNode = nextKey ? tree[nextKey] : undefined
@@ -386,7 +488,13 @@ export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotM
   }
 
   if (!nextNode || !nextKey) {
-    throw new Error(`[chatbot-engine] next node "${nextKey}" introuvable même après reload`)
+    
+    
+    console.warn('[chatbot-engine] étape suivante absente, retour à la racine', {
+      idConversation: opts.conversationId, from: currentKey, missing: nextKey,
+    })
+    nextKey = rootStartKey(tree, scenario)
+    nextNode = tree[nextKey]
   }
   await db.run(
     `UPDATE cs_main.cs_chatbot_conversation
@@ -401,7 +509,7 @@ export async function replyConversation(opts: ReplyOpts, ctx: Ctx): Promise<BotM
   if (nextKey === 'review') {
     renderedNode = await renderReviewNode(opts.conversationId, nextNode, ctx)
   } else {
-    const q = await renderQuestionPlaceholders(opts.conversationId, nextNode.question, ctx, opts.idLang || 1)
+    const q = await renderQuestionPlaceholders(opts.conversationId, nextNode.question, ctx, idLang)
     renderedNode = q === nextNode.question ? nextNode : { ...nextNode, question: q }
   }
   await persistBotMessage(opts.conversationId, renderedNode, ctx)
@@ -747,27 +855,33 @@ async function finalizeAsLead(idConversation: number, ctx: Ctx): Promise<void> {
   
   
   
-  if (!email || !isEmailFormat(email) || siret.replace(/\D/g, '').length !== 14) {
+  
+  const hasEmail = email && isEmailFormat(email)
+  const hasPhone = phone && phone.replace(/\D/g, '').length >= 8
+  if (!hasEmail && !hasPhone) {
     await db.run(
       `UPDATE cs_main.cs_chatbot_conversation
           SET status='closed', date_upd=NOW()
         WHERE id_conversation = ?`,
       [idConversation],
     )
-    console.warn('[chatbot-engine] finalize skipped — email ou siret manquant/invalide', { email, siret })
+    console.warn('[chatbot-engine] finalize skipped — ni email ni téléphone valide', { email, phone })
     return
   }
 
   
   
   const productRows = await db.query<any>(
-    `SELECT id_product, qty, freq, target_price
-       FROM cs_main.cs_chatbot_conversation_product
-      WHERE id_conversation = ? ORDER BY id_link ASC`,
+    `SELECT cp.id_product, cp.qty, cp.freq, cp.target_price,
+            COALESCE(pl.name, 'Produit #' || cp.id_product::text) AS product_name
+       FROM cs_main.cs_chatbot_conversation_product cp
+       LEFT JOIN cs_main.ps_product_lang pl
+         ON pl.id_product = cp.id_product AND pl.id_lang = 1
+      WHERE cp.id_conversation = ? ORDER BY cp.id_link ASC`,
     [idConversation],
   ) as any[]
   const productLines = productRows.map((p) => {
-    const parts = [`Produit #${p.id_product}`]
+    const parts = [String(p.product_name || `Produit #${p.id_product}`)]
     if (p.qty)          parts.push(`qté ${p.qty}`)
     if (p.freq)         parts.push(`fréquence ${p.freq}`)
     if (p.target_price) parts.push(`prix cible ${p.target_price}`)
@@ -795,17 +909,22 @@ async function finalizeAsLead(idConversation: number, ctx: Ctx): Promise<void> {
     answerLines.length > 0 ? `\n📋 Qualif :\n${answerLines.join('\n')}` : '',
   ].filter(Boolean).join('\n')
 
-  const noteParts = [`Chatbot — tunnel "${scenario}". SIRET ${siret}.`]
+  const noteParts = [`Chatbot — tunnel "${scenario}".`]
+  if (siret) noteParts.push(`SIRET ${siret}.`)
   if (conv.product_id_context) noteParts.push(`Produit id=${conv.product_id_context}.`)
   noteParts.push(`Conversation #${idConversation}.`)
   const note = noteParts.join(' ')
 
   
+  
+  
   let idSmartlead = 0
-  const existing = await db.get<any>(
-    `SELECT id_ac_smartlead FROM cs_main.cs_smartlead WHERE email = ? LIMIT 1`,
-    [email],
-  )
+  const existing = hasEmail
+    ? await db.get<any>(
+        `SELECT id_ac_smartlead FROM cs_main.cs_smartlead WHERE email = ? LIMIT 1`,
+        [email],
+      )
+    : null
   if (existing?.id_ac_smartlead) {
     idSmartlead = Number(existing.id_ac_smartlead)
     await db.run(
@@ -828,7 +947,10 @@ async function finalizeAsLead(idConversation: number, ctx: Ctx): Promise<void> {
   
   
   
-  const projectTitle = makeProjectTitle(scenario, company, conv.product_id_context)
+  const firstProductName = productRows.length > 0
+    ? String(productRows[0].product_name || '')
+    : null
+  const projectTitle = makeProjectTitle(scenario, company, conv.product_id_context, firstProductName)
   let idSmartproject = 0
   try {
     const r = await db.get<any>(
@@ -851,11 +973,47 @@ async function finalizeAsLead(idConversation: number, ctx: Ctx): Promise<void> {
     [idSmartlead || null, idConversation],
   )
   console.log('[chatbot-engine] finalize OK', { idConversation, idSmartlead, idSmartproject })
+
+  
+  
+  
+  
+  if (hasEmail) {
+    try {
+      const { syncLead } = await import('~/enterprise/data/sf-connector/server/utils/salesforce-sync')
+      const { enqueueSfOutbox } = await import('~/enterprise/data/sf-connector/server/utils/salesforce-outbox')
+      const sfInput = {
+        firstName:  firstname || 'Inconnu',
+        lastName:   lastname || '-',
+        email,
+        company:    company || `${firstname} ${lastname}`.trim() || 'Inconnu',
+        siret:      /^\d{14}$/.test(siret) ? siret : undefined,
+        phone:      phone || undefined,
+        description: `Chatbot — scénario "${scenario}". Conversation #${idConversation}.`,
+        leadSource: 'Chat',
+        mode:       'realtime' as const,
+      }
+      const sfResult = await syncLead(sfInput)
+      if (sfResult.status === 'failed') {
+        await enqueueSfOutbox(sfInput)
+        console.warn(`[chatbot-engine:sf] sync failed (enqueued) — ${sfResult.errorMessage}`)
+      } else if (sfResult.status !== 'disabled') {
+        console.log(`[chatbot-engine:sf] SF sync ${sfResult.status} sfId=${('sfId' in sfResult ? sfResult.sfId : '') ?? ''} (${sfResult.durationMs}ms)`)
+      }
+    } catch (sfErr: any) {
+      if (!sfErr?.message?.includes('Cannot find module') && !sfErr?.message?.includes('Failed to resolve')) {
+        console.warn('[chatbot-engine:sf] SF sync error:', sfErr?.message)
+      }
+    }
+  }
 }
 
-function makeProjectTitle(scenario: string, company: string, productId?: number | null): string {
+function makeProjectTitle(scenario: string, company: string, productId?: number | null, productName?: string | null): string {
   const co = company || 'prospect'
-  if (scenario === 'product') return `Demande produit — ${co}` + (productId ? ` (id ${productId})` : '')
+  if (scenario === 'product') {
+    const productLabel = productName || (productId ? `Produit #${productId}` : '')
+    return `Demande produit — ${co}` + (productLabel ? ` — ${productLabel}` : '')
+  }
   if (scenario === 'b2b' || scenario === 'global') return `Nouveau client B2B — ${co}`
   if (scenario === 'order') return `SAV commande — ${co}`
   if (scenario === 'human') return `Contact direct — ${co}`

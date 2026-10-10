@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const { id_category } = getQuery(event)
   const idCat = Number(id_category)
   if (!idCat || idCat < 1) {

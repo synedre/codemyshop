@@ -3,7 +3,7 @@
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
-      <NuxtLink to="/favoris" class="text-sm text-primary-600 hover:underline mb-4 inline-flex items-center gap-1">
+      <NuxtLink :to="localePath('/favoris')" class="text-sm text-primary-600 hover:underline mb-4 inline-flex items-center gap-1">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
         </svg>
@@ -35,14 +35,14 @@
 
       <div v-else-if="!list" class="bg-white rounded-2xl border border-gray-200 p-10 text-center">
         <p class="text-gray-600 mb-4">{{ t('favoris.favoris_not_found', 'Liste introuvable.') }}</p>
-        <NuxtLink to="/favoris" class="inline-flex px-5 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold">
+        <NuxtLink :to="localePath('/favoris')" class="inline-flex px-5 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold">
           {{ t('favoris.favoris_back_button', 'Retour à mes favoris') }}
         </NuxtLink>
       </div>
 
       <div v-else-if="!items.length" class="bg-white rounded-2xl border border-gray-200 p-10 text-center">
         <p class="text-gray-600">{{ t('favoris.favoris_empty_list', 'Cette liste est vide.') }}</p>
-        <NuxtLink to="/catalogue" class="inline-flex mt-4 px-5 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold">
+        <NuxtLink to="/" class="inline-flex mt-4 px-5 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold">
           {{ t('favoris.favoris_browse_catalog', 'Parcourir le catalogue') }}
         </NuxtLink>
       </div>
@@ -53,7 +53,8 @@
           :key="item.id_wishlist_product"
           class="bg-white rounded-2xl border border-gray-200 p-4 flex items-center gap-4 hover:border-primary-300 transition-colors"
         >
-          <NuxtLink :to="`/produit/${item.id_product}`" class="shrink-0">
+          
+          <NuxtLink :to="item.url || `/produit/${item.id_product}`" class="shrink-0">
             <div class="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center">
               <img
                 v-if="item.id_image"
@@ -69,7 +70,7 @@
           </NuxtLink>
 
           <div class="min-w-0 flex-1">
-            <NuxtLink :to="`/produit/${item.id_product}`" class="text-sm font-semibold text-gray-900 hover:text-primary-600 line-clamp-2">
+            <NuxtLink :to="item.url || `/produit/${item.id_product}`" class="text-sm font-semibold text-gray-900 hover:text-primary-600 line-clamp-2">
               {{ item.product_name }}
             </NuxtLink>
             <p class="text-xs text-gray-500 mt-1">
@@ -153,6 +154,7 @@ const list = computed(() => lists.value.find(l => l.id_wishlist === id.value) ||
 
 useHead(() => ({ title: list.value ? list.value.name : 'Ma liste' }))
 definePageMeta({ layout: 'default' })
+const { localePath } = useLocalePath()
 
 const showEmail = ref(false)
 const emailTo = ref('')
@@ -183,6 +185,8 @@ async function refreshItems() {
 }
 
 function productImage(item: WishlistItem): string {
+  
+  if ((item as any).cover_url) return (item as any).cover_url
   if (!item.id_image) return ''
   const slug = item.link_rewrite || 'product'
   return `/${item.id_image}-home_default/${encodeURIComponent(slug)}.jpg`

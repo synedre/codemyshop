@@ -1,10 +1,13 @@
 
 <script setup lang="ts">
-const { resolvedClientId } = useClientDetection()
 const { t: i18nt } = useI18nField()
 
-const DB_PREFOOTER_TENANTS = ['example-shop']
-const isDbPrefooter = computed(() => DB_PREFOOTER_TENANTS.includes(resolvedClientId.value))
+const { t } = useT()
+
+const _pubDbFlags = useRuntimeConfig().public
+const isDbPrefooter = computed(() => resolveDbContentFlags(_pubDbFlags as any).dbPrefooterSections)
+
+const hidePrefooterZone = computed(() => resolveDbContentFlags(_pubDbFlags as any).hidePrefooterFallback)
 
 const { activeLang: pfLang } = useRouteLang()
 const { data: pfData } = await useFetch<{ sections: any[] }>('/api/prefooter-sections', {
@@ -32,10 +35,13 @@ function resolveI18n(value: any, fallback: string = ''): string {
   if (!value) return fallback
   if (typeof value === 'object') return i18nt(value) || fallback
   if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value)
-      if (typeof parsed === 'object' && parsed !== null) return i18nt(parsed) || fallback
-    } catch {  }
+    const trimmed = value.trimStart()
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(value)
+        if (typeof parsed === 'object' && parsed !== null) return i18nt(parsed) || fallback
+      } catch {  }
+    }
     return value || fallback
   }
   return fallback
@@ -48,7 +54,7 @@ function findPf(type: string): any {
 const reviewsSection = computed(() => {
   const s = findPf('customer-reviews')
   return s ? {
-    title: resolveI18n(s.title, 'Nos clients parlent de nous'),
+    title: resolveI18n(s.title, t('reviews.heading', 'Nos clients parlent de nous')),
     limit: s.limitItems ?? 6,
   } : null
 })
@@ -56,16 +62,20 @@ const reviewsSection = computed(() => {
 
 <template>
   
-  <template v-if="useDbMode">
-    <template v-for="section in pfSections" :key="section.id">
-      <LazyCustomerReviews
-        v-if="section.type === 'customer-reviews'"
-        :title="reviewsSection?.title ?? 'Nos clients parlent de nous'"
-        :limit="reviewsSection?.limit ?? 6"
-      />
+  <template v-if="!hidePrefooterZone">
+    
+    <template v-if="useDbMode">
+      <template v-for="section in pfSections" :key="section.id">
+        <LazyCustomerReviews
+          v-if="section.type === 'customer-reviews'"
+          :title="reviewsSection?.title ?? t('reviews.heading', 'Nos clients parlent de nous')"
+          :limit="reviewsSection?.limit ?? 6"
+          layout="slider"
+        />
+      </template>
     </template>
-  </template>
 
-  
-  <LazyCustomerReviews v-else title="Nos clients parlent de nous" />
+    
+    <LazyCustomerReviews v-else :title="t('reviews.heading', 'Nos clients parlent de nous')" />
+  </template>
 </template>

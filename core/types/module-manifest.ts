@@ -8,6 +8,7 @@ export type ModulePack =
   | 'data'              
   | 'seo'               
   | 'banking'           
+  | 'logistics'         
   | 'vertical-food'     
   | 'vertical-vape'
   | 'vertical-fashion'

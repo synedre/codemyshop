@@ -1,4 +1,5 @@
 
+import { resolveClientId } from './db'
 
 export interface ResolvedPilier {
   
@@ -26,7 +27,7 @@ export async function resolveTenantPiliers(
   idLang: number = 1,
 ): Promise<ResolvedPilier[]> {
   const cfg = useRuntimeConfig(event)
-  const clientId = String((cfg as any).clientId || cfg.public?.clientId || 'ac-hub')
+  const clientId = String((cfg as any).clientId || cfg.public?.clientId || resolveClientId(event))
   const cacheKey = `${clientId}:${idLang}`
 
   if (CACHE.has(cacheKey)) return CACHE.get(cacheKey)!

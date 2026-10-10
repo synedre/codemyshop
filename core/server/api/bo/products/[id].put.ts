@@ -1,8 +1,18 @@
 
 
 import { useClientDb } from '~/server/utils/db'
+import { invalidateCategoryPathCache } from '~/server/utils/category-path'
+import { snapshotEntityUrls, poseRedirectsForMovedUrls } from '~/server/utils/rename-redirect'
+
+import { requireEmployeeSession } from '~/server/utils/session'
+import { tenantHasUnitPricing } from '~/server/utils/tenant-vertical'
+import { upsertPriceDisplayMode } from '~/enterprise/vertical-food/product-food/server/utils/product-food'
+import { callAction } from '~/server/utils/hooks-bus'
+import { HOOKS_ACTION, type ActionProductSavedPayload } from '~/server/utils/hooks-catalog'
+import { slugForProductReactivation } from '~/server/utils/product-reactivation'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
 
@@ -14,31 +24,89 @@ export default defineEventHandler(async (event) => {
   const db = useClientDb(event)
   const productId = Number(id)
 
-  const exists = await db.get<any>(`SELECT id_product FROM ps_product WHERE id_product = ?`, [productId])
+  const exists = await db.get<{ id_product: number; active: number }>(
+    `SELECT id_product, active FROM ps_product WHERE id_product = ?`,
+    [productId],
+  )
   if (!exists) throw createError({ statusCode: 404, message: 'Produit introuvable' })
 
-  
-  const pf: string[] = []
-  const pp: any[] = []
-  if (body.priceHT !== undefined) { pf.push('price = ?'); pp.push(Number(body.priceHT)) }
-  if (body.wholesalePrice !== undefined) { pf.push('wholesale_price = ?'); pp.push(Number(body.wholesalePrice)) }
-  if (body.reference !== undefined) { pf.push('reference = ?'); pp.push(String(body.reference)) }
-  if (body.ean13 !== undefined) { pf.push('ean13 = ?'); pp.push(String(body.ean13)) }
-  if (body.active !== undefined) { pf.push('active = ?'); pp.push(body.active ? 1 : 0) }
-  if (body.categoryId !== undefined) { pf.push('id_category_default = ?'); pp.push(Number(body.categoryId)) }
-  if (body.weight !== undefined) { pf.push('weight = ?'); pp.push(Number(body.weight)) }
-  if (body.width !== undefined) { pf.push('width = ?'); pp.push(Number(body.width) || 0) }
-  if (body.height !== undefined) { pf.push('height = ?'); pp.push(Number(body.height) || 0) }
-  if (body.depth !== undefined) { pf.push('depth = ?'); pp.push(Number(body.depth) || 0) }
-  if (body.availableForOrder !== undefined) { pf.push('available_for_order = ?'); pp.push(body.availableForOrder ? 1 : 0) }
-  if (body.showPrice !== undefined) { pf.push('show_price = ?'); pp.push(body.showPrice ? 1 : 0) }
-  if (body.additionalShippingCost !== undefined) { pf.push('additional_shipping_cost = ?'); pp.push(Number(body.additionalShippingCost) || 0) }
-  if (body.taxRulesGroupId !== undefined) { pf.push('id_tax_rules_group = ?'); pp.push(Number(body.taxRulesGroupId) || 0) }
+  if (isMaster && body.active && !exists.active && body.linkRewrite === undefined) {
+    const masterLanguage = await db.get<{ name: string | null; link_rewrite: string | null }>(
+      `SELECT name, link_rewrite FROM ps_product_lang WHERE id_product = ? AND id_lang = 1 AND id_shop = 1 LIMIT 1`,
+      [productId],
+    )
+    const regeneratedSlug = slugForProductReactivation({
+      wasActive: false,
+      nextActive: true,
+      currentSlug: masterLanguage?.link_rewrite,
+      name: masterLanguage?.name,
+    })
+    if (regeneratedSlug)
+      body.linkRewrite = regeneratedSlug
+  }
 
-  if (isMaster && pf.length) {
-    pf.push('date_upd = NOW()')
-    await db.run(`UPDATE ps_product SET ${pf.join(', ')} WHERE id_product = ?`, [...pp, productId])
-    await db.run(`UPDATE ps_product_shop SET ${pf.join(', ')} WHERE id_product = ?`, [...pp, productId]).catch(() => {})
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const urlsMayMove = body.linkRewrite !== undefined
+    || body.categoryId !== undefined
+    || Array.isArray(body.categoryIds)
+  const urlsBefore = await snapshotEntityUrls(db, {
+    event, kind: 'product', ids: urlsMayMove ? [productId] : [],
+  })
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const shf: string[] = []   
+  const shp: any[] = []
+  const pof: string[] = []   
+  const pop: any[] = []
+
+  if (body.priceHT !== undefined) { shf.push('price = ?'); shp.push(Number(body.priceHT)) }
+  if (body.wholesalePrice !== undefined) { shf.push('wholesale_price = ?'); shp.push(Number(body.wholesalePrice)) }
+  if (body.active !== undefined) { shf.push('active = ?'); shp.push(body.active ? 1 : 0) }
+  if (body.categoryId !== undefined) { shf.push('id_category_default = ?'); shp.push(Number(body.categoryId)) }
+  if (body.availableForOrder !== undefined) { shf.push('available_for_order = ?'); shp.push(body.availableForOrder ? 1 : 0) }
+  if (body.showPrice !== undefined) { shf.push('show_price = ?'); shp.push(body.showPrice ? 1 : 0) }
+  if (body.additionalShippingCost !== undefined) { shf.push('additional_shipping_cost = ?'); shp.push(Number(body.additionalShippingCost) || 0) }
+  if (body.taxRulesGroupId !== undefined) { shf.push('id_tax_rules_group = ?'); shp.push(Number(body.taxRulesGroupId) || 0) }
+  if (body.unity !== undefined && tenantHasUnitPricing(event)) { shf.push('unity = ?'); shp.push(String(body.unity || '')) }
+  if (body.unitPriceRatio !== undefined && tenantHasUnitPricing(event)) { shf.push('unit_price_ratio = ?'); shp.push(Number(body.unitPriceRatio) || 0) }
+
+  if (body.reference !== undefined) { pof.push('reference = ?'); pop.push(String(body.reference)) }
+  if (body.ean13 !== undefined) { pof.push('ean13 = ?'); pop.push(String(body.ean13)) }
+  if (body.weight !== undefined) { pof.push('weight = ?'); pop.push(Number(body.weight)) }
+  if (body.width !== undefined) { pof.push('width = ?'); pop.push(Number(body.width) || 0) }
+  if (body.height !== undefined) { pof.push('height = ?'); pop.push(Number(body.height) || 0) }
+  if (body.depth !== undefined) { pof.push('depth = ?'); pop.push(Number(body.depth) || 0) }
+
+  if (isMaster && (shf.length || pof.length)) {
+    
+    const allF = [...shf, ...pof, 'date_upd = NOW()']
+    await db.run(`UPDATE ps_product SET ${allF.join(', ')} WHERE id_product = ?`, [...shp, ...pop, productId])
+    
+    
+    if (shf.length) {
+      await db.run(
+        `UPDATE ps_product_shop SET ${[...shf, 'date_upd = NOW()'].join(', ')} WHERE id_product = ? AND id_shop = 1`,
+        [...shp, productId],
+      )
+    }
   }
 
   
@@ -101,15 +169,35 @@ export default defineEventHandler(async (event) => {
   }
 
   
+  
+  
   const stats = { categoriesUpdated: 0, combinationsUpdated: 0, combinationsFailed: 0, carriersUpdated: 0 }
 
-  if (!isMaster) {
-    return { success: true, stats, langId, isMaster }
-  }
-
+  
+  
+  
+  
+  
+  
+  
   
   if (body.stock !== undefined) {
-    await db.run(`UPDATE ps_stock_available SET quantity = ? WHERE id_product = ? AND id_product_attribute = 0`, [Number(body.stock), productId])
+    const qty = Number(body.stock)
+    const { affectedRows } = await db.run(`
+      UPDATE ps_stock_available
+         SET quantity = ?,
+             physical_quantity = GREATEST(?, 0) + COALESCE(reserved_quantity, 0)
+       WHERE id_product = ? AND id_product_attribute = 0
+    `, [qty, qty, productId])
+    if (!affectedRows) {
+      const phys = Math.max(qty, 0)
+      await db.run(`
+        INSERT INTO ps_stock_available
+          (id_product, id_product_attribute, id_shop, id_shop_group, quantity,
+           physical_quantity, reserved_quantity, depends_on_stock, out_of_stock, location)
+        VALUES (?, 0, 1, 0, ?, ?, 0, 0, 2, '')
+      `, [productId, qty, phys])
+    }
   }
 
   if (Array.isArray(body.categoryIds)) {
@@ -126,6 +214,27 @@ export default defineEventHandler(async (event) => {
           [catId, productId]
         )
         stats.categoriesUpdated++
+      }
+
+      
+      
+      
+      
+      
+      const explicitDefault = Number(body.categoryId) > 2 ? Number(body.categoryId) : 0
+      if (!explicitDefault) {
+        const orderedReal = (body.categoryIds as any[])
+          .map((x) => Number(x))
+          .filter((n) => Number.isFinite(n) && n > 2)
+        const cur = await db.get<{ id_category_default: number }>(
+          `SELECT id_category_default FROM ps_product WHERE id_product = ?`, [productId],
+        )
+        const curDef = Number(cur?.id_category_default) || 0
+        if (orderedReal.length && (curDef <= 2 || !ids.has(curDef))) {
+          const target = orderedReal[0]
+          await db.run(`UPDATE ps_product SET id_category_default = ?, date_upd = NOW() WHERE id_product = ?`, [target, productId])
+          await db.run(`UPDATE ps_product_shop SET id_category_default = ? WHERE id_product = ?`, [target, productId]).catch(() => {})
+        }
       }
     }
   }
@@ -166,10 +275,12 @@ export default defineEventHandler(async (event) => {
           )
         }
         if (combo.quantity !== undefined) {
-          await db.run(
-            `UPDATE ps_stock_available SET quantity = ? WHERE id_product = ? AND id_product_attribute = ?`,
-            [Number(combo.quantity) || 0, productId, comboId]
-          )
+          await db.run(`
+            UPDATE ps_stock_available
+               SET quantity = ?,
+                   physical_quantity = GREATEST(?, 0) + COALESCE(reserved_quantity, 0)
+             WHERE id_product = ? AND id_product_attribute = ?
+          `, [Number(combo.quantity) || 0, Number(combo.quantity) || 0, productId, comboId])
         }
         stats.combinationsUpdated++
       } catch (err) {
@@ -179,5 +290,41 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return { success: true, stats, langId, isMaster }
+  
+  
+  if (body.priceDisplayMode !== undefined && tenantHasUnitPricing(event)) {
+    const raw = body.priceDisplayMode
+    const mode: 'unit' | 'kg' | null = (raw === 'unit' || raw === 'kg') ? raw : null
+    try {
+      await upsertPriceDisplayMode(productId, mode, { event })
+    } catch (err) {
+      console.error('[bo/products PUT] upsertPriceDisplayMode failed', { productId, mode, err })
+    }
+  }
+
+  
+  
+  
+  
+  
+  let redirects: Array<{ source: string; target: string; action: string }> = []
+  if (urlsMayMove) {
+    invalidateCategoryPathCache()
+    const urlsAfter = await snapshotEntityUrls(db, { event, kind: 'product', ids: [productId] })
+    
+    
+    try {
+      redirects = await poseRedirectsForMovedUrls(db, urlsBefore, urlsAfter, 'product')
+    } catch (err: any) {
+      console.error(`[bo/products/${productId} PUT] 301 non posees:`, err?.message)
+    }
+  }
+
+  callAction<ActionProductSavedPayload>(HOOKS_ACTION.PRODUCT_SAVED, {
+    productId, created: false,
+  }).catch((err: any) => {
+    console.error(`[bo/products PUT] hook '${HOOKS_ACTION.PRODUCT_SAVED}' failed:`, err?.message)
+  })
+
+  return { success: true, stats, langId, isMaster, redirects }
 })

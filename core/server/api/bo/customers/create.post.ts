@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ firstname: string; lastname: string; email: string; company?: string; siret?: string; phone?: string }>(event)
   if (!body.firstname?.trim() || !body.lastname?.trim() || !body.email?.trim()) {
     throw createError({ statusCode: 400, message: 'Nom, prénom et email requis' })
@@ -10,7 +13,8 @@ export default defineEventHandler(async (event) => {
   const db = useClientDb(event)
 
   
-  const existing = await db.get<any>(`SELECT id_customer FROM ps_customer WHERE email = ?`, [body.email.trim().toLowerCase()])
+  
+  const existing = await db.get<any>(`SELECT id_customer FROM ps_customer WHERE LOWER(email) = ?`, [body.email.trim().toLowerCase()])
   if (existing) throw createError({ statusCode: 409, message: 'Un client avec cet email existe déjà' })
 
   

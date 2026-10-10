@@ -1,12 +1,12 @@
 
 
-export type TenantVertical = 'food' | 'fashion' | 'general'
+export type TenantVertical = 'food' | 'fashion' | 'home' | 'general'
 
 export function getTenantVertical(event?: any): TenantVertical {
   try {
     const cfg = useRuntimeConfig(event)
     const v = String((cfg.public as any)?.vertical || '').toLowerCase()
-    if (v === 'food' || v === 'fashion') return v
+    if (v === 'food' || v === 'fashion' || v === 'home') return v
   } catch {  }
   return 'general'
 }

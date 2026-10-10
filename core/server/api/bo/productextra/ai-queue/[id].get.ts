@@ -2,7 +2,9 @@
 
 import { getAiQueueStatus } from '~/modules/product-extra/server/utils/productextra'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idStr = getRouterParam(event, 'id')
   const idQueue = Number(idStr)
   if (!idQueue || idQueue <= 0) {

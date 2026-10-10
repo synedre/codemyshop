@@ -16,8 +16,10 @@ export function ensureTrailingSlash(url: string | null | undefined): string {
   return base.endsWith('/') ? url : `${base}/${suffix}`
 }
 
-export function isCategoryHref(url: string | null | undefined): boolean {
+export function isCategoryHref(url: string | null | undefined, roots: Set<string> = new Set()): boolean {
   if (!url) return false
-  
-  return /^\/(grossiste|marque|catalogue|c)(\/|$)/i.test(url)
+  const m = /^\/([^/?#]+)(?:[/?#]|$)/.exec(url)
+  if (!m) return false
+  const first = m[1].toLowerCase()
+  return first === 'c' || roots.has(first)
 }

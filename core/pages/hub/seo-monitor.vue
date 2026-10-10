@@ -2,7 +2,9 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth' })
 
-useHead({ title: 'SEO Monitor — Bot Tracking' })
+const { t } = useHubT()
+
+useHead({ title: () => t('hub.ui.seo_monitor.head_title', 'SEO Monitor — Bot Tracking') })
 
 const { data: stats, refresh } = await useFetch('/api/bot-stats')
 
@@ -29,11 +31,11 @@ function getBotColor(name: string) {
 function timeAgo(ts: string) {
   const diff = Date.now() - new Date(ts).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `il y a ${mins}min`
+  if (mins < 60) return t('hub.ui.seo_monitor.ago_min', 'il y a {n}min', { n: mins })
   const hours = Math.floor(mins / 60)
-  if (hours < 24) return `il y a ${hours}h`
+  if (hours < 24) return t('hub.ui.seo_monitor.ago_h', 'il y a {n}h', { n: hours })
   const days = Math.floor(hours / 24)
-  return `il y a ${days}j`
+  return t('hub.ui.seo_monitor.ago_d', 'il y a {n}j', { n: days })
 }
 </script>
 
@@ -41,29 +43,29 @@ function timeAgo(ts: string) {
   <div class="p-6 max-w-6xl mx-auto">
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">SEO Monitor</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Activité des bots sur les 7 derniers jours</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('hub.ui.seo_monitor.title', 'SEO Monitor') }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('hub.ui.seo_monitor.subtitle', 'Activité des bots sur les 7 derniers jours') }}</p>
       </div>
       <button
         class="px-4 py-2 text-sm font-medium rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors"
         @click="refresh()"
       >
-        Rafraîchir
+        {{ t('hub.ui.seo_monitor.refresh', 'Rafraîchir') }}
       </button>
     </div>
 
     
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
       <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700">
-        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total crawls</p>
+        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('hub.ui.seo_monitor.total_crawls', 'Total crawls') }}</p>
         <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats?.total || 0 }}</p>
       </div>
       <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700">
-        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Bots distincts</p>
+        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('hub.ui.seo_monitor.distinct_bots', 'Bots distincts') }}</p>
         <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats?.bots?.length || 0 }}</p>
       </div>
       <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700">
-        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pages crawlées</p>
+        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('hub.ui.seo_monitor.crawled_pages', 'Pages crawlées') }}</p>
         <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats?.topUrls?.length || 0 }}</p>
       </div>
     </div>
@@ -71,7 +73,7 @@ function timeAgo(ts: string) {
     
     <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden mb-8">
       <div class="px-5 py-4 border-b border-gray-200 dark:border-slate-700">
-        <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Activité par bot</h2>
+        <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('hub.ui.seo_monitor.by_bot', 'Activité par bot') }}</h2>
       </div>
       <div class="divide-y divide-gray-100 dark:divide-slate-700">
         <div
@@ -84,13 +86,13 @@ function timeAgo(ts: string) {
             <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ bot.name }}</span>
           </div>
           <div class="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-            <span><strong class="text-gray-900 dark:text-white">{{ bot.hits }}</strong> hits</span>
-            <span>{{ bot.uniqueUrls }} pages</span>
+            <span><strong class="text-gray-900 dark:text-white">{{ bot.hits }}</strong> {{ t('hub.ui.seo_monitor.hits_label', 'hits') }}</span>
+            <span>{{ t('hub.ui.seo_monitor.pages_n', '{n} pages', { n: bot.uniqueUrls }) }}</span>
             <span class="text-xs">{{ timeAgo(bot.lastSeen) }}</span>
           </div>
         </div>
         <div v-if="!stats?.bots?.length" class="px-5 py-8 text-center text-gray-400 text-sm">
-          Aucune donnée de crawl. Le tracking démarre après le deploy.
+          {{ t('hub.ui.seo_monitor.no_crawl', 'Aucune donnée de crawl. Le tracking démarre après le deploy.') }}
         </div>
       </div>
     </div>
@@ -98,7 +100,7 @@ function timeAgo(ts: string) {
     
     <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
       <div class="px-5 py-4 border-b border-gray-200 dark:border-slate-700">
-        <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Top pages crawlées</h2>
+        <h2 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">{{ t('hub.ui.seo_monitor.top_pages', 'Top pages crawlées') }}</h2>
       </div>
       <div class="divide-y divide-gray-100 dark:divide-slate-700">
         <div

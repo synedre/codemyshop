@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const periodDays = [7, 30, 90, 365].includes(Number(q.period)) ? Number(q.period) : 30
   const db = useClientDb(event)

@@ -37,6 +37,9 @@ export const emailQueue = vaisseauMereAcSchema.table(
     resendId:       varchar('resend_id',     { length: 64 }),
     scheduledAt:    timestamp('scheduled_at', { mode: 'date' }),
     sentAt:         timestamp('sent_at',      { mode: 'date' }),
+    
+
+    sourceHost:     varchar('source_host',    { length: 255 }),
     dateAdd:        timestamp('date_add',     { mode: 'date' }).notNull(),
     dateUpd:        timestamp('date_upd',     { mode: 'date' }).notNull(),
   },

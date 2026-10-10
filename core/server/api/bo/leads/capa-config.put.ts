@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = (await readBody(event)) as Record<string, any>
 
   const ticketAnnuelEur = Math.max(0, Math.min(10_000_000, Math.trunc(Number(body.ticketAnnuelEur ?? 10000))))

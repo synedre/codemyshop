@@ -3,7 +3,9 @@
 import { addTeamMember } from '~/enterprise/base/smartproject/server/utils/smartproject'
 import { getSession } from '~/server/utils/session'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<any>(event)
   if (!body) {
     throw createError({ statusCode: 400, message: 'Body manquant' })

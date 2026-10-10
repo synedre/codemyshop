@@ -1,4 +1,4 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 import {
   updateFreightRule,
@@ -6,6 +6,7 @@ import {
 } from '~/modules/freight-rule/server/utils/freight-rule'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id) throw createError({ statusCode: 400, statusMessage: 'id invalide' })
 

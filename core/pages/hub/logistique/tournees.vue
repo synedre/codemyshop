@@ -2,12 +2,12 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Tournées de livraison</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ tours.length }} tournée{{ tours.length > 1 ? 's' : '' }} · {{ dateLabel }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.logistics_rounds.title', 'Tournées de livraison') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ tours.length > 1 ? tHub('hub.ui.logistics_rounds.rounds_count_other', '{n} tournées', { n: tours.length }) : tHub('hub.ui.logistics_rounds.rounds_count_one', '{n} tournée', { n: tours.length }) }} · {{ dateLabel }}</p>
       </div>
       <div class="flex gap-2 items-center">
         <input v-model="filterDate" type="date" class="text-xs px-2 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg" @change="load" />
-        <button @click="openCreate" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-semibold">+ Nouvelle tournée</button>
+        <button @click="openCreate" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-semibold">{{ tHub('hub.ui.logistics_rounds.new_round', '+ Nouvelle tournée') }}</button>
         <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">↻</button>
       </div>
     </header>
@@ -21,8 +21,8 @@
           <div class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
         </div>
         <div v-else-if="!tours.length" class="p-10 text-center text-xs text-gray-400">
-          Aucune tournée pour {{ dateLabel }}.
-          <p class="mt-2 text-[11px]">Crée-en une pour commencer.</p>
+          {{ tHub('hub.ui.logistics_rounds.none_for_date', 'Aucune tournée pour {date}.', { date: dateLabel }) }}
+          <p class="mt-2 text-[11px]">{{ tHub('hub.ui.logistics_rounds.create_first', 'Crée-en une pour commencer.') }}</p>
         </div>
         <ul v-else class="divide-y divide-gray-100 dark:divide-slate-800">
           <li v-for="t in tours" :key="t.id"
@@ -41,9 +41,9 @@
               </span>
             </div>
             <div class="flex items-center gap-3 mt-2 text-[11px] text-gray-600 dark:text-slate-400">
-              <span class="font-mono">📍 {{ t.stopCount }} arrêts</span>
+              <span class="font-mono">📍 {{ t.stopCount > 1 ? tHub('hub.ui.logistics_rounds.stops_count_other', '{n} arrêts', { n: t.stopCount }) : tHub('hub.ui.logistics_rounds.stops_count_one', '{n} arrêt', { n: t.stopCount }) }}</span>
               <span class="font-mono">⚖️ {{ Number(t.totalWeight).toFixed(0) }} kg</span>
-              <span class="font-mono">📦 {{ t.totalPallets }} plt</span>
+              <span class="font-mono">📦 {{ tHub('hub.ui.logistics_rounds.pallets_short', '{n} plt', { n: t.totalPallets }) }}</span>
               <span v-if="Number(t.totalKm) > 0" class="font-mono text-primary-600">{{ Number(t.totalKm).toFixed(1) }} km</span>
             </div>
           </li>
@@ -55,7 +55,7 @@
         <div v-if="!selected" class="h-full flex items-center justify-center text-xs text-gray-400">
           <div class="text-center">
             <p class="text-2xl mb-2">🗺️</p>
-            <p>Sélectionne une tournée à gauche pour voir ses arrêts.</p>
+            <p>{{ tHub('hub.ui.logistics_rounds.select_round', 'Sélectionne une tournée à gauche pour voir ses arrêts.') }}</p>
           </div>
         </div>
 
@@ -72,54 +72,54 @@
               </div>
               <div class="flex gap-2">
                 <button @click="optimizeTour" :disabled="optimizing" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-semibold disabled:opacity-50">
-                  {{ optimizing ? 'Optimisation…' : '🧭 Optimiser (TSP)' }}
+                  {{ optimizing ? tHub('hub.ui.logistics_rounds.optimizing', 'Optimisation…') : tHub('hub.ui.logistics_rounds.optimize', '🧭 Optimiser (TSP)') }}
                 </button>
                 <select v-model="selected.tour.status" @change="updateStatus" class="text-xs px-2 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800">
-                  <option value="planned">Planifiée</option>
-                  <option value="in_progress">En cours</option>
-                  <option value="done">Terminée</option>
-                  <option value="cancelled">Annulée</option>
+                  <option value="planned">{{ tHub('hub.ui.logistics_rounds.st_planned', 'Planifiée') }}</option>
+                  <option value="in_progress">{{ tHub('hub.ui.logistics_rounds.st_in_progress', 'En cours') }}</option>
+                  <option value="done">{{ tHub('hub.ui.logistics_rounds.st_done', 'Terminée') }}</option>
+                  <option value="cancelled">{{ tHub('hub.ui.logistics_rounds.st_cancelled', 'Annulée') }}</option>
                 </select>
-                <button @click="deleteTour" class="text-xs px-2 py-1.5 border border-danger-200 text-danger-600 rounded-lg hover:bg-danger-50" title="Supprimer">✕</button>
+                <button @click="deleteTour" class="text-xs px-2 py-1.5 border border-danger-200 text-danger-600 rounded-lg hover:bg-danger-50" :title="tHub('hub.ui.logistics_rounds.delete', 'Supprimer')">✕</button>
               </div>
             </div>
             <div class="grid grid-cols-4 gap-3 text-xs">
               <div class="bg-gray-50 dark:bg-slate-800/50 rounded-lg p-2">
-                <p class="text-[10px] uppercase tracking-wider text-gray-400">Arrêts</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ tHub('hub.ui.logistics_rounds.stat_stops', 'Arrêts') }}</p>
                 <p class="font-bold text-gray-800 dark:text-slate-100 mt-0.5">{{ selected.stops.length }}</p>
               </div>
               <div class="bg-gray-50 dark:bg-slate-800/50 rounded-lg p-2">
-                <p class="text-[10px] uppercase tracking-wider text-gray-400">Charge</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ tHub('hub.ui.logistics_rounds.stat_load', 'Charge') }}</p>
                 <p class="font-bold text-gray-800 dark:text-slate-100 mt-0.5">
                   {{ totalWeight }}<span class="text-[10px] text-gray-400 font-normal"> / {{ Number(selected.tour.vehicleCapacityKg || 0).toFixed(0) }} kg</span>
                 </p>
               </div>
               <div class="bg-gray-50 dark:bg-slate-800/50 rounded-lg p-2">
-                <p class="text-[10px] uppercase tracking-wider text-gray-400">Palettes</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ tHub('hub.ui.logistics_rounds.stat_pallets', 'Palettes') }}</p>
                 <p class="font-bold text-gray-800 dark:text-slate-100 mt-0.5">
                   {{ totalPallets }}<span class="text-[10px] text-gray-400 font-normal"> / {{ selected.tour.vehicleCapacityPallets || 0 }}</span>
                 </p>
               </div>
               <div class="bg-gray-50 dark:bg-slate-800/50 rounded-lg p-2">
-                <p class="text-[10px] uppercase tracking-wider text-gray-400">Distance</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ tHub('hub.ui.logistics_rounds.stat_distance', 'Distance') }}</p>
                 <p class="font-bold text-primary-600 mt-0.5">
                   {{ Number(selected.tour.totalKm || 0).toFixed(1) }}<span class="text-[10px] text-gray-400 font-normal"> km</span>
                 </p>
               </div>
             </div>
             <p v-if="selected.tour.optimizedAt" class="text-[10px] text-gray-400 mt-2">
-              Dernière optimisation : {{ new Date(selected.tour.optimizedAt).toLocaleString('fr-FR') }}
+              {{ tHub('hub.ui.logistics_rounds.last_optim', 'Dernière optimisation : {date}', { date: new Date(selected.tour.optimizedAt).toLocaleString('fr-FR') }) }}
             </p>
           </section>
 
           
           <section>
             <div class="flex items-center justify-between mb-2">
-              <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">📍 Feuille de route</h3>
-              <button @click="openAddStop" class="text-[11px] px-2 py-1 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">+ Ajouter un arrêt</button>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">📍 {{ tHub('hub.ui.logistics_rounds.sec_route', 'Feuille de route') }}</h3>
+              <button @click="openAddStop" class="text-[11px] px-2 py-1 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.logistics_rounds.add_stop_btn', '+ Ajouter un arrêt') }}</button>
             </div>
             <div v-if="!selected.stops.length" class="py-8 text-center text-xs text-gray-400 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
-              Aucun arrêt dans cette tournée.
+              {{ tHub('hub.ui.logistics_rounds.no_stops', 'Aucun arrêt dans cette tournée.') }}
             </div>
             <ol v-else class="space-y-1.5">
               <li v-for="(s, idx) in selected.stops" :key="s.id"
@@ -140,13 +140,13 @@
                   <div class="flex items-center gap-3 mt-1 text-[11px] text-gray-600 dark:text-slate-400">
                     <span v-if="s.windowStart || s.windowEnd" class="font-mono">🕐 {{ s.windowStart || '—' }} / {{ s.windowEnd || '—' }}</span>
                     <span v-if="Number(s.weightKg) > 0" class="font-mono">⚖️ {{ Number(s.weightKg).toFixed(0) }} kg</span>
-                    <span v-if="Number(s.pallets) > 0" class="font-mono">📦 {{ s.pallets }} plt</span>
-                    <span v-if="Number(s.lat) === 0 && Number(s.lng) === 0" class="text-amber-600">⚠︎ sans GPS</span>
+                    <span v-if="Number(s.pallets) > 0" class="font-mono">📦 {{ tHub('hub.ui.logistics_rounds.pallets_short', '{n} plt', { n: s.pallets }) }}</span>
+                    <span v-if="Number(s.lat) === 0 && Number(s.lng) === 0" class="text-amber-600">{{ tHub('hub.ui.logistics_rounds.no_gps', '⚠︎ sans GPS') }}</span>
                   </div>
                 </div>
                 <div class="shrink-0 flex flex-col gap-1">
-                  <button @click="markStop(s, 'delivered')" class="text-[10px] px-2 py-0.5 border border-success-200 text-success-700 rounded hover:bg-success-50">✓ Livré</button>
-                  <button @click="markStop(s, 'failed')" class="text-[10px] px-2 py-0.5 border border-danger-200 text-danger-600 rounded hover:bg-danger-50">✕ Échec</button>
+                  <button @click="markStop(s, 'delivered')" class="text-[10px] px-2 py-0.5 border border-success-200 text-success-700 rounded hover:bg-success-50">✓ {{ tHub('hub.ui.logistics_rounds.sst_delivered', 'Livré') }}</button>
+                  <button @click="markStop(s, 'failed')" class="text-[10px] px-2 py-0.5 border border-danger-200 text-danger-600 rounded hover:bg-danger-50">✕ {{ tHub('hub.ui.logistics_rounds.sst_failed', 'Échec') }}</button>
                   <button @click="deleteStop(s)" class="text-[10px] px-2 py-0.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">🗑</button>
                 </div>
               </li>
@@ -160,28 +160,28 @@
     <div v-if="createOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="createOpen = false">
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-md mx-4">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Nouvelle tournée</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.logistics_rounds.new_round_title', 'Nouvelle tournée') }}</h2>
           <button @click="createOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="submitCreate" class="p-5 space-y-3">
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Libellé *</span>
-            <input v-model="form.label" required maxlength="128" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="Tournée Paris Est — Restaurants" />
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_label', 'Libellé *') }}</span>
+            <input v-model="form.label" required maxlength="128" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="tHub('hub.ui.logistics_rounds.ph_label', 'Tournée Paris Est — Restaurants')" />
           </label>
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Date *</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_date', 'Date *') }}</span>
             <input v-model="form.tourDate" type="date" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Véhicule</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_vehicle', 'Véhicule') }}</span>
               <select v-model.number="form.idVehicle" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5">
                 <option :value="0">—</option>
                 <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.label }} ({{ v.plate }})</option>
               </select>
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Chauffeur</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_driver', 'Chauffeur') }}</span>
               <select v-model.number="form.idDriver" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5">
                 <option :value="0">—</option>
                 <option v-for="d in drivers" :key="d.id" :value="d.id">{{ d.fullName }}</option>
@@ -190,8 +190,8 @@
           </div>
           <p v-if="createError" class="text-xs text-danger-500">{{ createError }}</p>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="createOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">Annuler</button>
-            <button type="submit" :disabled="saving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ saving ? 'Création…' : 'Créer' }}</button>
+            <button type="button" @click="createOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.logistics_rounds.cancel', 'Annuler') }}</button>
+            <button type="submit" :disabled="saving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ saving ? tHub('hub.ui.logistics_rounds.creating', 'Création…') : tHub('hub.ui.logistics_rounds.create', 'Créer') }}</button>
           </div>
         </form>
       </div>
@@ -201,55 +201,55 @@
     <div v-if="stopOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="stopOpen = false">
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-lg mx-4">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Ajouter un arrêt</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.logistics_rounds.add_stop_title', 'Ajouter un arrêt') }}</h2>
           <button @click="stopOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="submitStop" class="p-5 space-y-3">
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Client *</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_customer', 'Client *') }}</span>
             <input v-model="stopForm.customerLabel" required maxlength="255" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Adresse</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_address', 'Adresse') }}</span>
               <input v-model="stopForm.address" maxlength="255" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Ville</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_city', 'Ville') }}</span>
               <input v-model="stopForm.city" maxlength="128" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">CP</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_postcode', 'CP') }}</span>
               <input v-model="stopForm.postcode" maxlength="16" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Lat / Lng</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_lat_lng', 'Lat / Lng') }}</span>
               <div class="flex gap-1">
-                <input v-model.number="stopForm.lat" type="number" step="0.000001" class="w-1/2 mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="lat" />
-                <input v-model.number="stopForm.lng" type="number" step="0.000001" class="w-1/2 mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="lng" />
+                <input v-model.number="stopForm.lat" type="number" step="0.000001" class="w-1/2 mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="tHub('hub.ui.logistics_rounds.ph_lat', 'lat')" />
+                <input v-model.number="stopForm.lng" type="number" step="0.000001" class="w-1/2 mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="tHub('hub.ui.logistics_rounds.ph_lng', 'lng')" />
               </div>
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Fenêtre début</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_window_start', 'Fenêtre début') }}</span>
               <input v-model="stopForm.windowStart" type="time" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Fenêtre fin</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_window_end', 'Fenêtre fin') }}</span>
               <input v-model="stopForm.windowEnd" type="time" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Poids (kg)</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.f_weight', 'Poids (kg)') }}</span>
               <input v-model.number="stopForm.weightKg" type="number" step="0.1" min="0" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Palettes</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.logistics_rounds.stat_pallets', 'Palettes') }}</span>
               <input v-model.number="stopForm.pallets" type="number" min="0" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
           </div>
           <p v-if="stopError" class="text-xs text-danger-500">{{ stopError }}</p>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="stopOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">Annuler</button>
-            <button type="submit" :disabled="stopSaving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ stopSaving ? 'Ajout…' : 'Ajouter' }}</button>
+            <button type="button" @click="stopOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.logistics_rounds.cancel', 'Annuler') }}</button>
+            <button type="submit" :disabled="stopSaving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ stopSaving ? tHub('hub.ui.logistics_rounds.adding', 'Ajout…') : tHub('hub.ui.logistics_rounds.add', 'Ajouter') }}</button>
           </div>
         </form>
       </div>
@@ -259,6 +259,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
+
+const { t: tHub } = useHubT()
 
 interface Tour {
   id: number; label: string; tourDate: string
@@ -315,10 +317,10 @@ function statusClass(s: string): string {
   return 'bg-amber-100 text-amber-700'
 }
 function statusLabel(s: string): string {
-  if (s === 'in_progress') return 'En cours'
-  if (s === 'done')        return 'Terminée'
-  if (s === 'cancelled')   return 'Annulée'
-  return 'Planifiée'
+  if (s === 'in_progress') return tHub('hub.ui.logistics_rounds.st_in_progress', 'En cours')
+  if (s === 'done')        return tHub('hub.ui.logistics_rounds.st_done', 'Terminée')
+  if (s === 'cancelled')   return tHub('hub.ui.logistics_rounds.st_cancelled', 'Annulée')
+  return tHub('hub.ui.logistics_rounds.st_planned', 'Planifiée')
 }
 function stopStatusClass(s: string): string {
   if (s === 'delivered') return 'bg-success-100 text-success-700'
@@ -327,10 +329,10 @@ function stopStatusClass(s: string): string {
   return 'bg-amber-100 text-amber-700'
 }
 function stopStatusLabel(s: string): string {
-  if (s === 'delivered') return 'Livré'
-  if (s === 'failed')    return 'Échec'
-  if (s === 'skipped')   return 'Ignoré'
-  return 'En attente'
+  if (s === 'delivered') return tHub('hub.ui.logistics_rounds.sst_delivered', 'Livré')
+  if (s === 'failed')    return tHub('hub.ui.logistics_rounds.sst_failed', 'Échec')
+  if (s === 'skipped')   return tHub('hub.ui.logistics_rounds.sst_skipped', 'Ignoré')
+  return tHub('hub.ui.logistics_rounds.sst_pending', 'En attente')
 }
 
 async function load() {
@@ -369,7 +371,7 @@ async function reloadSelected() {
     const res = await $fetch<{ ok: boolean; tour: Tour; stops: Stop[] }>(`/api/bo/routing/tours/${selectedId.value}`)
     selected.value = { tour: res.tour, stops: res.stops || [] }
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.logistics_rounds.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 
@@ -386,7 +388,7 @@ async function submitCreate() {
     createOpen.value = false
     await load()
   } catch (e: any) {
-    createError.value = e?.data?.statusMessage || e?.message || 'Erreur'
+    createError.value = e?.data?.statusMessage || e?.message || tHub('hub.ui.logistics_rounds.error_short', 'Erreur')
   } finally { saving.value = false }
 }
 
@@ -396,20 +398,20 @@ async function updateStatus() {
     await $fetch(`/api/bo/routing/tours/${selected.value.tour.id}`, { method: 'PUT', body: { status: selected.value.tour.status } })
     await load()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.logistics_rounds.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 
 async function deleteTour() {
   if (!selected.value) return
-  if (!confirm(`Supprimer "${selected.value.tour.label}" ?`)) return
+  if (!confirm(tHub('hub.ui.logistics_rounds.delete_confirm', 'Supprimer "{name}" ?', { name: selected.value.tour.label }))) return
   try {
     await $fetch(`/api/bo/routing/tours/${selected.value.tour.id}`, { method: 'DELETE' })
     selectedId.value = null
     selected.value = null
     await load()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.logistics_rounds.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 
@@ -424,10 +426,10 @@ async function optimizeTour() {
     await reloadSelected()
     await load()
     if (res.stopsWithoutGps > 0) {
-      alert(`Optimisé : ${res.stopsOrdered} arrêts GPS (${res.totalKm} km). ${res.stopsWithoutGps} arrêts sans coordonnées placés en fin.`)
+      alert(tHub('hub.ui.logistics_rounds.optim_done', 'Optimisé : {ordered} arrêts GPS ({km} km). {missing} arrêts sans coordonnées placés en fin.', { ordered: res.stopsOrdered, km: res.totalKm, missing: res.stopsWithoutGps }))
     }
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.logistics_rounds.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   } finally { optimizing.value = false }
 }
 
@@ -446,7 +448,7 @@ async function submitStop() {
     await reloadSelected()
     await load()
   } catch (e: any) {
-    stopError.value = e?.data?.statusMessage || e?.message || 'Erreur'
+    stopError.value = e?.data?.statusMessage || e?.message || tHub('hub.ui.logistics_rounds.error_short', 'Erreur')
   } finally { stopSaving.value = false }
 }
 
@@ -455,17 +457,17 @@ async function markStop(s: Stop, status: string) {
     await $fetch(`/api/bo/routing/stops/${s.id}`, { method: 'PUT', body: { status } })
     await reloadSelected()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.logistics_rounds.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 async function deleteStop(s: Stop) {
-  if (!confirm(`Supprimer "${s.customerLabel}" ?`)) return
+  if (!confirm(tHub('hub.ui.logistics_rounds.delete_confirm', 'Supprimer "{name}" ?', { name: s.customerLabel }))) return
   try {
     await $fetch(`/api/bo/routing/stops/${s.id}`, { method: 'DELETE' })
     await reloadSelected()
     await load()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.logistics_rounds.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 

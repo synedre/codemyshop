@@ -25,6 +25,9 @@ export const emailTemplate = vaisseauMereAcSchema.table(
     recipientTo:  text('recipient_to').notNull().default(''),
     recipientCc:  text('recipient_cc').notNull().default(''),
     recipientBcc: text('recipient_bcc').notNull().default(''),
+    
+
+    attachInvoice: smallint('attach_invoice').notNull().default(0),
     dateAdd:      timestamp('date_add', { mode: 'date' }).notNull(),
     dateUpd:      timestamp('date_upd', { mode: 'date' }).notNull(),
   },

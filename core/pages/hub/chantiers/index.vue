@@ -5,18 +5,18 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">🚧 Chantiers</h1>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">🚧 {{ tHub('hub.ui.chantiers.title', 'Chantiers') }}</h1>
           <p class="text-xs text-gray-400 mt-0.5">
-            {{ chantiers.length }} chantier(s) {{ view === 'active' ? 'actifs' : view }}
+            {{ view === 'active' ? tHub('hub.ui.chantiers.count_active', '{n} chantier(s) actifs', { n: chantiers.length }) : tHub('hub.ui.chantiers.count_other', '{n} chantier(s) {view}', { n: chantiers.length, view }) }}
           </p>
         </div>
         <div class="flex items-center gap-2">
           <select v-model="view" @change="loadAll"
             class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200">
-            <option value="active">Actifs</option>
-            <option value="paused">En pause</option>
-            <option value="done">Terminés</option>
-            <option value="all">Tout</option>
+            <option value="active">{{ tHub('hub.ui.chantiers.view_active', 'Actifs') }}</option>
+            <option value="paused">{{ tHub('hub.ui.chantiers.view_paused', 'En pause') }}</option>
+            <option value="done">{{ tHub('hub.ui.chantiers.view_done', 'Terminés') }}</option>
+            <option value="all">{{ tHub('hub.ui.chantiers.view_all', 'Tout') }}</option>
           </select>
           <button @click="loadAll" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -25,7 +25,7 @@
           </button>
           <button @click="creating = true"
             class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors">
-            + Nouveau
+            {{ tHub('hub.ui.chantiers.new_short', '+ Nouveau') }}
           </button>
         </div>
       </div>
@@ -45,10 +45,10 @@
       
       <div v-else-if="!chantiers.length"
         class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-10 text-center">
-        <p class="text-sm text-gray-400">Aucun chantier dans cette vue.</p>
+        <p class="text-sm text-gray-400">{{ tHub('hub.ui.chantiers.empty', 'Aucun chantier dans cette vue.') }}</p>
         <button @click="creating = true"
           class="mt-4 px-4 py-2 rounded-lg text-xs font-semibold bg-primary-600 text-white hover:bg-primary-700">
-          Créer le premier chantier
+          {{ tHub('hub.ui.chantiers.create_first', 'Créer le premier chantier') }}
         </button>
       </div>
 
@@ -63,6 +63,13 @@
                 <span :class="priorityClass(c.priority)" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ c.priority }}</span>
                 <span :class="statusClass(c.status)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full">{{ c.status }}</span>
                 <span v-if="c.clientId" class="text-[10px] font-medium text-gray-500 dark:text-slate-400">{{ c.clientId }}</span>
+                
+                <span v-if="c.lastExplodeStatus === 'pending'"
+                      class="text-amber-500" :title="tHub('hub.ui.chantiers.explode_running', 'Auto-explode en cours')">🤖</span>
+                <span v-else-if="c.lastExplodeStatus === 'success' && !c.explodeReviewed"
+                      class="text-emerald-600" :title="tHub('hub.ui.chantiers.explode_review', 'Travaux d\'impl créés à reviewer')">✨</span>
+                <span v-else-if="c.lastExplodeStatus === 'validation_failed' || c.lastExplodeStatus === 'llm_failed'"
+                      class="text-red-500" :title="tHub('hub.ui.chantiers.explode_failed', 'Auto-explode failed')">⚠️</span>
               </div>
               <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 truncate">
                 {{ c.title }}
@@ -77,9 +84,9 @@
               </div>
             </div>
             <div class="text-right shrink-0">
-              <p v-if="c.estimatedEffortD" class="text-[10px] text-gray-400 uppercase">Effort</p>
+              <p v-if="c.estimatedEffortD" class="text-[10px] text-gray-400 uppercase">{{ tHub('hub.ui.chantiers.effort', 'Effort') }}</p>
               <p v-if="c.estimatedEffortD" class="text-xs font-bold text-gray-700 dark:text-slate-200">
-                {{ c.spentEffortD || 0 }}/{{ c.estimatedEffortD }}j
+                {{ c.spentEffortD || 0 }}/{{ c.estimatedEffortD }}{{ tHub('hub.ui.chantiers.days_suffix', 'j') }}
               </p>
               <p v-if="c.deadline" class="text-[10px] text-gray-400 mt-1">{{ c.deadline }}</p>
             </div>
@@ -90,13 +97,13 @@
       
       <div v-if="creating" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click.self="creating = false">
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-lg w-full p-6">
-          <h2 class="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">Nouveau chantier</h2>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">{{ tHub('hub.ui.chantiers.modal_title', 'Nouveau chantier') }}</h2>
           <div class="space-y-3">
-            <input v-model="newChantier.codename" placeholder="codename (slug, ex: example-shop-bascule)"
+            <input v-model="newChantier.codename" :placeholder="tHub('hub.ui.chantiers.codename_ph', 'codename (slug, ex: ma-boutique-bascule)')"
               class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
-            <input v-model="newChantier.title" placeholder="Titre lisible"
+            <input v-model="newChantier.title" :placeholder="tHub('hub.ui.chantiers.title_ph', 'Titre lisible')"
               class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
-            <input v-model="newChantier.clientId" placeholder="client_id (optionnel)"
+            <input v-model="newChantier.clientId" :placeholder="tHub('hub.ui.chantiers.client_ph', 'client_id (optionnel)')"
               class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
             <div class="flex gap-2">
               <select v-model="newChantier.priority" class="flex-1 px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
@@ -113,16 +120,16 @@
                 <option value="bascule">bascule</option>
               </select>
             </div>
-            <textarea v-model="newChantier.nextAction" placeholder="Next action (optionnel)" rows="2"
+            <textarea v-model="newChantier.nextAction" :placeholder="tHub('hub.ui.chantiers.next_ph', 'Next action (optionnel)')" rows="2"
               class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100" />
           </div>
           <div class="flex gap-2 mt-4">
             <button @click="creating = false" class="flex-1 px-4 py-2 text-sm font-semibold border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-lg hover:bg-gray-50">
-              Annuler
+              {{ tHub('hub.ui.chantiers.cancel', 'Annuler') }}
             </button>
             <button @click="createChantier" :disabled="!newChantier.codename || !newChantier.title || saving"
               class="flex-1 px-4 py-2 text-sm font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50">
-              {{ saving ? 'Création…' : 'Créer' }}
+              {{ saving ? tHub('hub.ui.chantiers.creating', 'Création…') : tHub('hub.ui.chantiers.create', 'Créer') }}
             </button>
           </div>
           <p v-if="createError" class="mt-3 text-xs text-red-600">{{ createError }}</p>
@@ -135,6 +142,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub' })
+const { t: tHub } = useHubT()
 
 const view = ref<'active' | 'paused' | 'done' | 'all'>('active')
 const chantiers = ref<any[]>([])
@@ -179,10 +187,10 @@ async function createChantier() {
       Object.assign(newChantier, { codename: '', title: '', clientId: '', priority: 'P1', status: 'planning', nextAction: '' })
       await loadAll()
     } else {
-      createError.value = res?.error || 'erreur création'
+      createError.value = res?.error || tHub('hub.ui.chantiers.err_create', 'erreur création')
     }
   } catch (e: any) {
-    createError.value = e?.data?.error || e?.message || 'erreur réseau'
+    createError.value = e?.data?.error || e?.message || tHub('hub.ui.chantiers.err_network', 'erreur réseau')
   } finally {
     saving.value = false
   }

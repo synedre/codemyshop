@@ -1,4 +1,5 @@
 
+import { errorMessage } from '~/server/utils/redact-url-secrets'
 
 interface DebugTokenResponse {
   data?: {
@@ -40,8 +41,12 @@ export default defineEventHandler(async (event) => {
 
     
     
-    const appId = process.env.EXAMPLE_INSTAGRAM_APP_ID || process.env.INSTAGRAM_APP_ID
-    const appSecret = process.env.EXAMPLE_INSTAGRAM_APP_SECRET || process.env.INSTAGRAM_APP_SECRET
+    
+    
+    
+    
+    const appId = String(cfg.instagramAppId || '')
+    const appSecret = String(cfg.instagramAppSecret || '')
 
     if (appId && appSecret) {
       try {
@@ -85,7 +90,7 @@ export default defineEventHandler(async (event) => {
       userId: null,
       expiresAt: null,
       daysRemaining: null,
-      reason: `Token invalide ou expiré : ${err?.message || 'erreur inconnue'}`,
+      reason: `Token invalide ou expiré : ${errorMessage(err) || 'erreur inconnue'}`,
     }
   }
 })

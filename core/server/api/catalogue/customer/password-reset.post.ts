@@ -16,10 +16,13 @@ export default defineEventHandler(async (event) => {
   const token = String(body.token).trim()
   const db = useClientDb(event)
 
+  
+  
+  
   const customer = await db.get<{ id_customer: number; firstname: string }>(
     `SELECT id_customer, firstname
        FROM ps_customer
-      WHERE email = ?
+      WHERE LOWER(email) = ?
         AND reset_password_token = ?
         AND reset_password_validity > NOW()
         AND deleted = 0
@@ -47,8 +50,11 @@ export default defineEventHandler(async (event) => {
 
   
   
-  
-  sendPasswordChangedEmail(email, customer.firstname || '')
+  const shopName = (await db.get<{ value: string }>(
+    `SELECT value FROM ps_configuration WHERE name = 'PS_SHOP_NAME' LIMIT 1`,
+  ).catch(() => null))?.value || 'Boutique'
+
+  sendPasswordChangedEmail(email, customer.firstname || '', shopName)
     .catch((err: any) => console.error(`[password-reset:${email}] mail confirmation KO:`, err?.message || err))
 
   return { success: true }

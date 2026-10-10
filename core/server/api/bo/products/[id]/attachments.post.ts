@@ -6,6 +6,8 @@ import { psProxyMultipart } from '~/server/utils/ps-proxy'
 import { usePocPg } from '~/server/db/drizzle-pg'
 import { psFsCanWriteDownload, writeAttachmentFile } from '~/server/utils/ps-fs'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const MAX_FILE_SIZE = 20 * 1024 * 1024
 const ALLOWED_MIMES = new Set([
   'application/pdf',
@@ -29,6 +31,7 @@ function rows<T = any>(result: any): T[] {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id || id <= 0) throw createError({ statusCode: 400, message: 'id produit invalide' })
 

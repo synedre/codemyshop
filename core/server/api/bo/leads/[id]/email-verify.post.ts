@@ -2,8 +2,12 @@
 
 import { useClientDb } from '~/server/utils/db'
 import { verifyEmailViaSmtp } from '~/server/utils/smtp-verify'
+import { getShopConfig } from '~/server/utils/shop-config'
+
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!Number.isFinite(id) || id <= 0) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid id' })
@@ -41,7 +45,11 @@ export default defineEventHandler(async (event) => {
   }
   if (!email) throw createError({ statusCode: 400, statusMessage: 'Email vide' })
 
-  const result = await verifyEmailViaSmtp(email)
+  const shop = await getShopConfig(event).catch(() => null)
+  const result = await verifyEmailViaSmtp(email, {
+    heloDomain: shop?.shopDomain || undefined,
+    mailFrom:   shop?.shopEmail  || undefined,
+  })
   const verifiedAt = new Date()
   let persisted = false
 

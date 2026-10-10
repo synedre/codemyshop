@@ -15,7 +15,7 @@
         type="button"
         class="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-slate-100"
         @click.stop="emit('toggle', node.id)"
-        :title="isOpen ? 'Replier' : 'Déplier'"
+        :title="isOpen ? t('hub.ui.category_tree_node_inner.collapse', 'Replier') : t('hub.ui.category_tree_node_inner.expand', 'Déplier')"
       >
         <svg class="w-3 h-3 transition-transform" :class="isOpen ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+const { t } = useHubT()
 
 interface TreeCategory {
   id: number

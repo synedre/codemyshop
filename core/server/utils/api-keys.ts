@@ -46,9 +46,10 @@ const ALGO = 'aes-256-gcm'
 const IV_LENGTH = 16
 const TAG_LENGTH = 16
 
-function getMasterKey(): Buffer {
+function getMasterKey(explicitSecret?: string): Buffer {
   const config = useRuntimeConfig()
-  const secret = (config as any).apiEncryptionKey
+  const secret = explicitSecret
+                 || (config as any).apiEncryptionKey
                  || process.env.API_ENCRYPTION_KEY
                  || config.secret    
                  || ''
@@ -61,9 +62,9 @@ function getMasterKey(): Buffer {
   return scryptSync(secret, 'codemyshop-api-keys-salt', 32)
 }
 
-export function encrypt(plaintext: string): string {
+export function encrypt(plaintext: string, explicitKey?: string): string {
   if (!plaintext) return ''
-  const key = getMasterKey()
+  const key = getMasterKey(explicitKey)
   const iv  = randomBytes(IV_LENGTH)
   const cipher = createCipheriv(ALGO, key, iv)
   let encrypted = cipher.update(plaintext, 'utf8', 'base64')
@@ -73,11 +74,11 @@ export function encrypt(plaintext: string): string {
   return `${iv.toString('base64')}:${tag.toString('base64')}:${encrypted}`
 }
 
-export function decrypt(blob: string): string {
+export function decrypt(blob: string, explicitKey?: string): string {
   if (!blob || !blob.includes(':')) return ''
   try {
     const [ivB64, tagB64, ciphertext] = blob.split(':')
-    const key = getMasterKey()
+    const key = getMasterKey(explicitKey)
     const iv  = Buffer.from(ivB64, 'base64')
     const tag = Buffer.from(tagB64, 'base64')
     const decipher = createDecipheriv(ALGO, key, iv)
@@ -140,9 +141,11 @@ export function writeApiKeys(clientId: string, keys: Partial<ClientApiKeys>) {
   writeStore(all)
 }
 
+export const MASK_SAFE_MIN = 16
+
 export function maskKey(key?: string): string {
   if (!key) return ''
-  if (key.length <= 8) return '••••••••'
+  if (key.length < MASK_SAFE_MIN) return '••••••••'
   return key.slice(0, 4) + '\u2022'.repeat(Math.min(20, key.length - 8)) + key.slice(-4)
 }
 

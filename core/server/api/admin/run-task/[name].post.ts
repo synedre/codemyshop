@@ -1,10 +1,10 @@
 
 
 import { runTask } from 'nitropack/runtime'
-import { verifyToken } from '~/server/utils/session-crypto'
+import { readHubSessionToken } from '~/server/utils/session'
 import { timingSafeEqual } from 'node:crypto'
 
-const TASK_PREFIXES_ALLOWED = ['audit:', 'cover:', 'business:', 'seo:']
+const TASK_PREFIXES_ALLOWED = ['audit:', 'cover:', 'business:', 'seo:', 'facet:']
 const TASK_NAME_RE = /^[a-z]+:[a-z][a-z0-9-]*$/
 
 function safeEqual(a: string, b: string): boolean {
@@ -16,7 +16,7 @@ function isAuthorized(event: any): { ok: true; via: 'cookie' | 'token' } | { ok:
   
   const cookie = getCookie(event, 'hub_session')
   if (cookie) {
-    const session = verifyToken<any>(cookie)
+    const session = readHubSessionToken<any>(cookie)
     if (session?.isAdmin) return { ok: true, via: 'cookie' }
   }
 

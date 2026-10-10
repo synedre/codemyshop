@@ -7,6 +7,15 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  /* Filtre input des colonnes de tableau hub — utilisé par customer/leads/
+     orders/products/carts/marketing-blog/... via composable useHubColFilters.
+     Garder global (pas scoped) pour éviter de re-déclarer dans chaque page. */
+  .filter-input {
+    @apply w-full text-[11px] border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-primary-300;
+  }
+}
 /* ══════════════════════════════════════════════════════════════════════════════
  * CodeMyShop — Design System (Variables & Base)
  * Les overrides Dark Mode sont dans dark-overrides.css (chargé séparément).
@@ -46,6 +55,24 @@
   --color-footer-bg: #ffffff;
 
   --color-accent:    #ec4899;
+
+  /* ── Tokens de rôle « fiche produit » ─────────────────────────────────────
+     Points d'entrée génériques du core : un tenant qui ne les définit pas rend
+     ce que la fiche produit rendait avant (les classes Tailwind d'origine).
+     Aucun de ces trois rôles n'était couvert par un token existant :
+     --color-muted est un gris de TEXTE (#6B7280 ici, #64748b en dark), pas une
+     surface, et le core n'avait ni couleur d'état de stock ni couleur de
+     notation. Les valeurs par défaut sont choisies pour tenir WCAG AA seules :
+       surface  #f5f5f5 = neutral-100, le fond de bloc déjà utilisé
+       stock-ok #047857 = emerald-700 (5.48:1 sur blanc). emerald-600, plus
+                proche du vert de marque habituel, ne rend que 3.77:1 — un
+                défaut de design system ne naît pas en dette d'accessibilité.
+       rating   #f59e0b = amber-500. À 2.15:1 sur blanc, un remplissage d'étoile
+                ne peut PAS porter seul la note (1.4.11) : tout composant qui
+                consomme ce token affiche aussi la note en texte. */
+  --cs-surface-muted: #f5f5f5;
+  --cs-stock-ok:      #047857;
+  --cs-rating-star:   #f59e0b;
 
   --radius-btn:   0.5rem;
   --radius-card:  0.75rem;

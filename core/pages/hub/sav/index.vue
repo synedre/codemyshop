@@ -2,14 +2,14 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">SAV — Tickets clients</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ total }} ticket{{ total > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.sav.title', 'SAV — Tickets clients') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ total > 1 ? tHub('hub.ui.sav.count_other', '{n} tickets', { n: total }) : tHub('hub.ui.sav.count_one', '{n} ticket', { n: total }) }}</p>
       </div>
       <div class="flex items-center gap-2">
         <input
           v-model="search"
           type="text"
-          placeholder="Email, nom, commande…"
+          :placeholder="tHub('hub.ui.sav.search_ph', 'Email, nom, commande…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
         <select
@@ -17,10 +17,10 @@
           @change="applyFilter"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none"
         >
-          <option value="">Tous</option>
-          <option value="open">Ouverts</option>
-          <option value="pending1">En attente</option>
-          <option value="closed">Fermés</option>
+          <option value="">{{ tHub('hub.ui.sav.all', 'Tous') }}</option>
+          <option value="open">{{ tHub('hub.ui.sav.open_pl', 'Ouverts') }}</option>
+          <option value="pending1">{{ tHub('hub.ui.sav.waiting', 'En attente') }}</option>
+          <option value="closed">{{ tHub('hub.ui.sav.closed_pl', 'Fermés') }}</option>
         </select>
       </div>
     </header>
@@ -36,7 +36,7 @@
           : 'text-gray-500 hover:bg-gray-50'"
       >
         <span class="w-2 h-2 rounded-full bg-red-400" />
-        Ouverts
+        {{ tHub('hub.ui.sav.open_pl', 'Ouverts') }}
         <span class="font-bold">{{ counts.open }}</span>
       </button>
       <button
@@ -48,7 +48,7 @@
           : 'text-gray-500 hover:bg-gray-50'"
       >
         <span class="w-2 h-2 rounded-full bg-amber-400" />
-        En attente
+        {{ tHub('hub.ui.sav.waiting', 'En attente') }}
         <span class="font-bold">{{ counts.pending1 + counts.pending2 }}</span>
       </button>
       <button
@@ -60,7 +60,7 @@
           : 'text-gray-500 hover:bg-gray-50'"
       >
         <span class="w-2 h-2 rounded-full bg-emerald-400" />
-        Fermés
+        {{ tHub('hub.ui.sav.closed_pl', 'Fermés') }}
         <span class="font-bold">{{ counts.closed }}</span>
       </button>
       <button
@@ -69,11 +69,11 @@
         @click="setStatus('')"
         class="ml-auto text-[10px] text-gray-400 hover:text-gray-600"
       >
-        Réinitialiser le filtre
+        {{ tHub('hub.ui.sav.reset', 'Réinitialiser le filtre') }}
       </button>
     </div>
 
-    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" label="tickets"
+    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" :label="tHub('hub.ui.sav.tickets_label', 'tickets')"
       :per-page="perPage" :per-page-options="perPageOptions"
       @go="goPage" @update:per-page="setPerPage"
       class="border-b border-gray-100 dark:border-slate-800" />
@@ -84,7 +84,7 @@
       </div>
 
       <div v-else-if="!threads.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucun ticket trouvé</p>
+        <p class="text-sm">{{ tHub('hub.ui.sav.none', 'Aucun ticket trouvé') }}</p>
       </div>
 
       <div v-else class="space-y-2">
@@ -102,7 +102,7 @@
                   {{ statusLabel(t.status) }}
                 </span>
                 <span v-if="t.orderId" class="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
-                  Commande {{ t.orderReference || `#${t.orderId}` }}
+                  {{ tHub('hub.ui.sav.order_ref', 'Commande {ref}', { ref: t.orderReference || `#${t.orderId}` }) }}
                 </span>
               </div>
               <p class="text-sm font-medium text-gray-800 dark:text-slate-100 mt-1 truncate">
@@ -115,7 +115,7 @@
             <div class="text-right shrink-0">
               <p class="text-xs text-gray-500">{{ formatDate(t.dateUpd || t.dateAdd) }}</p>
               <p class="text-[10px] text-gray-400 mt-0.5">
-                {{ t.messagesCount }} message{{ t.messagesCount > 1 ? 's' : '' }}
+                {{ t.messagesCount > 1 ? tHub('hub.ui.sav.msg_other', '{n} messages', { n: t.messagesCount }) : tHub('hub.ui.sav.msg_one', '{n} message', { n: t.messagesCount }) }}
               </p>
             </div>
           </div>
@@ -123,13 +123,14 @@
       </div>
     </div>
 
-    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" label="tickets" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
+    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :label="tHub('hub.ui.sav.tickets_label', 'tickets')" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
   </div>
 </template>
 
 <script setup lang="ts">
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 const { canAccess } = useRoles()
 if (!canAccess('crm_sav')) {
@@ -203,10 +204,10 @@ function statusClass(s: string) {
 }
 
 function statusLabel(s: string) {
-  if (s === 'open') return 'Ouvert'
-  if (s === 'closed') return 'Fermé'
-  if (s === 'pending1') return 'En attente'
-  if (s === 'pending2') return 'En attente (2)'
+  if (s === 'open') return tHub('hub.ui.sav.st_open', 'Ouvert')
+  if (s === 'closed') return tHub('hub.ui.sav.st_closed', 'Fermé')
+  if (s === 'pending1') return tHub('hub.ui.sav.waiting', 'En attente')
+  if (s === 'pending2') return tHub('hub.ui.sav.st_waiting2', 'En attente (2)')
   return s
 }
 

@@ -1,6 +1,7 @@
 
 
 import { useClientDb } from '~/server/utils/db'
+import { requireCustomer, resolveCustomerIdForRequest } from '~/server/utils/customer-session'
 
 const ALLOWED = new Set([
   'alias', 'company', 'vat_number', 'vatNumber',
@@ -20,6 +21,14 @@ export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
 
+  
+  
+  
+  
+  requireCustomer(event)
+  const customerId = resolveCustomerIdForRequest(event)
+  if (!customerId) throw createError({ statusCode: 401, message: 'Connexion requise' })
+
   const body = await readBody<Record<string, any>>(event)
   if (!body || typeof body !== 'object') {
     throw createError({ statusCode: 400, message: 'body vide' })
@@ -36,20 +45,27 @@ export default defineEventHandler(async (event) => {
   if (!sets.length) throw createError({ statusCode: 400, message: 'aucun champ modifiable' })
 
   sets.push('date_upd = NOW()')
-  params.push(id)
+  params.push(id, customerId)
 
   const db = useClientDb(event)
+  
+  
   await db.run(
-    `UPDATE ps_address SET ${sets.join(', ')} WHERE id_address = ? AND deleted = 0`,
+    `UPDATE ps_address SET ${sets.join(', ')}
+      WHERE id_address = ? AND id_customer = ? AND deleted = 0`,
     params,
   )
 
+  
+  
+  
   const updated = await db.get<any>(
     `SELECT id_address, id_customer, id_country, alias, company, vat_number,
             firstname, lastname, address1, address2, postcode, city, phone, phone_mobile
-       FROM ps_address WHERE id_address = ? LIMIT 1`,
-    [id],
+       FROM ps_address WHERE id_address = ? AND id_customer = ? LIMIT 1`,
+    [id, customerId],
   )
+  
   if (!updated) throw createError({ statusCode: 404, message: 'Adresse introuvable' })
 
   return {

@@ -3,6 +3,9 @@
 export const useT = () => {
   const translations = useState<Record<string, string>>('oss_translations', () => ({}))
   const loaded = useState<boolean>('oss_translations_loaded', () => false)
+  
+  
+  const recordKey = import.meta.server ? translationKeyRecorder(useNuxtApp()) : null
 
   async function load() {
     if (loaded.value) return
@@ -19,9 +22,25 @@ export const useT = () => {
   }
 
   
-  function t(key: string, params?: Record<string, string | number>): string {
-    const raw = translations.value[key]
-    if (!raw) {
+
+  function t(
+    key: string,
+    fallbackOrParams?: string | Record<string, string | number>,
+    maybeParams?: Record<string, string | number>,
+  ): string {
+    const fallback = typeof fallbackOrParams === 'string' ? fallbackOrParams : undefined
+    const params =
+      typeof fallbackOrParams === 'object' && fallbackOrParams !== null
+        ? fallbackOrParams
+        : maybeParams
+
+    
+    
+    
+    
+    recordKey?.(key)
+    const raw = (translations.value ?? {})[key] ?? fallback
+    if (raw === undefined) {
       if (import.meta.dev) console.warn(`[useT] missing key: ${key}`)
       return key
     }
@@ -35,5 +54,11 @@ export const useT = () => {
     load()
   }
 
-  return { t, translations, load, loaded }
+  
+
+  function prime(keys: readonly string[]): void {
+    if (recordKey) for (const k of keys) recordKey(k)
+  }
+
+  return { t, translations, load, loaded, prime }
 }

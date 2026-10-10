@@ -5,19 +5,19 @@
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
       </NuxtLink>
       <div v-if="category" class="flex-1 min-w-0">
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100 truncate">{{ category.name || 'Catégorie sans nom' }}</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100 truncate">{{ category.name || tHub('hub.ui.category.no_name', 'Catégorie sans nom') }}</h1>
         <p class="text-xs text-gray-400 mt-0.5">
-          #{{ category.id }} — profondeur {{ category.depth }} — {{ nbProducts }} produit{{ nbProducts > 1 ? 's' : '' }}
+          {{ nbProducts > 1 ? tHub('hub.ui.category.depth_line_other', '#{id} — profondeur {depth} — {n} produits', { id: category.id, depth: category.depth, n: nbProducts }) : tHub('hub.ui.category.depth_line_one', '#{id} — profondeur {depth} — {n} produit', { id: category.id, depth: category.depth, n: nbProducts }) }}
         </p>
       </div>
       <div v-else class="flex-1" />
 
       <div class="flex items-center gap-3">
         
-        <HubLangSelector aria-label="Langue d'édition de la catégorie" />
+        <HubLangSelector :aria-label="tHub('hub.ui.category.lang_aria', 'Langue d\'édition de la catégorie')" />
 
-        <label class="flex items-center gap-2 text-xs cursor-pointer" :class="{ 'opacity-40 cursor-not-allowed': !isMasterLang }" title="Affichée sur la boutique (éditable en langue master uniquement)">
-          <span class="text-gray-500 dark:text-slate-400">Affichée</span>
+        <label class="flex items-center gap-2 text-xs cursor-pointer" :class="{ 'opacity-40 cursor-not-allowed': !isMasterLang }" :title="tHub('hub.ui.category.active_title', 'Affichée sur la boutique (éditable en langue master uniquement)')">
+          <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.category.displayed', 'Affichée') }}</span>
           <span class="relative inline-block w-9 h-5">
             <input type="checkbox" v-model="form.active" :disabled="!isMasterLang" class="peer sr-only" />
             <span class="absolute inset-0 bg-gray-200 dark:bg-slate-700 rounded-full peer-checked:bg-primary-600 transition-colors"></span>
@@ -25,7 +25,7 @@
           </span>
         </label>
 
-        <span v-if="saved" class="text-xs text-green-600 font-medium">Sauvegardé</span>
+        <span v-if="saved" class="text-xs text-green-600 font-medium">{{ tHub('hub.ui.category.saved', 'Sauvegardé') }}</span>
         <span v-if="saveError" class="text-xs text-red-600 font-medium truncate max-w-xs" :title="saveError">{{ saveError }}</span>
 
         <a
@@ -34,19 +34,19 @@
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-1.5 text-xs px-3 py-2 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium"
-          title="Ouvrir la catégorie sur le site public"
+          :title="tHub('hub.ui.category.open_public_title', 'Ouvrir la catégorie sur le site public')"
         >
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
           </svg>
-          <span>Voir</span>
+          <span>{{ tHub('hub.ui.category.view', 'Voir') }}</span>
         </a>
         <button
           @click="save"
           :disabled="saving || loading"
           class="text-xs px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
         >
-          {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+          {{ saving ? tHub('hub.ui.category.saving', 'Enregistrement…') : tHub('hub.ui.category.save', 'Enregistrer') }}
         </button>
       </div>
     </header>
@@ -91,11 +91,11 @@
           <div v-show="activeTab === 'essentiel'" class="space-y-6">
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-5">
               <div class="flex items-center justify-between">
-                <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Identité</h2>
-                <span class="text-[10px] uppercase tracking-wide text-gray-400">Général</span>
+                <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.identity', 'Identité') }}</h2>
+                <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ tHub('hub.ui.category.general', 'Général') }}</span>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Nom</label>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{{ tHub('hub.ui.category.name', 'Nom') }}</label>
                 <input
                   v-model="form.name"
                   type="text"
@@ -106,8 +106,8 @@
 
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-3">
               <div class="flex items-center justify-between">
-                <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Arborescence</h2>
-                <span class="text-[10px] uppercase tracking-wide text-gray-400">Parent</span>
+                <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.tree', 'Arborescence') }}</h2>
+                <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ tHub('hub.ui.category.parent', 'Parent') }}</span>
               </div>
               <HubCategoryTreeSelect
                 v-model="form.parentId"
@@ -123,8 +123,8 @@
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-4">
               <div class="flex items-start justify-between gap-4">
                 <div>
-                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Image de couverture</h2>
-                  <p class="text-xs text-gray-400 mt-0.5">Format carré (col-4 du hero) — upload manuel ou génération automatique (Pexels / Unsplash).</p>
+                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.cover_image', 'Image de couverture') }}</h2>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.category.cover_hint', 'Format carré (col-4 du hero) — upload manuel ou génération automatique (Pexels / Unsplash).') }}</p>
                 </div>
                 <button
                   @click="requestCatCover"
@@ -133,24 +133,24 @@
                 >
                   <svg v-if="catCoverGenerating" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                   <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" /></svg>
-                  {{ catCoverGenerating ? 'En file…' : 'Générer' }}
+                  {{ catCoverGenerating ? tHub('hub.ui.category.queueing', 'En file…') : tHub('hub.ui.category.generate', 'Générer') }}
                 </button>
               </div>
 
               <div>
                 <label for="cat-cover-keywords" class="block text-[11px] font-medium text-gray-500 dark:text-slate-400 mb-1">
-                  Mots-clés image (optionnel)
+                  {{ tHub('hub.ui.category.cover_keywords', 'Mots-clés image (optionnel)') }}
                 </label>
                 <input
                   id="cat-cover-keywords"
                   v-model="catCoverKeywords"
                   type="text"
                   maxlength="255"
-                  placeholder="ex : olives kalamata greek market"
+                  :placeholder="tHub('hub.ui.category.cover_kw_ph', 'ex : olives kalamata greek market')"
                   class="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
                 />
                 <p class="text-[10px] text-gray-400 mt-1">
-                  Si rempli, ces mots-clés sont envoyés tels quels à Pexels/Unsplash (anglais recommandé). Vide = cascade auto sur le nom de la catégorie.
+                  {{ tHub('hub.ui.category.cover_kw_help', 'Si rempli, ces mots-clés sont envoyés tels quels à Pexels/Unsplash (anglais recommandé). Vide = cascade auto sur le nom de la catégorie.') }}
                 </p>
               </div>
 
@@ -164,7 +164,7 @@
                   />
                 </div>
                 <div v-else class="aspect-square w-full rounded-lg border-2 border-dashed border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-400">
-                  <p class="text-xs">Aucune image</p>
+                  <p class="text-xs">{{ tHub('hub.ui.category.no_image', 'Aucune image') }}</p>
                 </div>
               </div>
 
@@ -181,7 +181,7 @@
                 @click="onUploadCover"
                 class="w-full text-xs px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
               >
-                {{ coverUploading ? 'Envoi…' : "Remplacer l'image" }}
+                {{ coverUploading ? tHub('hub.ui.category.sending', 'Envoi…') : tHub('hub.ui.category.replace_image', 'Remplacer l\'image') }}
               </button>
               <p v-if="coverUploadError" class="text-xs text-rose-600 dark:text-rose-400">{{ coverUploadError }}</p>
               <p v-if="catCoverStatus" class="text-[10px]" :class="catCoverStatusClass">{{ catCoverStatus }}</p>
@@ -198,22 +198,51 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01" />
                   </svg>
                   <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 absolute left-6 top-0 z-30 w-80 p-3 rounded-lg bg-slate-900 text-slate-100 text-[11px] leading-relaxed shadow-xl ring-1 ring-slate-700">
-                    <p class="font-semibold mb-1.5 text-white">Le H1 est décisif pour le SEO.</p>
-                    <p class="mb-1.5">Il oriente le mot-clé ciblé par toute la page et alimente la rédaction IA — il n'est <strong class="text-emerald-300">jamais</strong> généré automatiquement.</p>
-                    <p>La section <strong class="text-emerald-300">Mots-clés ciblés (Search Console)</strong> ci-dessous liste les requêtes réelles qui mentionnent cette catégorie. Le top keyword (impressions × position) suggère le H1 optimal — clique « Appliquer comme H1 » pour l'utiliser.</p>
+                    <p class="font-semibold mb-1.5 text-white">{{ tHub('hub.ui.category.h1_tip_title', 'Le H1 est décisif pour le SEO.') }}</p>
+                    <p class="mb-1.5">{{ tHub('hub.ui.category.h1_tip_a', 'Il oriente le mot-clé ciblé par toute la page et alimente la rédaction IA — il n\'est') }} <strong class="text-emerald-300">{{ tHub('hub.ui.category.h1_tip_never', 'jamais') }}</strong> {{ tHub('hub.ui.category.h1_tip_b', 'généré automatiquement.') }}</p>
+                    <p>{{ tHub('hub.ui.category.h1_tip_c_a', 'La section') }} <strong class="text-emerald-300">{{ tHub('hub.ui.category.seo_title', 'Mots-clés ciblés (Search Console)') }}</strong> {{ tHub('hub.ui.category.h1_tip_c_b', 'ci-dessous liste les requêtes réelles qui mentionnent cette catégorie. Le top keyword (impressions × position) suggère le H1 optimal — clique « Appliquer comme H1 » pour l\'utiliser.') }}</p>
                   </div>
                 </div>
               </div>
-              <p class="text-xs text-gray-400">Titre principal affiché sur la page catégorie (distinct du nom navigation).</p>
+              <p class="text-xs text-gray-400">{{ tHub('hub.ui.category.h1_desc', 'Titre principal affiché sur la page catégorie (distinct du nom navigation).') }}</p>
               <input
                 id="cat-h1"
                 v-model="form.h1"
                 type="text"
                 maxlength="255"
-                placeholder="Ex : Fruits secs en gros — sélection Rungis"
+                :placeholder="tHub('hub.ui.category.h1_ph', 'Ex : Chaussures de randonnée pour homme')"
                 class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
               />
               <p class="text-[10px] text-gray-400">{{ form.h1.length }}/255</p>
+            </div>
+
+            
+            <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-3">
+              <div>
+                <label for="cat-hero-image" class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.hero_title', 'Image d\'ambiance (héros catégorie)') }}</label>
+                <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.category.hero_help_a', 'URL de l\'image affichée en tête de la page catégorie —') }} <strong>{{ tHub('hub.ui.category.hero_ratio', 'format 4/3') }}</strong>{{ tHub('hub.ui.category.hero_help_b', ', elle prend la place de la vignette catalogue. Laissez vide pour utiliser l\'image catalogue PS ou le placeholder.') }}</p>
+              </div>
+              <input
+                id="cat-hero-image"
+                v-model="form.heroImageUrl"
+                type="url"
+                maxlength="500"
+                :placeholder="tHub('hub.ui.category.hero_ph', 'https://… ou /img/cat-hero/exemple.jpg')"
+                :disabled="!isMasterLang"
+                :title="!isMasterLang ? tHub('hub.ui.category.hero_locked_title', 'L\'image héros est partagée entre les langues — à éditer en langue master uniquement.') : undefined"
+                class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              
+              <div v-if="form.heroImageUrl" class="relative w-full max-w-xs overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800" style="aspect-ratio:4/3">
+                <img
+                  :src="form.heroImageUrl"
+                  :alt="tHub('hub.ui.category.hero_alt', 'Aperçu image héros — {name}', { name: form.name })"
+                  class="w-full h-full object-cover"
+                  @error="(e: Event) => (e.target as HTMLImageElement).style.visibility='hidden'"
+                  @load="(e: Event) => (e.target as HTMLImageElement).style.visibility='visible'"
+                />
+                <p class="absolute bottom-1 right-2 text-[10px] text-white/70 bg-black/30 rounded px-1">{{ tHub('hub.ui.category.preview', 'Aperçu') }}</p>
+              </div>
             </div>
 
             
@@ -227,25 +256,25 @@
                 <div class="flex-1 min-w-0">
                   <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2 flex-wrap">
                     <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>
-                    Mots-clés ciblés (Search Console)
+                    {{ tHub('hub.ui.category.seo_title', 'Mots-clés ciblés (Search Console)') }}
                     <span v-if="seoIsPillar" class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300">
-                      Page pilier · {{ seoChildren.length }} sous-cat.
+                      {{ tHub('hub.ui.category.pillar_badge', 'Page pilier · {n} sous-cat.', { n: seoChildren.length }) }}
                     </span>
                     <span v-if="!seoExpanded && (seoKeywords.length || seoSiloBuckets.length)" class="text-[10px] font-medium text-gray-400 normal-case tracking-normal">
-                      {{ seoKeywords.length }} broad · {{ seoSiloBuckets.reduce((a, b) => a + b.keywords.length, 0) }} en silo
+                      {{ tHub('hub.ui.category.kw_summary', '{broad} broad · {silo} en silo', { broad: seoKeywords.length, silo: seoSiloBuckets.reduce((a, b) => a + b.keywords.length, 0) }) }}
                     </span>
                   </h2>
                   <p v-if="seoExpanded" class="text-xs text-gray-400 mt-0.5">
                     <template v-if="seoIsPillar">
-                      Cette catégorie a des enfants — seuls les mots-clés <strong>broad</strong> (transverses) sont gardés ici. Les requêtes spécifiques sont déléguées aux sous-catégories ci-dessous.
+                      {{ tHub('hub.ui.category.pillar_desc_a', 'Cette catégorie a des enfants — seuls les mots-clés') }} <strong>{{ tHub('hub.ui.category.kw_broad', 'broad') }}</strong> {{ tHub('hub.ui.category.pillar_desc_b', '(transverses) sont gardés ici. Les requêtes spécifiques sont déléguées aux sous-catégories ci-dessous.') }}
                     </template>
                     <template v-else>
-                      Opportunités GSC qui mentionnent cette catégorie. Le top keyword pilote le H1 et la rédaction IA.
+                      {{ tHub('hub.ui.category.leaf_desc', 'Opportunités GSC qui mentionnent cette catégorie. Le top keyword pilote le H1 et la rédaction IA.') }}
                     </template>
                   </p>
                   <p v-else-if="seoBest" class="text-xs text-gray-400 mt-0.5 truncate">
-                    Top : <span class="font-semibold text-gray-600 dark:text-slate-300">{{ seoBest.query }}</span>
-                    <span class="text-[10px]">· pos. {{ seoBest.position }} · {{ seoBest.impressions.toLocaleString('fr-FR') }} impr.</span>
+                    {{ tHub('hub.ui.category.top_label', 'Top :') }} <span class="font-semibold text-gray-600 dark:text-slate-300">{{ seoBest.query }}</span>
+                    <span class="text-[10px]">· {{ tHub('hub.ui.category.best_line', 'pos. {pos} · {impr} impr.', { pos: seoBest.position, impr: seoBest.impressions.toLocaleString('fr-FR') }) }}</span>
                   </p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -256,7 +285,7 @@
                     :class="seoLoading ? 'opacity-50 pointer-events-none' : ''"
                     class="text-[10px] px-2 py-1 rounded border border-gray-200 dark:border-slate-700 text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                   >
-                    {{ seoLoading ? 'Chargement…' : 'Actualiser' }}
+                    {{ seoLoading ? tHub('hub.ui.category.loading', 'Chargement…') : tHub('hub.ui.category.refresh', 'Actualiser') }}
                   </span>
                   <svg
                     class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform"
@@ -273,25 +302,24 @@
                 <svg class="w-4 h-4 animate-spin mx-auto text-emerald-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
               </div>
               <div v-else-if="seoError" class="text-xs text-amber-600 bg-amber-50 dark:bg-amber-500/10 rounded p-2">
-                {{ seoError }} — <NuxtLink to="/hub/admin/features" class="underline">configurer GSC</NuxtLink>
+                {{ seoError }} — <NuxtLink to="/hub/admin/features" class="underline">{{ tHub('hub.ui.category.configure_gsc', 'configurer GSC') }}</NuxtLink>
               </div>
               <div v-else-if="!seoKeywords.length" class="text-xs text-gray-400 italic">
-                Aucun mot-clé GSC ne mentionne « {{ form.name }} » sur les 28 derniers jours.
-                Soit la catégorie est neuve, soit le sujet n'est pas encore indexé.
+                {{ tHub('hub.ui.category.no_kw', 'Aucun mot-clé GSC ne mentionne « {name} » sur les 28 derniers jours. Soit la catégorie est neuve, soit le sujet n\'est pas encore indexé.', { name: form.name }) }}
               </div>
               <div v-else>
                 
                 <div v-if="seoBest && seoRecommendedH1" class="mb-3 p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30">
                   <div class="flex items-start justify-between gap-3">
                     <div class="flex-1 min-w-0">
-                      <p class="text-[10px] font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-1">H1 recommandé (top GSC)</p>
+                      <p class="text-[10px] font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-1">{{ tHub('hub.ui.category.h1_reco', 'H1 recommandé (top GSC)') }}</p>
                       <p class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ seoRecommendedH1 }}</p>
                       <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-1">
-                        Position {{ seoBest.position }} · {{ seoBest.impressions.toLocaleString('fr-FR') }} impressions · {{ seoBest.clicks }} clics · CTR {{ seoBest.ctr }}%
+                        {{ tHub('hub.ui.category.reco_stats', 'Position {pos} · {impr} impressions · {clicks} clics · CTR {ctr}%', { pos: seoBest.position, impr: seoBest.impressions.toLocaleString('fr-FR'), clicks: seoBest.clicks, ctr: seoBest.ctr }) }}
                       </p>
                     </div>
                     <button @click="applyH1FromSeo" class="text-[11px] px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-semibold transition-colors shrink-0">
-                      Appliquer comme H1
+                      {{ tHub('hub.ui.category.apply_h1', 'Appliquer comme H1') }}
                     </button>
                   </div>
                 </div>
@@ -301,12 +329,12 @@
                   <table class="w-full text-[11px]">
                     <thead class="text-[9px] uppercase tracking-wider text-gray-500 dark:text-slate-500 border-b border-gray-100 dark:border-slate-800">
                       <tr>
-                        <th class="px-6 py-1.5 text-left font-semibold">Mot-clé</th>
-                        <th class="px-2 py-1.5 text-right font-semibold">Pos.</th>
-                        <th class="px-2 py-1.5 text-right font-semibold">Impr.</th>
-                        <th class="px-2 py-1.5 text-right font-semibold">Clics</th>
-                        <th class="px-2 py-1.5 text-right font-semibold">CTR</th>
-                        <th class="px-2 py-1.5 text-left font-semibold">Type</th>
+                        <th class="px-6 py-1.5 text-left font-semibold">{{ tHub('hub.ui.category.th_keyword', 'Mot-clé') }}</th>
+                        <th class="px-2 py-1.5 text-right font-semibold">{{ tHub('hub.ui.category.th_pos', 'Pos.') }}</th>
+                        <th class="px-2 py-1.5 text-right font-semibold">{{ tHub('hub.ui.category.th_impr', 'Impr.') }}</th>
+                        <th class="px-2 py-1.5 text-right font-semibold">{{ tHub('hub.ui.category.th_clicks', 'Clics') }}</th>
+                        <th class="px-2 py-1.5 text-right font-semibold">{{ tHub('hub.ui.category.th_ctr', 'CTR') }}</th>
+                        <th class="px-2 py-1.5 text-left font-semibold">{{ tHub('hub.ui.category.th_type', 'Type') }}</th>
                         <th class="px-6 py-1.5 text-right font-semibold w-20"></th>
                       </tr>
                     </thead>
@@ -338,32 +366,32 @@
                 </div>
 
                 <p class="text-[10px] text-gray-400 mt-3">
-                  Ces données seront automatiquement injectées dans le prompt « Rédaction IA » ci-dessous pour orienter le résumé et la description longue.
+                  {{ tHub('hub.ui.category.kw_note', 'Ces données seront automatiquement injectées dans le prompt « Rédaction IA » ci-dessous pour orienter le résumé et la description longue.') }}
                 </p>
 
                 
                 <div v-if="seoIsPillar && seoSiloBuckets.length" class="mt-5 pt-4 border-t border-gray-100 dark:border-slate-800">
                   <h3 class="text-xs font-bold text-gray-700 dark:text-slate-200 mb-2">
-                    Distribution silo — {{ seoSiloBuckets.reduce((a, b) => a + b.keywords.length, 0) }} mots-clés à déléguer aux sous-catégories
+                    {{ tHub('hub.ui.category.silo_title', 'Distribution silo — {n} mots-clés à déléguer aux sous-catégories', { n: seoSiloBuckets.reduce((a, b) => a + b.keywords.length, 0) }) }}
                   </h3>
                   <p class="text-[10px] text-gray-400 mb-3">
-                    Ces requêtes ciblent des thématiques spécifiques. Elles devraient être traitées par la sous-catégorie correspondante (cocon sémantique).
+                    {{ tHub('hub.ui.category.silo_desc', 'Ces requêtes ciblent des thématiques spécifiques. Elles devraient être traitées par la sous-catégorie correspondante (cocon sémantique).') }}
                   </p>
                   <div class="space-y-3">
                     <div v-for="bucket in seoSiloBuckets" :key="bucket.childId" class="rounded-lg border border-gray-100 dark:border-slate-800 overflow-hidden">
                       <div class="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-slate-800/50">
                         <div class="flex items-center gap-2">
                           <span class="text-xs font-semibold text-gray-800 dark:text-slate-200">{{ bucket.child.name }}</span>
-                          <span class="text-[10px] text-gray-400">{{ bucket.keywords.length }} mot{{ bucket.keywords.length > 1 ? 's' : '' }}-clé</span>
+                          <span class="text-[10px] text-gray-400">{{ bucket.keywords.length > 1 ? tHub('hub.ui.category.kw_count_other', '{n} mots-clés', { n: bucket.keywords.length }) : tHub('hub.ui.category.kw_count_one', '{n} mot-clé', { n: bucket.keywords.length }) }}</span>
                         </div>
                         <NuxtLink :to="`/hub/categories/${bucket.childId}`" class="text-[10px] text-emerald-600 hover:text-emerald-700 hover:underline">
-                          Éditer →
+                          {{ tHub('hub.ui.category.edit_arrow', 'Éditer →') }}
                         </NuxtLink>
                       </div>
                       <ul class="divide-y divide-gray-100 dark:divide-slate-800">
                         <li v-for="kw in bucket.keywords" :key="kw.query" class="px-3 py-1.5 flex items-center justify-between text-[11px]">
                           <span class="font-medium text-gray-700 dark:text-slate-300">{{ kw.query }}</span>
-                          <span class="font-mono text-gray-400">pos. {{ kw.position }} · {{ kw.impressions }} impr · CTR {{ kw.ctr }}%</span>
+                          <span class="font-mono text-gray-400">{{ tHub('hub.ui.category.pos_line', 'pos. {pos} · {impr} impr · CTR {ctr}%', { pos: kw.position, impr: kw.impressions, ctr: kw.ctr }) }}</span>
                         </li>
                       </ul>
                     </div>
@@ -377,8 +405,8 @@
             <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
               <div class="flex items-center justify-between">
                 <div>
-                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Rédaction IA</h2>
-                  <p class="text-xs text-gray-400 mt-0.5">Résumé + description longue.{{ aiMode === 'centaure' ? ' Copier le prompt, coller dans votre LLM, coller la réponse.' : ' Génération automatique via API (file d\'attente).' }}</p>
+                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.ai_writing', 'Rédaction IA') }}</h2>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ aiMode === 'centaure' ? tHub('hub.ui.category.ai_desc_centaure', 'Résumé + description longue. Copier le prompt, coller dans votre LLM, coller la réponse.') : tHub('hub.ui.category.ai_desc_api', 'Résumé + description longue. Génération automatique via API (file d\'attente).') }}</p>
                 </div>
                 <div class="flex items-center gap-1 bg-gray-100 dark:bg-slate-800 rounded-lg p-0.5">
                   <button
@@ -396,7 +424,7 @@
                 <input
                   v-model="catInstructions"
                   type="text"
-                  placeholder="Consignes (optionnel) : angle, ton, cible…"
+                  :placeholder="tHub('hub.ui.category.instr_ph', 'Consignes (optionnel) : angle, ton, cible…')"
                   class="w-full text-xs border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                 />
               </div>
@@ -408,14 +436,14 @@
                   :disabled="!form.name"
                   class="text-xs px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors font-medium"
                 >
-                  Générer le prompt
+                  {{ tHub('hub.ui.category.gen_prompt', 'Générer le prompt') }}
                 </button>
 
                 <div v-if="centaurePrompt" class="space-y-2">
                   <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-medium text-gray-600 dark:text-slate-300">Prompt (copier dans Claude, Gemini ou ChatGPT)</span>
+                    <span class="text-[11px] font-medium text-gray-600 dark:text-slate-300">{{ tHub('hub.ui.category.prompt_label', 'Prompt (copier dans Claude, Gemini ou ChatGPT)') }}</span>
                     <button @click="copyCentaurePrompt" class="text-[11px] px-2.5 py-1 rounded-md font-medium transition-colors" :class="centaurePromptCopied ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 hover:bg-gray-200'">
-                      {{ centaurePromptCopied ? 'Copié !' : 'Copier' }}
+                      {{ centaurePromptCopied ? tHub('hub.ui.category.copied', 'Copié !') : tHub('hub.ui.category.copy', 'Copier') }}
                     </button>
                   </div>
                   <textarea
@@ -428,11 +456,11 @@
                 </div>
 
                 <div v-if="centaurePrompt" class="space-y-2">
-                  <span class="text-[11px] font-medium text-gray-600 dark:text-slate-300">Réponse du LLM (coller ici)</span>
+                  <span class="text-[11px] font-medium text-gray-600 dark:text-slate-300">{{ tHub('hub.ui.category.llm_response', 'Réponse du LLM (coller ici)') }}</span>
                   <textarea
                     v-model="centaureResponse"
                     rows="8"
-                    placeholder='Collez la réponse JSON du LLM ici : { "summary": "...", "description": "..." }'
+                    :placeholder="tHub('hub.ui.category.llm_json_ph', 'Collez la réponse JSON du LLM ici : {example}', { example: llmJsonExample })"
                     class="w-full text-[11px] font-mono bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                   />
                   <button
@@ -440,7 +468,7 @@
                     @click="applyCentaureResponse"
                     class="text-xs px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
                   >
-                    Appliquer Résumé + Description
+                    {{ tHub('hub.ui.category.apply_summary_desc', 'Appliquer Résumé + Description') }}
                   </button>
                   <p v-if="catRedactionStatus" class="text-[10px]" :class="catRedactionStatusClass">{{ catRedactionStatus }}</p>
                 </div>
@@ -454,47 +482,47 @@
                   class="text-xs px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors font-medium flex items-center gap-1.5"
                 >
                   <svg v-if="catRedactionGenerating" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                  {{ catRedactionGenerating ? 'En cours…' : 'Lancer la rédaction' }}
+                  {{ catRedactionGenerating ? tHub('hub.ui.category.running', 'En cours…') : tHub('hub.ui.category.run_writing', 'Lancer la rédaction') }}
                 </button>
                 <p v-if="catRedactionStatus" class="text-[10px]" :class="catRedactionStatusClass">{{ catRedactionStatus }}</p>
 
                 <div v-if="catRedactionResult" class="space-y-3">
                   <div class="border border-violet-200 dark:border-violet-800 rounded-lg p-3 bg-violet-50/50 dark:bg-violet-950/20 space-y-2">
-                    <p class="text-[10px] font-semibold uppercase tracking-widest text-violet-600">Proposition IA</p>
+                    <p class="text-[10px] font-semibold uppercase tracking-widest text-violet-600">{{ tHub('hub.ui.category.ai_proposal', 'Proposition IA') }}</p>
                     <div v-if="catRedactionResult.short_description">
-                      <span class="text-[10px] text-gray-500">Résumé (haut) :</span>
+                      <span class="text-[10px] text-gray-500">{{ tHub('hub.ui.category.summary_top', 'Résumé (haut) :') }}</span>
                       <div class="text-xs text-gray-600 prose prose-sm" v-html="catRedactionResult.short_description" />
                     </div>
                     <div v-if="catRedactionResult.long_description">
-                      <span class="text-[10px] text-gray-500">Description longue (bas) :</span>
+                      <span class="text-[10px] text-gray-500">{{ tHub('hub.ui.category.desc_bottom', 'Description longue (bas) :') }}</span>
                       <div class="text-xs text-gray-600 prose prose-sm max-h-40 overflow-auto" v-html="catRedactionResult.long_description" />
                     </div>
                   </div>
-                  <button @click="applyCatRedaction" class="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors font-medium">Appliquer Résumé + Description</button>
+                  <button @click="applyCatRedaction" class="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors font-medium">{{ tHub('hub.ui.category.apply_summary_desc', 'Appliquer Résumé + Description') }}</button>
                 </div>
               </div>
             </section>
 
             
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-2">
-              <label for="cat-summary" class="text-sm font-bold text-gray-800 dark:text-slate-100">Résumé</label>
-              <p class="text-xs text-gray-400">Texte court affiché à côté de la cover en haut de page.</p>
+              <label for="cat-summary" class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.summary', 'Résumé') }}</label>
+              <p class="text-xs text-gray-400">{{ tHub('hub.ui.category.summary_hint', 'Texte court affiché à côté de la cover en haut de page.') }}</p>
               <textarea
                 id="cat-summary"
                 v-model="form.summary"
                 rows="5"
-                placeholder="2–3 phrases qui posent la catégorie."
+                :placeholder="tHub('hub.ui.category.summary_ph', '2–3 phrases qui posent la catégorie.')"
                 class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg px-3 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-primary-500/40"
               />
-              <p class="text-[10px] text-gray-400">{{ form.summary.length }} caractères.</p>
+              <p class="text-[10px] text-gray-400">{{ tHub('hub.ui.category.chars_count', '{n} caractères.', { n: form.summary.length }) }}</p>
             </div>
 
             
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-5">
               <div class="flex items-center justify-between">
                 <div>
-                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Description longue</h2>
-                  <p class="text-xs text-gray-400">Texte SEO affiché en bas de page catégorie.</p>
+                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.long_desc', 'Description longue') }}</h2>
+                  <p class="text-xs text-gray-400">{{ tHub('hub.ui.category.long_desc_hint', 'Texte SEO affiché en bas de page catégorie.') }}</p>
                 </div>
                 <div class="flex items-center gap-1">
                   <button
@@ -510,7 +538,7 @@
                   <button
                     type="button"
                     @mousedown.prevent="promptLink"
-                    title="Lien"
+                    :title="tHub('hub.ui.category.link', 'Lien')"
                     class="text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-300 font-mono border border-transparent hover:border-gray-200 dark:hover:border-slate-700 transition-colors"
                   >🔗</button>
                   <span class="mx-1 h-4 w-px bg-gray-200 dark:bg-slate-700" />
@@ -535,10 +563,10 @@
                 v-else
                 v-model="form.description"
                 rows="14"
-                placeholder="<p>Description HTML…</p>"
+                :placeholder="tHub('hub.ui.category.html_desc_ph', '<p>Description HTML…</p>')"
                 class="w-full text-xs font-mono border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-950 rounded-lg px-3 py-3 resize-y focus:outline-none focus:ring-2 focus:ring-primary-500/40"
               />
-              <p class="text-[10px] text-gray-400">{{ plainTextLength }} caractères.</p>
+              <p class="text-[10px] text-gray-400">{{ tHub('hub.ui.category.chars_count', '{n} caractères.', { n: plainTextLength }) }}</p>
             </div>
           </div>
 
@@ -549,8 +577,8 @@
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Génération FAQ par IA</h2>
-                  <p class="text-xs text-gray-400 mt-0.5">Copier le prompt, coller dans votre LLM, coller la réponse JSON.</p>
+                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.faq_gen_title', 'Génération FAQ par IA') }}</h2>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.category.faq_gen_hint', 'Copier le prompt, coller dans votre LLM, coller la réponse JSON.') }}</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <button
@@ -558,14 +586,14 @@
                     :disabled="!form.name"
                     class="text-xs px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-40 transition-colors font-medium"
                   >
-                    Générer le prompt
+                    {{ tHub('hub.ui.category.gen_prompt', 'Générer le prompt') }}
                   </button>
                   <button
                     v-if="faqCentaurePrompt"
                     @click="copyFaqCentaurePrompt"
                     class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium"
                   >
-                    {{ faqCentaurePromptCopied ? 'Copié !' : 'Copier' }}
+                    {{ faqCentaurePromptCopied ? tHub('hub.ui.category.copied', 'Copié !') : tHub('hub.ui.category.copy', 'Copier') }}
                   </button>
                 </div>
               </div>
@@ -579,7 +607,7 @@
                   @focus="($event.target as HTMLTextAreaElement).select()"
                 />
                 <div class="space-y-2">
-                  <span class="text-[11px] font-medium text-gray-600 dark:text-slate-300">Réponse du LLM (coller ici)</span>
+                  <span class="text-[11px] font-medium text-gray-600 dark:text-slate-300">{{ tHub('hub.ui.category.llm_response', 'Réponse du LLM (coller ici)') }}</span>
                   <textarea
                     v-model="faqCentaureResponse"
                     rows="6"
@@ -591,11 +619,11 @@
                     @click="applyFaqCentaureResponse"
                     class="text-xs px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
                   >
-                    Appliquer les FAQ
+                    {{ tHub('hub.ui.category.apply_faq', 'Appliquer les FAQ') }}
                   </button>
                 </div>
               </div>
-              <p v-else-if="!form.name" class="text-xs text-gray-400">Enregistrez d'abord un nom de catégorie.</p>
+              <p v-else-if="!form.name" class="text-xs text-gray-400">{{ tHub('hub.ui.category.need_name', 'Enregistrez d\'abord un nom de catégorie.') }}</p>
               <p v-if="catRedactionStatus && !faqCentaurePrompt" class="text-[10px]" :class="catRedactionStatusClass">{{ catRedactionStatus }}</p>
             </div>
 
@@ -620,8 +648,8 @@
             <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Optimisation SEO par IA</h2>
-                  <p class="text-xs text-gray-400 mt-0.5">Optimise meta_title, meta_description et slug pour maximiser le CTR.</p>
+                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.seo_ai_title', 'Optimisation SEO par IA') }}</h2>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.category.seo_ai_hint', 'Optimise meta_title, meta_description et slug pour maximiser le CTR.') }}</p>
                 </div>
               </div>
 
@@ -631,14 +659,14 @@
                   :disabled="!form.name"
                   class="text-xs px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-40 transition-colors font-medium"
                 >
-                  Générer le prompt
+                  {{ tHub('hub.ui.category.gen_prompt', 'Générer le prompt') }}
                 </button>
                 <button
                   v-if="seoPrompt"
                   @click="copySeoPrompt"
                   class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium"
                 >
-                  {{ seoPromptCopied ? 'Copié !' : 'Copier' }}
+                  {{ seoPromptCopied ? tHub('hub.ui.category.copied', 'Copié !') : tHub('hub.ui.category.copy', 'Copier') }}
                 </button>
               </div>
 
@@ -651,7 +679,7 @@
                   @focus="($event.target as HTMLTextAreaElement).select()"
                 />
                 <div>
-                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Coller la réponse IA</label>
+                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.category.paste_ai', 'Coller la réponse IA') }}</label>
                   <textarea
                     v-model="seoResponse"
                     rows="6"
@@ -664,7 +692,7 @@
                   :disabled="!seoResponse"
                   class="text-xs px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-40 transition-colors font-medium"
                 >
-                  Appliquer les optimisations SEO
+                  {{ tHub('hub.ui.category.apply_seo', 'Appliquer les optimisations SEO') }}
                 </button>
               </div>
               <p v-if="seoApplyStatus" class="text-[10px]" :class="seoApplyStatusClass">{{ seoApplyStatus }}</p>
@@ -673,28 +701,28 @@
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-5">
               <div class="flex items-center justify-between">
                 <div>
-                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Référencement</h2>
-                  <p class="text-[11px] text-gray-400 mt-0.5">Meta title, meta description, slug. Preview Google en direct.</p>
+                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.ref_title', 'Référencement') }}</h2>
+                  <p class="text-[11px] text-gray-400 mt-0.5">{{ tHub('hub.ui.category.ref_hint', 'Meta title, meta description, slug. Preview Google en direct.') }}</p>
                 </div>
                 <span class="text-[10px] uppercase tracking-wide text-gray-400">SEO</span>
               </div>
 
               <div>
                 <div class="flex items-center justify-between mb-1">
-                  <label class="text-xs font-medium text-gray-500">Meta title</label>
+                  <label class="text-xs font-medium text-gray-500">{{ tHub('hub.ui.category.meta_title', 'Meta title') }}</label>
                   <span class="text-[10px] font-mono" :class="titleCounterClass">{{ titleLength }} / 60</span>
                 </div>
                 <input
                   v-model="form.metaTitle"
                   type="text"
-                  :placeholder="form.name || 'Titre affiché dans Google'"
+                  :placeholder="form.name || tHub('hub.ui.category.title_ph', 'Titre affiché dans Google')"
                   class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                 />
               </div>
 
               <div>
                 <div class="flex items-center justify-between mb-1">
-                  <label class="text-xs font-medium text-gray-500">Meta description</label>
+                  <label class="text-xs font-medium text-gray-500">{{ tHub('hub.ui.category.meta_desc', 'Meta description') }}</label>
                   <span class="text-[10px] font-mono" :class="descCounterClass">{{ descLength }} / 160</span>
                 </div>
                 <textarea
@@ -705,13 +733,13 @@
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">URL réécrite (link rewrite)</label>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{{ tHub('hub.ui.category.rewrite_url', 'URL réécrite (link rewrite)') }}</label>
                 <div class="flex items-center gap-2">
                   <span class="text-[11px] text-gray-400 font-mono select-none">/</span>
                   <input
                     v-model="form.slug"
                     type="text"
-                    placeholder="ma-categorie"
+                    :placeholder="tHub('hub.ui.category.slug_ph', 'ma-categorie')"
                     @input="sanitizeSlug"
                     class="flex-1 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg px-3 py-2 font-mono focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                   />
@@ -719,13 +747,13 @@
                     type="button"
                     @click="regenerateSlug"
                     class="text-[10px] uppercase tracking-wide px-2 py-2 rounded border border-gray-200 dark:border-slate-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >Régénérer</button>
+                  >{{ tHub('hub.ui.category.regen', 'Régénérer') }}</button>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-1">Minuscules, tirets, pas d'accent ni d'espace.</p>
+                <p class="text-[10px] text-gray-400 mt-1">{{ tHub('hub.ui.category.slug_hint', 'Minuscules, tirets, pas d\'accent ni d\'espace.') }}</p>
               </div>
 
               <div class="pt-4 border-t border-gray-100 dark:border-slate-800">
-                <p class="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-3">Aperçu Google</p>
+                <p class="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-3">{{ tHub('hub.ui.category.google_preview', 'Aperçu Google') }}</p>
                 <div class="bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-lg p-4 font-sans">
                   <div class="flex items-center gap-2 mb-1">
                     <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 via-red-500 to-yellow-500 flex items-center justify-center text-white text-[10px] font-bold">G</div>
@@ -742,9 +770,9 @@
                   </p>
                 </div>
                 <p class="text-[10px] text-gray-400 mt-2">
-                  <span v-if="titleLength > 60" class="text-amber-600">⚠ Meta title &gt; 60 caractères, Google tronquera.</span>
-                  <span v-else-if="descLength > 160" class="text-amber-600">⚠ Meta description &gt; 160 caractères, Google tronquera.</span>
-                  <span v-else class="text-emerald-600">✓ Longueurs conformes aux recommandations Google.</span>
+                  <span v-if="titleLength > 60" class="text-amber-600">{{ tHub('hub.ui.category.warn_title', '⚠ Meta title > 60 caractères, Google tronquera.') }}</span>
+                  <span v-else-if="descLength > 160" class="text-amber-600">{{ tHub('hub.ui.category.warn_desc', '⚠ Meta description > 160 caractères, Google tronquera.') }}</span>
+                  <span v-else class="text-emerald-600">{{ tHub('hub.ui.category.ok_len', '✓ Longueurs conformes aux recommandations Google.') }}</span>
                 </p>
               </div>
             </div>
@@ -752,8 +780,8 @@
             <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-4">
               <div class="flex items-center justify-between">
                 <div>
-                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Accès des groupes</h2>
-                  <p class="text-[11px] text-gray-400 mt-0.5">Groupes clients autorisés à voir cette catégorie.</p>
+                  <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.groups_title', 'Accès des groupes') }}</h2>
+                  <p class="text-[11px] text-gray-400 mt-0.5">{{ tHub('hub.ui.category.groups_hint', 'Groupes clients autorisés à voir cette catégorie.') }}</p>
                 </div>
                 <span class="text-[10px] uppercase tracking-wide text-gray-400">ps_category_group</span>
               </div>
@@ -773,8 +801,11 @@
                   <span class="text-[10px] text-gray-400 font-mono ml-auto">#{{ g.id }}</span>
                 </label>
               </div>
-              <p v-else class="text-xs text-gray-400">Aucun groupe configuré.</p>
+              <p v-else class="text-xs text-gray-400">{{ tHub('hub.ui.category.no_groups', 'Aucun groupe configuré.') }}</p>
             </div>
+
+            
+            <HubSeoStatusControl v-if="Number($route.params.id) > 0" entity="category" :id="Number($route.params.id)" />
           </div>
         </div>
 
@@ -782,34 +813,34 @@
         <div class="space-y-6">
           <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">État</h2>
-              <span class="text-[10px] uppercase tracking-wide text-gray-400">Status</span>
+              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.state', 'État') }}</h2>
+              <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ tHub('hub.ui.category.status_label', 'Status') }}</span>
             </div>
             <label class="flex items-center gap-3 text-sm cursor-pointer">
               <input type="checkbox" v-model="form.active" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-              <span class="text-gray-800 dark:text-slate-100">Catégorie visible</span>
+              <span class="text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.category.visible_cat', 'Catégorie visible') }}</span>
             </label>
             <div class="text-xs text-gray-500 space-y-1 pt-2 border-t border-gray-100 dark:border-slate-800">
-              <div class="flex items-center justify-between"><span>Profondeur</span><span class="font-mono text-gray-700 dark:text-slate-200">{{ category.depth }}</span></div>
-              <div class="flex items-center justify-between"><span>Produits</span><span class="font-mono text-gray-700 dark:text-slate-200">{{ nbProducts }}</span></div>
-              <div class="flex items-center justify-between"><span>Parent</span><span class="font-mono text-gray-700 dark:text-slate-200">#{{ form.parentId }}</span></div>
+              <div class="flex items-center justify-between"><span>{{ tHub('hub.ui.category.depth', 'Profondeur') }}</span><span class="font-mono text-gray-700 dark:text-slate-200">{{ category.depth }}</span></div>
+              <div class="flex items-center justify-between"><span>{{ tHub('hub.ui.category.products', 'Produits') }}</span><span class="font-mono text-gray-700 dark:text-slate-200">{{ nbProducts }}</span></div>
+              <div class="flex items-center justify-between"><span>{{ tHub('hub.ui.category.parent', 'Parent') }}</span><span class="font-mono text-gray-700 dark:text-slate-200">#{{ form.parentId }}</span></div>
             </div>
           </div>
 
           <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Raccourcis</h2>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ tHub('hub.ui.category.shortcuts', 'Raccourcis') }}</h2>
             <div class="space-y-2">
               <NuxtLink
                 :to="`/hub/products?category=${category.id}`"
                 class="block text-xs px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
               >
-                Voir les produits ({{ nbProducts }})
+                {{ tHub('hub.ui.category.see_products', 'Voir les produits ({n})', { n: nbProducts }) }}
               </NuxtLink>
               <NuxtLink
                 to="/hub/categories"
                 class="block text-xs px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
               >
-                Retour à la liste
+                {{ tHub('hub.ui.category.back_list', 'Retour à la liste') }}
               </NuxtLink>
               <button
                 type="button"
@@ -817,7 +848,7 @@
                 class="w-full text-left text-xs px-3 py-2 rounded-lg border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79" /></svg>
-                Supprimer la catégorie
+                {{ tHub('hub.ui.category.delete_cat', 'Supprimer la catégorie') }}
               </button>
             </div>
           </div>
@@ -826,15 +857,15 @@
           <Teleport to="body">
             <div v-if="showDeleteModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showDeleteModal = false">
               <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
-                <h3 class="text-base font-bold text-gray-900 dark:text-white">Supprimer « {{ category?.name || `#${category?.id}` }} »</h3>
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ tHub('hub.ui.category.delete_title', 'Supprimer « {name} »', { name: category?.name || `#${category?.id}` }) }}</h3>
                 <p class="text-xs text-gray-500 dark:text-slate-400">
-                  Cette catégorie contient <strong>{{ nbProducts }}</strong> produit{{ nbProducts > 1 ? 's' : '' }}. Choisis comment les traiter.
+                  {{ tHub('hub.ui.category.delete_body_a', 'Cette catégorie contient') }} <strong>{{ nbProducts }}</strong> {{ nbProducts > 1 ? tHub('hub.ui.category.delete_body_other', 'produits. Choisis comment les traiter.') : tHub('hub.ui.category.delete_body_one', 'produit. Choisis comment les traiter.') }}
                 </p>
 
                 <div>
-                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5">Migrer les produits vers</label>
+                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5">{{ tHub('hub.ui.category.migrate_to', 'Migrer les produits vers') }}</label>
                   <select v-model.number="deleteTargetId" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800">
-                    <option :value="0">— Ne pas migrer (les produits perdent cette cat) —</option>
+                    <option :value="0">{{ tHub('hub.ui.category.no_migrate', '— Ne pas migrer (les produits perdent cette cat) —') }}</option>
                     <option v-for="c in deleteTargetOptions" :key="c.id" :value="c.id">
                       {{ '— '.repeat(Math.max(0, c.depth - 2)) }}{{ c.name }} (#{{ c.id }})
                     </option>
@@ -844,16 +875,16 @@
                 <label class="flex items-start gap-2 text-xs cursor-pointer">
                   <input v-model="deleteHard" type="checkbox" class="mt-0.5 rounded border-gray-300 text-red-600 focus:ring-red-500" />
                   <span class="text-gray-700 dark:text-slate-300">
-                    <strong>Suppression définitive</strong> — supprime aussi la cat de la base. Sinon, elle est juste désactivée (récupérable).
+                    <strong>{{ tHub('hub.ui.category.hard_delete_label', 'Suppression définitive') }}</strong> {{ tHub('hub.ui.category.hard_delete_b', '— supprime aussi la cat de la base. Sinon, elle est juste désactivée (récupérable).') }}
                   </span>
                 </label>
 
                 <div v-if="deleteError" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded">{{ deleteError }}</div>
 
                 <div class="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-slate-800">
-                  <button @click="showDeleteModal = false" class="text-xs px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Annuler</button>
+                  <button @click="showDeleteModal = false" class="text-xs px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">{{ tHub('hub.ui.category.cancel', 'Annuler') }}</button>
                   <button @click="confirmDelete" :disabled="deleteLoading" class="text-xs px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold disabled:opacity-50 transition-colors">
-                    {{ deleteLoading ? 'Suppression…' : (deleteHard ? 'Supprimer définitivement' : 'Désactiver') }}
+                    {{ deleteLoading ? tHub('hub.ui.category.deleting', 'Suppression…') : (deleteHard ? tHub('hub.ui.category.delete_hard_btn', 'Supprimer définitivement') : tHub('hub.ui.category.deactivate', 'Désactiver')) }}
                   </button>
                 </div>
               </div>
@@ -864,13 +895,15 @@
     </div>
 
     <div v-else class="px-6 py-16 text-center">
-      <p class="text-sm text-gray-500">Catégorie introuvable.</p>
+      <p class="text-sm text-gray-500">{{ tHub('hub.ui.category.not_found', 'Catégorie introuvable.') }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', ssr: false, middleware: ['hub-auth'] })
+
+const { t: tHub } = useHubT()
 
 import type { CategoryFaq, LinkedBlogPost } from '~/types/hub/category-silo'
 
@@ -921,7 +954,7 @@ async function confirmDelete() {
     
     await navigateTo('/hub/categories')
   } catch (err: any) {
-    deleteError.value = err?.data?.message || err?.message || 'Erreur suppression'
+    deleteError.value = err?.data?.message || err?.message || tHub('hub.ui.category.delete_error', 'Erreur suppression')
   } finally {
     deleteLoading.value = false
   }
@@ -937,6 +970,7 @@ const form = reactive({
   name: '',
   slug: '',
   h1: '',
+  heroImageUrl: '',
   summary: '',
   description: '',
   parentId: 2,
@@ -950,23 +984,23 @@ const form = reactive({
 
 type CategoryTab = 'essentiel' | 'contenu' | 'faq' | 'maillage' | 'seo'
 const activeTab = ref<CategoryTab>('essentiel')
-const tabs: Array<{ id: CategoryTab; label: string }> = [
-  { id: 'essentiel', label: 'Essentiel' },
-  { id: 'contenu', label: 'Contenu' },
-  { id: 'faq', label: 'FAQ' },
-  { id: 'maillage', label: 'Maillage' },
-  { id: 'seo', label: 'SEO & Accès' },
-]
+const tabs = computed<Array<{ id: CategoryTab; label: string }>>(() => [
+  { id: 'essentiel', label: tHub('hub.ui.category.tab_essential', 'Essentiel') },
+  { id: 'contenu', label: tHub('hub.ui.category.tab_content', 'Contenu') },
+  { id: 'faq', label: tHub('hub.ui.category.tab_faq', 'FAQ') },
+  { id: 'maillage', label: tHub('hub.ui.category.tab_linking', 'Maillage') },
+  { id: 'seo', label: tHub('hub.ui.category.tab_seo_access', 'SEO & Accès') },
+])
 
 const mode = ref<'wysiwyg' | 'html'>('wysiwyg')
 const editorEl = ref<HTMLElement | null>(null)
-const toolbar = [
-  { cmd: 'bold', label: 'Gras', icon: 'B' },
-  { cmd: 'italic', label: 'Italique', icon: 'I' },
-  { cmd: 'formatBlock', value: 'H2', label: 'Titre H2', icon: 'H2' },
-  { cmd: 'insertUnorderedList', label: 'Liste à puces', icon: '•' },
-  { cmd: 'removeFormat', label: 'Effacer format', icon: '⟲' },
-]
+const toolbar = computed(() => [
+  { cmd: 'bold', label: tHub('hub.ui.category.tool_bold', 'Gras'), icon: 'B' },
+  { cmd: 'italic', label: tHub('hub.ui.category.tool_italic', 'Italique'), icon: 'I' },
+  { cmd: 'formatBlock', value: 'H2', label: tHub('hub.ui.category.tool_h2', 'Titre H2'), icon: 'H2' },
+  { cmd: 'insertUnorderedList', label: tHub('hub.ui.category.tool_list', 'Liste à puces'), icon: '•' },
+  { cmd: 'removeFormat', label: tHub('hub.ui.category.tool_clear', 'Effacer format'), icon: '⟲' },
+])
 function exec(cmd: string, value?: string) {
   if (typeof document === 'undefined') return
   editorEl.value?.focus()
@@ -975,7 +1009,7 @@ function exec(cmd: string, value?: string) {
 }
 function promptLink() {
   if (typeof document === 'undefined') return
-  const url = window.prompt('URL du lien', 'https://')
+  const url = window.prompt(tHub('hub.ui.category.link_url_prompt', 'URL du lien'), 'https://')
   if (!url) return
   editorEl.value?.focus()
   document.execCommand('createLink', false, url)
@@ -1004,17 +1038,14 @@ watch(mode, (m) => {
   })
 })
 
-const siteName = computed(() => {
-  const host = String(config.public.psFrontUrl || '').replace(/^https?:\/\//, '').replace(/\/+$/, '')
-  return host || 'www.example-shop.com'
-})
+const siteName = computed(() => resolvePreviewHost(undefined, config.public.psFrontUrl))
 const previewUrl = computed(() => `${siteName.value} › ${form.slug || 'categorie'}`)
 const previewTitle = computed(() => {
-  const t = (form.metaTitle || '').trim() || (form.name || '').trim() || 'Titre catégorie'
+  const t = (form.metaTitle || '').trim() || (form.name || '').trim() || tHub('hub.ui.category.preview_title_fb', 'Titre catégorie')
   return t.length > 60 ? t.slice(0, 60) + '…' : t
 })
 const previewDescription = computed(() => {
-  const d = (form.metaDescription || '').trim() || stripHtml(form.description || '').trim() || 'Aucune description.'
+  const d = (form.metaDescription || '').trim() || stripHtml(form.description || '').trim() || tHub('hub.ui.category.no_desc', 'Aucune description.')
   return d.length > 160 ? d.slice(0, 160) + '…' : d
 })
 const titleLength = computed(() => (form.metaTitle || '').length)
@@ -1098,11 +1129,11 @@ async function uploadCategoryImage(file: File) {
   if (!id) return
 
   if (!file.type.startsWith('image/')) {
-    coverUploadError.value = 'Format non supporté (image uniquement)'
+    coverUploadError.value = tHub('hub.ui.category.err_format', 'Format non supporté (image uniquement)')
     return
   }
   if (file.size > 10 * 1024 * 1024) {
-    coverUploadError.value = 'Fichier trop lourd (max 10 Mo)'
+    coverUploadError.value = tHub('hub.ui.category.err_too_big', 'Fichier trop lourd (max 10 Mo)')
     return
   }
 
@@ -1119,7 +1150,7 @@ async function uploadCategoryImage(file: File) {
     coverCacheBust.value = Date.now()
     coverFallbackLevel.value = 0
   } catch (err: any) {
-    coverUploadError.value = err?.data?.message || err?.message || 'Upload échoué'
+    coverUploadError.value = err?.data?.message || err?.message || tHub('hub.ui.category.err_upload', 'Upload échoué')
   } finally {
     coverUploading.value = false
   }
@@ -1150,6 +1181,7 @@ async function load() {
     form.name = c.name || ''
     form.slug = c.slug || ''
     form.h1 = c.h1 || ''
+    form.heroImageUrl = c.heroImageUrl || ''
     form.summary = c.summary || ''
     form.description = c.description || ''
     form.parentId = Number(c.parentId) || 2
@@ -1199,6 +1231,7 @@ async function save() {
         parentId: form.parentId,
         active: form.active,
         h1: form.h1,
+        heroImageUrl: form.heroImageUrl,
         summary: form.summary,
         description: form.description,
         slug: form.slug,
@@ -1219,7 +1252,7 @@ async function save() {
     setTimeout(() => { saved.value = false }, 3000)
     await load()
   } catch (err: any) {
-    saveError.value = err?.data?.message || err?.message || 'Échec de la sauvegarde'
+    saveError.value = err?.data?.message || err?.message || tHub('hub.ui.category.err_save', 'Échec de la sauvegarde')
     setTimeout(() => { saveError.value = null }, 6000)
   } finally {
     saving.value = false
@@ -1235,7 +1268,7 @@ const catCoverKeywords = ref('')
 async function requestCatCover() {
   if (!form.name || !route.params.id) return
   catCoverGenerating.value = true
-  catCoverStatus.value = 'Envoi…'
+  catCoverStatus.value = tHub('hub.ui.category.sending', 'Envoi…')
   try {
     const res = await $fetch<any>('/api/bo/categories/generate-cover', {
       method: 'POST',
@@ -1246,12 +1279,12 @@ async function requestCatCover() {
         keywords: catCoverKeywords.value.trim() || undefined,
       },
     })
-    catCoverStatus.value = res.message || 'En queue'
+    catCoverStatus.value = res.message || tHub('hub.ui.category.queued_status', 'En queue')
     catCoverStatusClass.value = 'text-amber-500'
     startCatCoverPoll()
   } catch (err: any) {
     catCoverGenerating.value = false
-    catCoverStatus.value = err?.data?.message || 'Erreur'
+    catCoverStatus.value = err?.data?.message || tHub('hub.ui.category.error', 'Erreur')
     catCoverStatusClass.value = 'text-red-500'
   }
 }
@@ -1269,12 +1302,12 @@ async function checkCatCoverStatus() {
     if (data.status === 'done' && data.cover_url) {
       catCoverUrl.value = data.cover_url
       catCoverGenerating.value = false
-      catCoverStatus.value = 'Image générée'
+      catCoverStatus.value = tHub('hub.ui.category.cover_done', 'Image générée')
       catCoverStatusClass.value = 'text-emerald-600'
       if (catCoverPollTimer) clearInterval(catCoverPollTimer)
     } else if (data.status === 'error') {
       catCoverGenerating.value = false
-      catCoverStatus.value = `Erreur : ${data.error_msg || 'inconnue'}`
+      catCoverStatus.value = tHub('hub.ui.category.error_detail', 'Erreur : {msg}', { msg: data.error_msg || tHub('hub.ui.category.unknown', 'inconnue') })
       catCoverStatusClass.value = 'text-red-500'
       if (catCoverPollTimer) clearInterval(catCoverPollTimer)
     }
@@ -1348,7 +1381,7 @@ async function loadSeoKeywords() {
     seoRecommendedH1.value  = data.recommendedH1
     if (data.error) seoError.value = data.error
   } catch (err: any) {
-    seoError.value = err?.data?.message || err?.message || 'Erreur réseau'
+    seoError.value = err?.data?.message || err?.message || tHub('hub.ui.category.err_network', 'Erreur réseau')
   } finally {
     seoLoading.value = false
   }
@@ -1373,19 +1406,19 @@ const catRedactionResult = ref<{ short_description: string; long_description: st
 async function requestCatContent() {
   if (!form.name || !route.params.id) return
   catRedactionGenerating.value = true
-  catRedactionStatus.value = 'Envoi…'
+  catRedactionStatus.value = tHub('hub.ui.category.sending', 'Envoi…')
   catRedactionResult.value = null
   try {
     const res = await $fetch<any>('/api/bo/categories/generate-content', {
       method: 'POST',
       body: { id_category: Number(route.params.id), name: form.name, slug: form.slug, instructions: catInstructions.value || undefined },
     })
-    catRedactionStatus.value = res.message || 'En queue'
+    catRedactionStatus.value = res.message || tHub('hub.ui.category.queued_status', 'En queue')
     catRedactionStatusClass.value = 'text-violet-500'
     startCatRedactionPoll()
   } catch (err: any) {
     catRedactionGenerating.value = false
-    catRedactionStatus.value = err?.data?.message || 'Erreur'
+    catRedactionStatus.value = err?.data?.message || tHub('hub.ui.category.error', 'Erreur')
     catRedactionStatusClass.value = 'text-red-500'
   }
 }
@@ -1410,19 +1443,19 @@ async function checkCatRedactionStatus() {
         faq_json: data.faq_json || '[]',
         faq_count: data.faq_count || 0,
       }
-      catRedactionStatus.value = `Rédaction terminée — ${data.faq_count} FAQ`
+      catRedactionStatus.value = tHub('hub.ui.category.writing_done', 'Rédaction terminée — {n} FAQ', { n: data.faq_count })
       catRedactionStatusClass.value = 'text-emerald-600'
       if (catRedactionPollTimer) clearInterval(catRedactionPollTimer)
     } else if (data.status === 'error') {
       catRedactionGenerating.value = false
-      catRedactionStatus.value = `Erreur : ${data.error_msg || 'inconnue'}`
+      catRedactionStatus.value = tHub('hub.ui.category.error_detail', 'Erreur : {msg}', { msg: data.error_msg || tHub('hub.ui.category.unknown', 'inconnue') })
       catRedactionStatusClass.value = 'text-red-500'
       if (catRedactionPollTimer) clearInterval(catRedactionPollTimer)
     } else if (data.status === 'processing') {
-      catRedactionStatus.value = 'Rédaction en cours (Claude CLI)…'
+      catRedactionStatus.value = tHub('hub.ui.category.seo_regen', 'Régénération SEO en cours…')
       catRedactionStatusClass.value = 'text-violet-500'
     } else if (data.status === 'pending') {
-      catRedactionStatus.value = 'En file d\'attente'
+      catRedactionStatus.value = tHub('hub.ui.category.in_queue', 'En file d\'attente')
       catRedactionStatusClass.value = 'text-violet-400'
     }
   } catch {  }
@@ -1438,7 +1471,7 @@ function applyCatRedaction() {
       if (editorEl.value && mode.value === 'wysiwyg') editorEl.value.innerHTML = form.description
     })
   }
-  catRedactionStatus.value = 'Résumé + Description appliqués'
+  catRedactionStatus.value = tHub('hub.ui.category.applied_summary_desc', 'Résumé + Description appliqués')
   catRedactionStatusClass.value = 'text-emerald-600'
 }
 
@@ -1450,7 +1483,7 @@ function applyCatFaqOnly() {
       form.faqs = faqList.map((f: any, i: number) => ({
         position: i, active: true, question: f.q || '', answer: f.a || '',
       }))
-      catRedactionStatus.value = `${faqList.length} FAQ appliquées`
+      catRedactionStatus.value = tHub('hub.ui.category.faq_applied', '{n} FAQ appliquées', { n: faqList.length })
       catRedactionStatusClass.value = 'text-emerald-600'
     }
   } catch {  }
@@ -1460,6 +1493,8 @@ const aiMode = ref<'centaure' | 'api'>('centaure')
 const centaurePrompt = ref('')
 const centaureResponse = ref('')
 const centaurePromptCopied = ref(false)
+
+const llmJsonExample = '{ "summary": "...", "description": "..." }'
 
 function generateCentaurePrompt() {
   const name = form.name?.trim() || ''
@@ -1707,7 +1742,7 @@ function applyCentaureResponse() {
   if (!parsed) {
     const preview = raw.slice(0, 120).replace(/\s+/g, ' ')
     console.error('[applyCentaureResponse] Format non reconnu', { rawLength: raw.length, preview, raw })
-    catRedactionStatus.value = `Format non reconnu — attendu JSON {summary, description} ou HTML brut. Reçu : "${preview}…"`
+    catRedactionStatus.value = tHub('hub.ui.category.err_format_unknown', 'Format non reconnu — attendu JSON {summary, description} ou HTML brut. Reçu : "{preview}…"', { preview })
     catRedactionStatusClass.value = 'text-red-500'
     return
   }
@@ -1719,19 +1754,19 @@ function applyCentaureResponse() {
   }
   if (parsed.summary) {
     form.summary = parsed.summary.trim()
-    applied.push('Résumé')
+    applied.push(tHub('hub.ui.category.summary', 'Résumé'))
   }
   if (parsed.description) {
     form.description = parsed.description.trim()
-    applied.push('Description')
+    applied.push(tHub('hub.ui.category.desc_label', 'Description'))
     nextTick(() => {
       if (editorEl.value && mode.value === 'wysiwyg') editorEl.value.innerHTML = form.description
     })
   }
 
   catRedactionStatus.value = applied.length
-    ? `${applied.join(' + ')} Centaure appliqués`
-    : 'Aucun champ extrait du JSON'
+    ? tHub('hub.ui.category.centaure_applied', '{fields} Centaure appliqués', { fields: applied.join(' + ') })
+    : tHub('hub.ui.category.no_field', 'Aucun champ extrait du JSON')
   catRedactionStatusClass.value = applied.length ? 'text-emerald-600' : 'text-amber-500'
 }
 
@@ -1838,7 +1873,7 @@ function applySeoResponse() {
   }
 
   if (!parsed) {
-    seoApplyStatus.value = 'Format réponse non reconnu (attendu : JSON {meta_title, meta_description, slug})'
+    seoApplyStatus.value = tHub('hub.ui.category.err_seo_format', 'Format réponse non reconnu (attendu : JSON {meta_title, meta_description, slug})')
     seoApplyStatusClass.value = 'text-red-500'
     return
   }
@@ -1846,11 +1881,11 @@ function applySeoResponse() {
   const applied: string[] = []
   if (parsed.meta_title) {
     form.metaTitle = parsed.meta_title.trim().slice(0, 70)
-    applied.push('Meta title')
+    applied.push(tHub('hub.ui.category.meta_title', 'Meta title'))
   }
   if (parsed.meta_description) {
     form.metaDescription = parsed.meta_description.trim().slice(0, 170)
-    applied.push('Meta description')
+    applied.push(tHub('hub.ui.category.meta_desc', 'Meta description'))
   }
   
   
@@ -1862,15 +1897,15 @@ function applySeoResponse() {
       const cleanSlug = parsed.slug.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
       if (cleanSlug) {
         form.slug = cleanSlug
-        applied.push('Slug')
+        applied.push(tHub('hub.ui.category.slug_label', 'Slug'))
       }
     }
     
   }
 
   seoApplyStatus.value = applied.length
-    ? `${applied.join(' + ')} appliqués — pensez à Enregistrer`
-    : 'Aucune optimisation extraite du JSON'
+    ? tHub('hub.ui.category.seo_applied', '{fields} appliqués — pensez à Enregistrer', { fields: applied.join(' + ') })
+    : tHub('hub.ui.category.no_seo_opt', 'Aucune optimisation extraite du JSON')
   seoApplyStatusClass.value = applied.length ? 'text-emerald-600' : 'text-amber-500'
   setTimeout(() => { seoApplyStatus.value = null }, 5000)
 }
@@ -1959,7 +1994,7 @@ function applyFaqCentaureResponse() {
   }
 
   if (!list || !list.length) {
-    catRedactionStatus.value = 'Format FAQ non reconnu (attendu : JSON {faqs: [{q,a}]})'
+    catRedactionStatus.value = tHub('hub.ui.category.err_faq_format', 'Format FAQ non reconnu (attendu : JSON {faqs: [{q,a}]})')
     catRedactionStatusClass.value = 'text-red-500'
     return
   }
@@ -1967,7 +2002,7 @@ function applyFaqCentaureResponse() {
   form.faqs = list.map((f, i) => ({
     position: i, active: true, question: f.q || '', answer: f.a || '',
   }))
-  catRedactionStatus.value = `${list.length} FAQ Centaure appliquées`
+  catRedactionStatus.value = tHub('hub.ui.category.faq_centaure_applied', '{n} FAQ Centaure appliquées', { n: list.length })
   catRedactionStatusClass.value = 'text-emerald-600'
 }
 

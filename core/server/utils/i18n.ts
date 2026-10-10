@@ -6,6 +6,8 @@ import { cachedFetch } from './redis'
 
 const CACHE_TTL_SEC = 10 * 60
 
+export const TRANSLATION_PRIORITY_SQL = sql.raw(`CASE WHEN domain LIKE 'tenant:%' THEN 0 WHEN domain = 'oss' THEN 1 ELSE 2 END, id_translation DESC`)
+
 export async function t(key: string, idLang: number = 1, fallback: string = ''): Promise<string> {
   return cachedFetch<string>(
     `i18n:${key}:${idLang}`,
@@ -16,6 +18,7 @@ export async function t(key: string, idLang: number = 1, fallback: string = ''):
           SELECT translation
             FROM cs_main.ps_translation
            WHERE key = ${key} AND id_lang = ${idLang}
+           ORDER BY ${TRANSLATION_PRIORITY_SQL}
            LIMIT 1
         `) as any[]
         return rows[0]?.translation ? String(rows[0].translation) : fallback

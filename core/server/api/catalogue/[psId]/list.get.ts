@@ -1,9 +1,14 @@
 
 
 import { useClientDbById, useClientDb } from '~/server/utils/db'
-import { resolveIdLang } from '~/server/utils/lang'
+import { resolveIdLang, langPrefixFor } from '~/server/utils/lang'
 import { buildProductImage } from '~/server/utils/ps-image'
-import { isTenantB2b, buildTaxJoinForPrice, buildPriceExprNonAgg } from '~/server/utils/ps-tax'
+import { isTenantB2b, buildTaxJoinForPrice, buildPriceExprNonAgg, isPriceRoundUp, roundDisplayPrice } from '~/server/utils/ps-tax'
+import { getProductUrls } from '~/server/utils/product-url'
+import { resolveTenantPiliers } from '~/server/utils/tenant-piliers'
+import { splitFacetFilterValues } from '~/utils/facet-filter'
+import { hasFacetFamilyMap, familyMemberSubquery } from '~/server/utils/facet-family-db'
+import { visibiliteSql } from '~/utils/product-visibility'
 
 interface ProductRow {
   id_product: number
@@ -78,6 +83,7 @@ export default defineEventHandler(async (event) => {
     const whereClauses: string[] = [
       'p.active = 1',
       'ps.active = 1',
+      visibiliteSql('ps', 'catalog'),
       'd.nleft BETWEEN ? AND ?',
       'd.active = 1',
     ]
@@ -93,19 +99,43 @@ export default defineEventHandler(async (event) => {
     }
 
     
+    
+    
+    
+    
+    
+    
+    
+    const filtreFamille = Object.values(features).some(
+      (vals) => splitFacetFilterValues(vals).familyIds.length > 0,
+    )
+    const familyMapDispo = filtreFamille ? await hasFacetFamilyMap(db) : false
     const featureJoins: string[] = []
     const featureParams: any[] = []
     let i = 0
     for (const [fIdStr, vals] of Object.entries(features)) {
       const fId = Number(fIdStr)
       if (!fId || !vals.length) continue
-      const alias = `fp${i++}`
+      const { valueIds, familyIds } = splitFacetFilterValues(vals)
+      const alias = `fp${i}`
+      const conds: string[] = []
+      const condParams: any[] = []
+      if (valueIds.length) {
+        conds.push(`${alias}.id_feature_value IN (${valueIds.map(() => '?').join(',')})`)
+        condParams.push(...valueIds)
+      }
+      if (familyIds.length && familyMapDispo) {
+        conds.push(familyMemberSubquery(alias, `IN (${familyIds.map(() => '?').join(',')})`))
+        condParams.push(...familyIds)
+      }
+      if (!conds.length) continue
+      i++
       featureJoins.push(
         `JOIN ps_feature_product ${alias} ON ${alias}.id_product = p.id_product
            AND ${alias}.id_feature = ?
-           AND ${alias}.id_feature_value IN (${vals.map(() => '?').join(',')})`,
+           AND (${conds.join(' OR ')})`,
       )
-      featureParams.push(fId, ...vals)
+      featureParams.push(fId, ...condParams)
     }
 
     const whereSql = whereClauses.join(' AND ')
@@ -147,19 +177,35 @@ export default defineEventHandler(async (event) => {
       [idLang, ...featureParams, ...whereParams, limit, offset],
     )
 
+    
+    const langRow = await db.get<{ iso_code: string }>(
+      `SELECT iso_code FROM ps_lang WHERE id_lang = ? LIMIT 1`,
+      [idLang],
+    )
+    const iso = langRow?.iso_code || 'fr'
+    const langPrefix = langPrefixFor(event, iso)
+    const tenantPiliers = await resolveTenantPiliers(event, db, idLang)
+    const urlMap = await getProductUrls(db, rows.map(r => r.id_product), idLang, {
+      langPrefix, iso, resolvedPiliers: tenantPiliers,
+    })
+
+    const roundUp = await isPriceRoundUp(db)
     const products = rows.map((r) => {
       const img = buildProductImage(r.id_image, r.link_rewrite)
+      const slug = r.link_rewrite || `produit-${r.id_product}`
+      const priceVal = roundDisplayPrice(Number(r.price), roundUp)
       return {
         id: r.id_product,
         name: r.name,
         ref: r.reference,
-        price: formatPrice(Number(r.price)),
-        priceRaw: Number(r.price),
+        price: formatPrice(priceVal),
+        priceRaw: priceVal,
         image: img?.src,
         imageSrcset: img?.srcset,
         imageFallback: img?.fallback,
         active: r.active === 1,
         description_short: r.description_short || undefined,
+        url: urlMap.get(r.id_product) ?? `${langPrefix}/produit/${r.id_product}-${slug}`,
       }
     })
 

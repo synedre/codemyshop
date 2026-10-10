@@ -13,6 +13,9 @@ export interface LoadedEmailTemplate {
   recipientTo:  string
   recipientCc:  string
   recipientBcc: string
+  
+
+  attachInvoice: boolean
 }
 
 const TTL_SEC = 5 * 60
@@ -30,7 +33,8 @@ export async function loadEmailTemplate(
       try {
         const rows = await usePocPg().execute<any>(sql`
           SELECT l.subject, l.html_body, l.plain_body,
-                 t.audience, t.recipient_to, t.recipient_cc, t.recipient_bcc
+                 t.audience, t.recipient_to, t.recipient_cc, t.recipient_bcc,
+                 t.attach_invoice
             FROM cs_main.cs_email_template_lang l
             JOIN cs_main.cs_email_template t ON t.slug = l.slug
            WHERE l.slug = ${slug} AND l.id_lang = ${idLang}
@@ -38,13 +42,14 @@ export async function loadEmailTemplate(
         `) as any[]
         return rows[0]
           ? {
-              subject:      String(rows[0].subject || ''),
-              htmlBody:     String(rows[0].html_body || ''),
-              plainBody:    rows[0].plain_body ?? null,
-              audience:     String(rows[0].audience || 'client'),
-              recipientTo:  String(rows[0].recipient_to  || ''),
-              recipientCc:  String(rows[0].recipient_cc  || ''),
-              recipientBcc: String(rows[0].recipient_bcc || ''),
+              subject:       String(rows[0].subject || ''),
+              htmlBody:      String(rows[0].html_body || ''),
+              plainBody:     rows[0].plain_body ?? null,
+              audience:      String(rows[0].audience || 'client'),
+              recipientTo:   String(rows[0].recipient_to  || ''),
+              recipientCc:   String(rows[0].recipient_cc  || ''),
+              recipientBcc:  String(rows[0].recipient_bcc || ''),
+              attachInvoice: Number(rows[0].attach_invoice ?? 0) === 1,
             }
           : null
       } catch (err: any) {

@@ -12,6 +12,13 @@ export default defineEventHandler(async (event) => {
   const search = (q.search || '').trim()
   const status = (q.status || '').trim()
   const langId = Math.max(1, Number(q.lang) || 1)
+
+  
+  const fId       = (q.fId       || '').trim()
+  const fTitle    = (q.fTitle    || '').trim()
+  const fCategory = (q.fCategory || '').trim()
+  const fStatus   = (q.fStatus   || '').trim()
+
   const db = useClientDb(event)
 
   const conditions: string[] = ['c.id_cms_category <> 1']
@@ -33,6 +40,24 @@ export default defineEventHandler(async (event) => {
     const s = `%${search}%`
     params.push(s, s, s, search)
   }
+  if (fId) {
+    conditions.push(`CAST(c.id_cms AS TEXT) ILIKE ?`)
+    params.push(`%${fId}%`)
+  }
+  if (fTitle) {
+    conditions.push(`(cl.meta_title ILIKE ? OR cl.link_rewrite ILIKE ?)`)
+    const s = `%${fTitle}%`
+    params.push(s, s)
+  }
+  if (fCategory) {
+    conditions.push(`ccl.name ILIKE ?`)
+    params.push(`%${fCategory}%`)
+  }
+  if (fStatus === 'published') {
+    conditions.push(`c.active = 1`)
+  } else if (fStatus === 'draft') {
+    conditions.push(`c.active = 0`)
+  }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
 
@@ -47,12 +72,25 @@ export default defineEventHandler(async (event) => {
     const total = countRow?.total ?? 0
     const offset = (page - 1) * perPage
 
-    let coverSelect = ", '' AS thumbUrl"
+    
+    
+    
+    
+    
+    
+    
+    let coverThumb = "''"
+    let coverSocial = "''"
     let redactionSelect = ", '' AS redactionStatus"
     try {
       await db.query('SELECT 1 FROM cs_covergen_queue LIMIT 0')
-      coverSelect = `, COALESCE((SELECT cq.thumb_url FROM cs_covergen_queue cq WHERE cq.id_cms = c.id_cms AND cq.status = 'done' ORDER BY cq.id_covergen DESC LIMIT 1), '') AS thumbUrl`
+      coverThumb = `(SELECT COALESCE(NULLIF(cq.thumb_url, ''), NULLIF(cq.cover_url, '')) FROM cs_covergen_queue cq WHERE cq.id_cms = c.id_cms AND cq.status = 'done' ORDER BY cq.id_covergen DESC LIMIT 1)`
     } catch {  }
+    try {
+      await db.query('SELECT 1 FROM cs_cms_extra LIMIT 0')
+      coverSocial = `(SELECT ce.social_cover_url FROM cs_cms_extra ce WHERE ce.id_cms = c.id_cms LIMIT 1)`
+    } catch {  }
+    const coverSelect = `, COALESCE(NULLIF(${coverThumb}, ''), NULLIF(${coverSocial}, ''), '') AS thumbUrl`
     try {
       await db.query('SELECT 1 FROM cs_cms_queue LIMIT 0')
       redactionSelect = `, COALESCE((SELECT rq.status FROM cs_cms_queue rq WHERE rq.id_cms = c.id_cms ORDER BY rq.id_redaction DESC LIMIT 1), '') AS redactionStatus`

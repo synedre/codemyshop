@@ -1,7 +1,7 @@
 
 
 import {
-  integer, numeric, primaryKey, smallint, text, timestamp, varchar,
+  check, integer, numeric, primaryKey, smallint, sql, text, timestamp, varchar,
   pgSchema,
 } from 'drizzle-orm/pg-core'
 
@@ -40,10 +40,19 @@ export const productFood = vaisseauMereAcSchema.table(
     extractionSource: varchar('extraction_source', { length: 40 }),
     extractionConfidence: numeric('extraction_confidence', { precision: 3, scale: 2 }),
     extractedAt: timestamp('extracted_at', { mode: 'date', precision: 0 }),
+    
+
+    priceDisplayMode: varchar('price_display_mode', { length: 4 }),
     active: smallint('active').notNull().default(1),
     dateAdd: timestamp('date_add', { mode: 'date', precision: 0 }).notNull().defaultNow(),
     dateUpd: timestamp('date_upd', { mode: 'date', precision: 0 }).notNull().defaultNow(),
   },
+  (t) => ({
+    priceDisplayModeCheck: check(
+      'chk_price_display_mode',
+      sql`${t.priceDisplayMode} IN ('unit', 'kg')`,
+    ),
+  }),
 )
 
 export const productFoodLang = vaisseauMereAcSchema.table(

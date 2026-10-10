@@ -54,7 +54,10 @@
             {{ submitting ? t('academy.academy_qa_submit_button_loading') : t('academy.academy_qa_submit_button_default') }}
           </button>
         </div>
-        <p class="text-[10px] text-gray-400 dark:text-slate-600 mt-2" v-html="t('academy.academy_qa_privacy_notice')" />
+        <p class="text-[10px] text-gray-400 dark:text-slate-600 mt-2">
+          {{ stripPolicyAnchor(t('academy.academy_qa_privacy_notice')) }}
+          <NuxtLink v-if="privacyHref" :to="privacyHref" class="underline hover:text-primary-500">{{ t('privacy.policy_link_label', 'Politique de confidentialité') }}</NuxtLink>
+        </p>
       </div>
 
       
@@ -95,7 +98,14 @@
 </template>
 
 <script setup lang="ts">
+import { resolvePrivacyPolicyHref, stripPolicyAnchor } from '~/utils/privacy-notice'
+
+import { useDisplayTimeZone } from '../../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
+
 const { t } = useT()
+const privacyHref = resolvePrivacyPolicyHref(useRuntimeConfig().public.privacyPolicyPath)
 
 interface QaEntry {
   id_qa: number
@@ -223,7 +233,7 @@ async function upvote(qa: QaEntry) {
 }
 
 function formatDate(dateStr: string): string {
-  try { return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) }
+  try { return new Date(dateStr).toLocaleDateString('fr-FR', { timeZone: displayTz, day: 'numeric', month: 'short', year: 'numeric' }) }
   catch { return dateStr }
 }
 </script>

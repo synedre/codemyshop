@@ -20,18 +20,23 @@ export default defineEventHandler(async (event) => {
       link_rewrite: string
     }>(
       `SELECT c.id_cms,
-              COALESCE(cl.meta_title,       clf.meta_title, '')       AS meta_title,
-              COALESCE(cl.meta_description, clf.meta_description, '') AS meta_description,
-              COALESCE(cl.content,          clf.content, '')          AS content,
-              COALESCE(cl.link_rewrite,     clf.link_rewrite, '')     AS link_rewrite
+              COALESCE(cl.meta_title,       '') AS meta_title,
+              COALESCE(cl.meta_description, '') AS meta_description,
+              COALESCE(cl.content,          '') AS content,
+              COALESCE(cl.link_rewrite,     '') AS link_rewrite
          FROM ps_cms c
-    LEFT JOIN ps_cms_lang cl  ON cl.id_cms  = c.id_cms AND cl.id_lang  = ? AND cl.id_shop = 1
-    LEFT JOIN ps_cms_lang clf ON clf.id_cms = c.id_cms AND clf.id_lang = 1 AND clf.id_shop = 1
+    LEFT JOIN ps_cms_lang cl ON cl.id_cms = c.id_cms AND cl.id_lang = ? AND cl.id_shop = 1
         WHERE c.id_cms = ? AND c.active = 1
         LIMIT 1`,
       [idLang, id],
     )
     if (!row) throw createError({ statusCode: 404, message: 'Page CMS introuvable' })
+    
+    
+    
+    if (idLang !== 1 && String(row.content ?? '').trim() === '') {
+      throw createError({ statusCode: 404, message: 'Page CMS introuvable' })
+    }
 
     return {
       id: Number(row.id_cms),

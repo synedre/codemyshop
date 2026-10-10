@@ -2,6 +2,8 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 interface ImportBody {
   rows: Record<string, any>[]
   mapping: {
@@ -26,6 +28,7 @@ function toBool(v: any): 0 | 1 | undefined {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<ImportBody>(event)
   if (!body || !Array.isArray(body.rows)) {
     throw createError({ statusCode: 400, message: 'Body invalide : rows manquant' })

@@ -3,7 +3,10 @@
 import { getFeatureIdByRoute } from '~/modules/marketplace/server/utils/marketplace'
 import { findPlaybookByFeatureRole } from '~/modules/playbook/server/utils/playbook'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const path = (q.path || '').trim()
   const role = (q.role || '').toUpperCase().trim() || null

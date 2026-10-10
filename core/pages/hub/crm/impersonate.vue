@@ -3,11 +3,11 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">🎭 Mode Commercial</h1>
-        <p class="text-xs text-gray-400 mt-0.5">Impersonation B2B · session 2h max · audit RGPD</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.crm_impersonate.title', '🎭 Mode Commercial') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.crm_impersonate.subtitle', 'Impersonation B2B · session 2h max · audit RGPD') }}</p>
       </div>
       <button @click="loadAll" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">
-        Actualiser
+        {{ t('hub.ui.crm_impersonate.refresh', 'Actualiser') }}
       </button>
     </header>
 
@@ -19,37 +19,37 @@
           <span class="text-2xl">🎭</span>
           <div class="flex-1">
             <p class="font-semibold text-orange-800 dark:text-orange-200">
-              Vous êtes actuellement connecté en tant que
-              {{ active.customerLabel || active.customerEmail || ('client #' + active.idCustomer) }}
+              {{ t('hub.ui.crm_impersonate.connected_as', 'Vous êtes actuellement connecté en tant que') }}
+              {{ active.customerLabel || active.customerEmail || t('hub.ui.crm_impersonate.customer_n', 'client #{id}', { id: active.idCustomer }) }}
             </p>
             <p class="text-xs text-orange-700 dark:text-orange-300 mt-0.5">
-              Session #{{ active.idSession }} ouverte à {{ formatDateTime(active.startedAt) }} · expire à {{ formatDateTime(active.expiresAt) }}
+              {{ t('hub.ui.crm_impersonate.session_info', 'Session #{id} ouverte à {start} · expire à {end}', { id: active.idSession, start: formatDateTime(active.startedAt), end: formatDateTime(active.expiresAt) }) }}
             </p>
-            <p v-if="active.reason" class="text-xs text-orange-700/70 dark:text-orange-300/70 mt-0.5 italic">Raison : « {{ active.reason }} »</p>
+            <p v-if="active.reason" class="text-xs text-orange-700/70 dark:text-orange-300/70 mt-0.5 italic">{{ t('hub.ui.crm_impersonate.reason_line', 'Raison : « {reason} »', { reason: active.reason }) }}</p>
           </div>
           <button @click="quit" :disabled="busy" class="text-sm px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold disabled:opacity-50">
-            Quitter la session
+            {{ t('hub.ui.crm_impersonate.quit', 'Quitter la session') }}
           </button>
         </div>
       </section>
 
       
       <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-        <h2 class="text-sm font-semibold mb-4 text-gray-700 dark:text-slate-200">Prendre la main sur un client</h2>
+        <h2 class="text-sm font-semibold mb-4 text-gray-700 dark:text-slate-200">{{ t('hub.ui.crm_impersonate.take_over', 'Prendre la main sur un client') }}</h2>
 
         <div class="space-y-3">
           <label class="block text-xs">
-            <span class="text-gray-500 dark:text-slate-400">Recherche client (nom, email, société, id)</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.crm_impersonate.search_label', 'Recherche client (nom, email, société, id)') }}</span>
             <input
               v-model="search"
               @input="debouncedSearch"
               type="text"
-              placeholder="Tapez 3 caractères minimum…"
+              :placeholder="t('hub.ui.crm_impersonate.search_ph', 'Tapez 3 caractères minimum…')"
               class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-950"
             />
           </label>
 
-          <div v-if="searchLoading" class="text-xs text-gray-400 py-2">Recherche…</div>
+          <div v-if="searchLoading" class="text-xs text-gray-400 py-2">{{ t('hub.ui.crm_impersonate.searching', 'Recherche…') }}</div>
           <ul v-else-if="searchResults.length > 0" class="border border-gray-100 dark:border-slate-800 rounded-lg max-h-64 overflow-auto divide-y divide-gray-100 dark:divide-slate-800">
             <li v-for="c in searchResults" :key="c.id"
               @click="pick(c)"
@@ -61,28 +61,28 @@
                   {{ [c.firstname, c.lastname].filter(Boolean).join(' ') || c.email }}
                   <span v-if="c.company" class="text-gray-400 text-xs font-normal ml-1">· {{ c.company }}</span>
                 </p>
-                <p class="text-xs text-gray-500">{{ c.email }} · {{ c.nbOrders }} commande{{ c.nbOrders > 1 ? 's' : '' }}</p>
+                <p class="text-xs text-gray-500">{{ c.email }} · {{ c.nbOrders > 1 ? t('hub.ui.crm_impersonate.orders_other', '{n} commandes', { n: c.nbOrders }) : t('hub.ui.crm_impersonate.orders_one', '{n} commande', { n: c.nbOrders }) }}</p>
               </div>
               <span class="text-xs text-gray-400">#{{ c.id }}</span>
             </li>
           </ul>
-          <p v-else-if="search.length >= 3" class="text-xs text-gray-400 py-2">Aucun client trouvé.</p>
+          <p v-else-if="search.length >= 3" class="text-xs text-gray-400 py-2">{{ t('hub.ui.crm_impersonate.no_customer', 'Aucun client trouvé.') }}</p>
 
           <label class="block text-xs">
-            <span class="text-gray-500 dark:text-slate-400">Raison <span class="text-red-500">*</span> (audit RGPD — obligatoire)</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.crm_impersonate.reason_label', 'Raison') }} <span class="text-red-500">*</span> {{ t('hub.ui.crm_impersonate.reason_hint', '(audit RGPD — obligatoire)') }}</span>
             <input
               v-model="reason"
               type="text"
               maxlength="255"
-              placeholder="Ex : commande téléphonique, support panier abandonné…"
+              :placeholder="t('hub.ui.crm_impersonate.reason_ph', 'Ex : commande téléphonique, support panier abandonné…')"
               class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-950"
             />
           </label>
 
           <div class="flex items-center justify-between gap-3 pt-2">
             <p class="text-xs text-gray-400">
-              <span v-if="picked">Cible : <strong>{{ pickedLabel }}</strong></span>
-              <span v-else class="italic">Sélectionnez un client…</span>
+              <span v-if="picked">{{ t('hub.ui.crm_impersonate.target', 'Cible :') }} <strong>{{ pickedLabel }}</strong></span>
+              <span v-else class="italic">{{ t('hub.ui.crm_impersonate.select_customer', 'Sélectionnez un client…') }}</span>
             </p>
             <button
               @click="start"
@@ -90,7 +90,7 @@
               class="text-sm px-4 py-2 rounded-lg font-semibold text-white"
               :class="canStart ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-300 dark:bg-slate-700 cursor-not-allowed'"
             >
-              {{ busy ? 'Ouverture…' : 'Prendre la main' }}
+              {{ busy ? t('hub.ui.crm_impersonate.opening', 'Ouverture…') : t('hub.ui.crm_impersonate.take_over_btn', 'Prendre la main') }}
             </button>
           </div>
           <p v-if="errorMsg" class="text-xs text-red-600 mt-1">{{ errorMsg }}</p>
@@ -100,40 +100,40 @@
       
       <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">Audit · {{ sessions.length }} dernière{{ sessions.length > 1 ? 's' : '' }} session{{ sessions.length > 1 ? 's' : '' }}</h2>
+          <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">{{ sessions.length > 1 ? t('hub.ui.crm_impersonate.audit_other', 'Audit · {n} dernières sessions', { n: sessions.length }) : t('hub.ui.crm_impersonate.audit_one', 'Audit · {n} dernière session', { n: sessions.length }) }}</h2>
           <select v-model="statusFilter" @change="loadSessions" class="text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-950">
-            <option value="">Tous les statuts</option>
-            <option value="active">Active</option>
-            <option value="closed">Fermée</option>
-            <option value="expired">Expirée</option>
-            <option value="revoked">Révoquée</option>
+            <option value="">{{ t('hub.ui.crm_impersonate.all_statuses', 'Tous les statuts') }}</option>
+            <option value="active">{{ t('hub.ui.crm_impersonate.st_active', 'Active') }}</option>
+            <option value="closed">{{ t('hub.ui.crm_impersonate.st_closed', 'Fermée') }}</option>
+            <option value="expired">{{ t('hub.ui.crm_impersonate.st_expired', 'Expirée') }}</option>
+            <option value="revoked">{{ t('hub.ui.crm_impersonate.st_revoked', 'Révoquée') }}</option>
           </select>
         </div>
 
-        <div v-if="sessions.length === 0" class="text-xs text-gray-400 py-6 text-center">Aucune session enregistrée.</div>
+        <div v-if="sessions.length === 0" class="text-xs text-gray-400 py-6 text-center">{{ t('hub.ui.crm_impersonate.no_sessions', 'Aucune session enregistrée.') }}</div>
         <div v-else class="overflow-auto">
           <table class="w-full text-xs">
             <thead class="text-gray-500 dark:text-slate-400 text-left">
               <tr>
                 <th class="py-2 px-2">#</th>
-                <th class="py-2 px-2">Commercial</th>
-                <th class="py-2 px-2">Client</th>
-                <th class="py-2 px-2">Démarrée</th>
-                <th class="py-2 px-2">Durée</th>
-                <th class="py-2 px-2">Status</th>
-                <th class="py-2 px-2">Raison</th>
+                <th class="py-2 px-2">{{ t('hub.ui.crm_impersonate.col_sales', 'Commercial') }}</th>
+                <th class="py-2 px-2">{{ t('hub.ui.crm_impersonate.col_customer', 'Client') }}</th>
+                <th class="py-2 px-2">{{ t('hub.ui.crm_impersonate.col_started', 'Démarrée') }}</th>
+                <th class="py-2 px-2">{{ t('hub.ui.crm_impersonate.col_duration', 'Durée') }}</th>
+                <th class="py-2 px-2">{{ t('hub.ui.crm_impersonate.col_status', 'Status') }}</th>
+                <th class="py-2 px-2">{{ t('hub.ui.crm_impersonate.col_reason', 'Raison') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
               <tr v-for="s in sessions" :key="s.idSession">
                 <td class="py-2 px-2 text-gray-400">#{{ s.idSession }}</td>
-                <td class="py-2 px-2">{{ s.employeeLabel || s.employeeEmail || ('emp #' + s.idEmployee) }}</td>
-                <td class="py-2 px-2">{{ s.customerLabel || s.customerEmail || ('client #' + s.idCustomer) }}</td>
+                <td class="py-2 px-2">{{ s.employeeLabel || s.employeeEmail || t('hub.ui.crm_impersonate.employee_n', 'emp #{id}', { id: s.idEmployee }) }}</td>
+                <td class="py-2 px-2">{{ s.customerLabel || s.customerEmail || t('hub.ui.crm_impersonate.customer_n', 'client #{id}', { id: s.idCustomer }) }}</td>
                 <td class="py-2 px-2 whitespace-nowrap">{{ formatDateTime(s.startedAt) }}</td>
                 <td class="py-2 px-2 whitespace-nowrap text-gray-500">{{ duration(s) }}</td>
                 <td class="py-2 px-2">
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" :class="statusBadge(s.status)">
-                    {{ s.status }}
+                    {{ statusLabel(s.status) }}
                   </span>
                   <span v-if="s.closeReason" class="text-[10px] text-gray-400 ml-1">{{ s.closeReason }}</span>
                 </td>
@@ -152,6 +152,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
+const { t } = useHubT()
 
 interface Customer {
   id: number
@@ -243,7 +244,7 @@ async function start() {
     await loadSessions()
     if (typeof window !== 'undefined') window.location.reload()
   } catch (err: any) {
-    errorMsg.value = err?.statusMessage || err?.data?.statusMessage || err?.message || 'Erreur ouverture session'
+    errorMsg.value = err?.statusMessage || err?.data?.statusMessage || err?.message || t('hub.ui.crm_impersonate.open_error', 'Erreur ouverture session')
   } finally {
     busy.value = false
   }
@@ -313,6 +314,16 @@ function duration(s: SessionRow): string {
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return `${h}h${String(m).padStart(2, '0')}`
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'active': return t('hub.ui.crm_impersonate.st_active', 'Active')
+    case 'closed': return t('hub.ui.crm_impersonate.st_closed', 'Fermée')
+    case 'expired': return t('hub.ui.crm_impersonate.st_expired', 'Expirée')
+    case 'revoked': return t('hub.ui.crm_impersonate.st_revoked', 'Révoquée')
+    default: return status
+  }
 }
 
 function statusBadge(status: string): string {

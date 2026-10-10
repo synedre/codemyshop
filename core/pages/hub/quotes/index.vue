@@ -2,42 +2,42 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Demandes de devis</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ total }} devis</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.quotes.title', 'Demandes de devis') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.quotes.count', '{n} devis', { n: total }) }}</p>
       </div>
       <div class="flex items-center gap-2">
         <select v-model="statusFilter" @change="goPage(1)" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5">
-          <option value="">Tous</option>
-          <option value="pending">En attente</option>
-          <option value="processing">En cours</option>
-          <option value="sent">Envoyé</option>
-          <option value="accepted">Accepté</option>
-          <option value="refused">Refusé</option>
-          <option value="expired">Expiré</option>
+          <option value="">{{ t('hub.ui.quotes.all', 'Tous') }}</option>
+          <option value="pending">{{ t('hub.ui.quotes.st_pending', 'En attente') }}</option>
+          <option value="processing">{{ t('hub.ui.quotes.st_processing', 'En cours') }}</option>
+          <option value="sent">{{ t('hub.ui.quotes.st_sent', 'Envoyé') }}</option>
+          <option value="accepted">{{ t('hub.ui.quotes.st_accepted', 'Accepté') }}</option>
+          <option value="refused">{{ t('hub.ui.quotes.st_refused', 'Refusé') }}</option>
+          <option value="expired">{{ t('hub.ui.quotes.st_expired', 'Expiré') }}</option>
         </select>
-        <input v-model="search" type="text" placeholder="Client, email, société…" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-primary-300" @keyup.enter="goPage(1)" />
-        <button @click="goPage(1)" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">Rechercher</button>
+        <input v-model="search" type="text" :placeholder="t('hub.ui.quotes.search_ph', 'Client, email, société…')" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-primary-300" @keyup.enter="goPage(1)" />
+        <button @click="goPage(1)" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">{{ t('hub.ui.quotes.search', 'Rechercher') }}</button>
         <button @click="showCreate = true" class="text-xs px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-          Nouveau devis
+          {{ t('hub.ui.quotes.new', 'Nouveau devis') }}
         </button>
       </div>
     </header>
 
-    <HubCreateModal v-model="showCreate" title="Nouveau devis" :loading="creating" @submit="createQuote">
+    <HubCreateModal v-model="showCreate" :title="t('hub.ui.quotes.new', 'Nouveau devis')" :loading="creating" @submit="createQuote">
       <div class="space-y-3">
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-xs font-medium text-gray-500 mb-1">Prénom</label><input v-model="newQuote.firstname" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
-          <div><label class="block text-xs font-medium text-gray-500 mb-1">Nom</label><input v-model="newQuote.lastname" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.quotes.firstname', 'Prénom') }}</label><input v-model="newQuote.firstname" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
+          <div><label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.quotes.lastname', 'Nom') }}</label><input v-model="newQuote.lastname" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
         </div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1">Email</label><input v-model="newQuote.email" type="email" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1">Société</label><input v-model="newQuote.company" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1">Téléphone</label><input v-model="newQuote.phone" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1">Message</label><textarea v-model="newQuote.message" rows="3" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none" /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.quotes.email', 'Email') }}</label><input v-model="newQuote.email" type="email" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.quotes.company', 'Société') }}</label><input v-model="newQuote.company" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.quotes.phone', 'Téléphone') }}</label><input v-model="newQuote.phone" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2" /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.quotes.message', 'Message') }}</label><textarea v-model="newQuote.message" rows="3" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none" /></div>
       </div>
     </HubCreateModal>
 
-    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" label="devis"
+    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.quotes.pagination_label', 'devis')"
       :per-page="perPage" :per-page-options="perPageOptions"
       @go="goPage" @update:per-page="setPerPage"
       class="border-b border-gray-100 dark:border-slate-800" />
@@ -48,20 +48,20 @@
       </div>
 
       <div v-else-if="!quotes.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucun devis trouvé</p>
+        <p class="text-sm">{{ t('hub.ui.quotes.empty', 'Aucun devis trouvé') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
             <th class="px-4 py-2.5 font-medium">#</th>
-            <th class="px-4 py-2.5 font-medium">Client</th>
-            <th class="px-4 py-2.5 font-medium">Société</th>
-            <th class="px-4 py-2.5 font-medium">Activité</th>
-            <th class="px-4 py-2.5 font-medium text-center">Articles</th>
-            <th class="px-4 py-2.5 font-medium">Statut</th>
-            <th class="px-4 py-2.5 font-medium text-center" title="Nombre de relances envoyées (cs_quote_recovery)">Relances</th>
-            <th class="px-4 py-2.5 font-medium">Date</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.quotes.col_customer', 'Client') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.quotes.company', 'Société') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.quotes.col_activity', 'Activité') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center">{{ t('hub.ui.quotes.col_items', 'Articles') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.quotes.col_status', 'Statut') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center" :title="t('hub.ui.quotes.col_reminders_title', 'Nombre de relances envoyées (cs_quote_recovery)')">{{ t('hub.ui.quotes.col_reminders', 'Relances') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.quotes.col_date', 'Date') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -89,7 +89,7 @@
       </table>
     </div>
 
-    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" label="devis" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
+    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.quotes.pagination_label', 'devis')" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
   </div>
 </template>
 
@@ -134,8 +134,8 @@ function statusClass(s: string) {
 }
 function statusLabel(s: string) {
   const map: Record<string, string> = {
-    pending: 'En attente', processing: 'En cours', sent: 'Envoyé',
-    accepted: 'Accepté', refused: 'Refusé', expired: 'Expiré',
+    pending: t('hub.ui.quotes.st_pending', 'En attente'), processing: t('hub.ui.quotes.st_processing', 'En cours'), sent: t('hub.ui.quotes.st_sent', 'Envoyé'),
+    accepted: t('hub.ui.quotes.st_accepted', 'Accepté'), refused: t('hub.ui.quotes.st_refused', 'Refusé'), expired: t('hub.ui.quotes.st_expired', 'Expiré'),
   }
   return map[s] || s
 }

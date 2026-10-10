@@ -1,9 +1,35 @@
 
 
 import { resolve } from 'node:path'
+import { buildStatefulDenyPaths } from './utils/locale-route-roots'
+import { PS_FRONT_URL_SENTINEL } from './server/mcp/constants'
+import { prependErrorHandler } from './server/error-status-message'
+import { OUTDATED_BUILD_INTERVAL_MS } from './utils/build-freshness'
+import { serverSideEffectEntries } from './utils/server-side-effects'
+import { HOST_DEPENDENT_ROUTES } from './utils/host-dependent-routes'
 const __layerDir = resolve(import.meta.dirname ?? __dirname)
+const PRIME_SECRET_ENV = resolve(__layerDir, 'server/boot/prime-secret-env.ts')
+
+const SSR_CACHE_TTL = Number(process.env.NUXT_SSR_CACHE_TTL || 60)
+const SSR_CACHE_HOMEPAGE = process.env.NUXT_SSR_CACHE_HOMEPAGE === '1'
+const SSR_CACHE_DENY_EXTRA = (process.env.NUXT_SSR_CACHE_DENY_EXTRA || '')
+  .split(',').map((s) => s.trim()).filter(Boolean)
+
+const NO_CACHE = { swr: false, cache: false } as const
+const SSR_CACHE = { swr: SSR_CACHE_TTL, cache: { base: 'redis' } } as const
+
+const DOC_NO_CACHE = { ...NO_CACHE, headers: { 'cache-control': 'no-cache' } } as const
+
+const STATEFUL_DENY = Object.fromEntries(buildStatefulDenyPaths().map((p) => [p, DOC_NO_CACHE]))
+const DENY_EXTRA = Object.fromEntries(SSR_CACHE_DENY_EXTRA.map((p) => [p, DOC_NO_CACHE]))
 
 export default defineNuxtConfig({
+  
+  
+  
+  
+  extends: ['../runtime-base'],
+
   
 
   
@@ -72,11 +98,19 @@ export default defineNuxtConfig({
 
   
   
+  
   image: {
     format: ['avif', 'webp'],
     quality: 80,
     screens: {
       xs: 320,
+      
+      
+      mobile: 380,
+      
+      
+      
+      phone: 414,
       sm: 640,
       md: 768,
       lg: 1024,
@@ -96,7 +130,6 @@ export default defineNuxtConfig({
   
   
   
-  
   app: {
     head: {
       htmlAttrs: { lang: 'fr' },
@@ -105,9 +138,12 @@ export default defineNuxtConfig({
 
   
   
+  
+  
   css: [
-    resolve(__layerDir, 'assets/css/dark-overrides.css'),
+    resolve(__layerDir, 'assets/css/base-overrides.css'),
     resolve(__layerDir, 'assets/css/content-width.css'),
+    resolve(__layerDir, 'assets/css/header-density.css'),
   ],
 
   
@@ -133,14 +169,13 @@ export default defineNuxtConfig({
     '~/enterprise/vertical-jewelry': resolve(__layerDir, '..', 'enterprise/vertical-jewelry/modules'),
     '~/enterprise/misc':             resolve(__layerDir, '..', 'enterprise/misc/modules'),
     '~/enterprise':   resolve(__layerDir, '..', 'enterprise'),
-    '~/internal':     resolve(__layerDir, '..', 'tenants/mothership/modules'),
+    '~/internal':     resolve(__layerDir, '../..', 'mothership-app/modules'),
   },
 
-  
   vite: {
-    optimizeDeps: { exclude: ['matomo-js'] },
     build: {
-      rollupOptions: { external: ['matomo-js'] },
+      
+      
       
       sourcemap: false,
     },
@@ -158,7 +193,15 @@ export default defineNuxtConfig({
   
   
   experimental: {
-    buildCache: true,
+    
+    
+    
+    
+    
+    buildCache: false,
+    
+    
+    checkOutdatedBuildInterval: OUTDATED_BUILD_INTERVAL_MS,
     
     
     
@@ -176,60 +219,108 @@ export default defineNuxtConfig({
   },
 
   
+  
+  
+  
+  
+  
+  
   runtimeConfig: {
-    secret: process.env.NUXT_SECRET,
-    apiEncryptionKey: process.env.API_ENCRYPTION_KEY ?? process.env.NUXT_SECRET ?? '',
-    prestashopApiKey: process.env.PRESTASHOP_API_KEY,
+    secret: '',
+    
+    
+    
+    
+    
+    apiEncryptionKey: '',
+    prestashopApiKey: '',
     psBaseUrl: process.env.PS_BASE_URL ?? 'http://localhost:8080',
     psHost: process.env.PS_DOMAIN ?? 'localhost',
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
-    mistralApiKey: process.env.MISTRAL_API_KEY ?? '',
+    anthropicApiKey: '',
+    mistralApiKey: '',
     aiSourceType: process.env.AI_SOURCE_TYPE ?? 'contact_form',
-    clientId: process.env.NUXT_CLIENT_ID ?? 'ac-hub',
-    aiClientId: process.env.AI_CLIENT_ID ?? 'ac-hub',
+    clientId: process.env.NUXT_CLIENT_ID ?? 'codemyshop',
+    aiClientId: process.env.AI_CLIENT_ID ?? process.env.NUXT_CLIENT_ID ?? 'codemyshop',
 
     
-    hubApiUrl: process.env.NUXT_HUB_API_URL ?? 'https://codemyshop.com',
+    hubApiUrl: process.env.NUXT_HUB_API_URL ?? '',
 
     
     uploadStaticDir: process.env.NUXT_UPLOAD_STATIC_DIR ?? '',
 
     
-    acClientConfigSecret: process.env.NUXT_AC_CLIENTCONFIG_SECRET ?? process.env.AC_CLIENTCONFIG_SECRET ?? '',
+    
+    
+    
+    
+    
+    
+    plateApiToken: '',
+    plateApiUrl: process.env.NUXT_PLATE_API_URL ?? '',
+    
+    
+    
+    plateApiTypesUrl: process.env.NUXT_PLATE_API_TYPES_URL ?? '',
+    plateApiCountry: process.env.NUXT_PLATE_API_COUNTRY ?? 'FR',
+    
+    
+    
+    plateApiCountries: process.env.NUXT_PLATE_API_COUNTRIES ?? '',
+    
+    plateApiVinUrl: process.env.NUXT_PLATE_API_VIN_URL ?? '',
 
     
-    acMarketplaceToken: process.env.NUXT_AC_MARKETPLACE_TOKEN ?? process.env.AC_MARKETPLACE_TOKEN ?? '',
+    
+    
+    
+    imgWriterUrl:    process.env.NUXT_IMG_WRITER_URL    ?? '',
+    imgWriterSecret: '',
 
     
-    acAcademyAiToken: process.env.NUXT_AC_ACADEMY_AI_TOKEN ?? process.env.AC_ACADEMY_AI_TOKEN ?? '',
+    acClientConfigSecret: '',
 
     
-    stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? '',
-    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? '',
+    acMarketplaceToken: '',
+
+    
+    acAcademyAiToken: '',
+
+    
+    stripeSecretKey: '',
+    stripeWebhookSecret: '',
 
     
     
-    instagramToken:    process.env.NUXT_INSTAGRAM_TOKEN ?? '',
+    instagramToken:    '',
     instagramIgUserId: process.env.NUXT_INSTAGRAM_IG_USER_ID ?? '',
+    
+    
+    
+    
+    
+    instagramAppId:     process.env.NUXT_INSTAGRAM_APP_ID ?? '',
+    instagramAppSecret: '',
 
     
     
     
     
-    scwAccessKey: process.env.AWS_ACCESS_KEY_ID ?? '',
-    scwSecretKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+    
+    
+    
+    backupS3Prefix: process.env.NUXT_BACKUP_S3_PREFIX ?? '',
+    scwAccessKey: '',
+    scwSecretKey: '',
     scwRegion:    process.env.AWS_DEFAULT_REGION ?? 'fr-par',
     scwEndpoint:  process.env.AWS_ENDPOINT_URL_S3 ?? 'https://s3.fr-par.scw.cloud',
     scwBucket:    process.env.SCW_BUCKET ?? 'ac-db-backups',
 
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? 'http://localhost:8080/api',
-      psFrontUrl: process.env.NUXT_PUBLIC_PS_FRONT_URL ?? 'http://localhost:8080',
-      clientId: process.env.NUXT_PUBLIC_CLIENT_ID ?? 'ac-hub',
-      matomoKey: process.env.NUXT_PUBLIC_MATOMO_KEY ?? '',
-      matomoHost: process.env.NUXT_PUBLIC_MATOMO_HOST ?? 'https://analytics.codemyshop.fr',
-      matomoUrl: process.env.NUXT_PUBLIC_MATOMO_URL ?? 'https://analytics.codemyshop.com',
-      matomoSiteId: process.env.NUXT_PUBLIC_MATOMO_SITE_ID ?? '1',
+      
+      
+      psFrontUrl: process.env.NUXT_PUBLIC_PS_FRONT_URL ?? PS_FRONT_URL_SENTINEL,
+      clientId: process.env.NUXT_PUBLIC_CLIENT_ID ?? 'codemyshop',
 
       
       brandName: process.env.NUXT_PUBLIC_BRAND_NAME ?? 'Boutique',
@@ -240,11 +331,65 @@ export default defineNuxtConfig({
       favicon: process.env.NUXT_PUBLIC_FAVICON ?? '/favicon.svg',
 
       
+      
+      
+      
+      
+      
+      
+      
+      displayTimeZone: process.env.NUXT_PUBLIC_DISPLAY_TIMEZONE ?? '',
+
+      
       b2bMode: process.env.NUXT_PUBLIC_B2B_MODE === 'true',
+      commerceMode: (process.env.NUXT_PUBLIC_COMMERCE_MODE as 'b2c' | 'b2b' | 'dual') || (process.env.NUXT_PUBLIC_B2B_MODE === 'true' ? 'b2b' : 'b2c'),
       catalogueIndexable: process.env.NUXT_PUBLIC_CATALOGUE_INDEXABLE === 'true',
+      
+      
+      
+      sitemapProductLocales: (process.env.NUXT_PUBLIC_SITEMAP_PRODUCT_LOCALES ?? '')
+        .split(',')
+        .map(locale => locale.trim())
+        .filter(Boolean),
+      
+      
+      
+      
+      facetedNav: process.env.NUXT_PUBLIC_FACETED_NAV === 'true',
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      plateSearch: process.env.NUXT_PUBLIC_PLATE_SEARCH === 'true',
+
+      
+      
+      
+      
+      
+      plateCountry: process.env.NUXT_PLATE_API_COUNTRY ?? 'FR',
+      
+      
+      plateCountries: process.env.NUXT_PLATE_API_COUNTRIES ?? '',
+
+      pwaEnabled: process.env.NUXT_PUBLIC_PWA_ENABLED === 'true',
+      pwaName: process.env.NUXT_PUBLIC_PWA_NAME ?? '',
+      pwaShortName: process.env.NUXT_PUBLIC_PWA_SHORT_NAME ?? '',
+      pwaThemeColor: process.env.NUXT_PUBLIC_PWA_THEME_COLOR ?? '#ffffff',
+      pwaBackgroundColor: process.env.NUXT_PUBLIC_PWA_BG_COLOR ?? '#ffffff',
 
       
       hubLoginUrl: process.env.NUXT_PUBLIC_HUB_LOGIN_URL ?? '',
+
+      
+      cmsVersion: process.env.NUXT_PUBLIC_CMS_VERSION ?? '0.2.8',
     },
   },
 
@@ -255,8 +400,8 @@ export default defineNuxtConfig({
   
   
   routeRules: {
-    '/hub/**': { ssr: false },
-    '/hub':    { ssr: false },
+    '/hub/**': { ssr: false, ...DOC_NO_CACHE },
+    '/hub':    { ssr: false, ...DOC_NO_CACHE },
     
     
     
@@ -289,6 +434,15 @@ export default defineNuxtConfig({
     
     
     
+
+    
+    '/**': { ...SSR_CACHE },
+
+    
+    '/api/**':   { ...NO_CACHE },
+    '/_nuxt/**': { ...NO_CACHE },
+    '/_ipx/**':  { headers: { 'cache-control': 'public, max-age=31536000, immutable' }, ...NO_CACHE },
+    '/_fonts/**':{ headers: { 'cache-control': 'public, max-age=31536000, immutable' }, ...NO_CACHE },
     
     
     
@@ -296,6 +450,56 @@ export default defineNuxtConfig({
     
     
     
+    
+    '/img/**':   { headers: { 'cache-control': 'public, max-age=31536000, immutable' }, ...NO_CACHE },
+    
+    
+    
+    '/google-merchant.xml': { ...NO_CACHE },
+    
+    
+    
+    '/commande-confirmee': { ...NO_CACHE },
+
+    
+    
+    
+    
+    
+    
+    
+    
+    '/.well-known/oauth-authorization-server': { ...NO_CACHE },
+    '/.well-known/oauth-protected-resource':   { ...NO_CACHE },
+    '/mcp':    { ...NO_CACHE },
+    '/mcp/**': { ...NO_CACHE },
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    '/oauth/**': { ...NO_CACHE },
+
+    
+    
+    
+    ...Object.fromEntries(HOST_DEPENDENT_ROUTES.map((route) => [route, { ...NO_CACHE }])),
+
+    
+    
+    
+    ...STATEFUL_DENY,
+
+    
+    
+    '/': SSR_CACHE_HOMEPAGE ? { ...SSR_CACHE } : { ...DOC_NO_CACHE },
+
     
     
     '/blog/**':         { swr: 300, cache: { base: 'redis' } },
@@ -304,22 +508,67 @@ export default defineNuxtConfig({
     '/dictionnaire/**': { swr: 600, cache: { base: 'redis' } },
     '/expertise/**':    { swr: 600, cache: { base: 'redis' } },
     '/page/**':         { swr: 600, cache: { base: 'redis' } },
-    '/grossiste/**':    { swr: 60,  cache: { base: 'redis' } },
-    '/produit/**':      { swr: 60,  cache: { base: 'redis' } },
-    
-    
-    
     '/cgv':             { swr: 3600, cache: { base: 'redis' } },
     '/mentions-legales':{ swr: 3600, cache: { base: 'redis' } },
     '/cookies':         { swr: 3600, cache: { base: 'redis' } },
-    '/contact':         { swr: 600,  cache: { base: 'redis' } },
+
+    
+    ...DENY_EXTRA,
+  },
+
+  hooks: {
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    'nitro:config': (nitroConfig: any) => {
+      prependErrorHandler(nitroConfig, resolve(__layerDir, 'server/error-status-message'))
+    },
+    
+    
+    
+    
+    
+    
+    
+    'build:manifest': (manifest) => {
+      for (const key in manifest) manifest[key]!.prefetch = false
+    },
   },
 
   nitro: {
     experimental: {
       tasks: true,
     },
+    
+    
+    
+    
+    
+    
+    compressPublicAssets: { gzip: true, brotli: true },
     storage: {
+      
+      
+      
+      
+      
+      
+      
+      
+      
       avatars:   { driver: 'fs', base: resolve(__layerDir, 'server/data/avatars') },
       automates: { driver: 'fs', base: resolve(__layerDir, 'server/data/automates') },
       
@@ -328,23 +577,18 @@ export default defineNuxtConfig({
       
       
       
-      redis: process.env.REDIS_URL
-        ? {
-            driver: 'redis',
-            url: process.env.REDIS_URL,
-            base: 'ac:',
-            
-            
-            lazyConnect: true,
-            maxRetriesPerRequest: 1,
-            enableOfflineQueue: false,
-          }
-        : {
-            
-            
-            
-            driver: 'memory',
-          },
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      redis: {
+        driver: 'memory',
+      },
     },
     alias: {
       '~/server':      resolve(__layerDir, 'server'),
@@ -363,8 +607,24 @@ export default defineNuxtConfig({
       '~/enterprise/vertical-jewelry': resolve(__layerDir, '..', 'enterprise/vertical-jewelry/modules'),
       '~/enterprise/misc':             resolve(__layerDir, '..', 'enterprise/misc/modules'),
       '~/enterprise':   resolve(__layerDir, '..', 'enterprise'),
-      '~/internal':     resolve(__layerDir, '..', 'tenants/mothership/modules'),
+      '~/internal':     resolve(__layerDir, '../..', 'mothership-app/modules'),
     },
+    
+    
+    
+    
+    moduleSideEffects: [
+      ...serverSideEffectEntries(resolve(__layerDir, '..')),
+      
+      
+      PRIME_SECRET_ENV,
+    ],
+    
+    
+    
+    
+    
+    unenv: { polyfill: [PRIME_SECRET_ENV] },
     scheduledTasks: {
       
       
@@ -376,11 +636,6 @@ export default defineNuxtConfig({
       
       
       '0 8 * * *': ['audit:sitemap-watch'],
-      
-      
-      
-      
-      '15 8 * * *': ['audit:matomo-watch'],
       
       
       
@@ -436,6 +691,10 @@ export default defineNuxtConfig({
       
       
       
+      
+      
+      
+      
       '50 3 * * *': ['business:expiry-discounts'],
       
       
@@ -456,6 +715,13 @@ export default defineNuxtConfig({
       
       
       '5 4 * * *': ['seo:crosslinks-rebuild'],
+      
+      
+      
+      
+      
+      
+      '35 4 * * *': ['facet:family-map'],
       
       
       

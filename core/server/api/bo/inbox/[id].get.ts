@@ -2,9 +2,12 @@
 
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const PG_SCHEMA = 'cs_main'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id) throw createError({ statusCode: 400, statusMessage: 'id requis' })
   const sql = getPgClient()

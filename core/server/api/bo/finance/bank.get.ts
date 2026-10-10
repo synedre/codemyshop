@@ -1,4 +1,4 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 import {
   bankTransactionTotals,
@@ -7,6 +7,7 @@ import {
 } from '~/enterprise/banking/bank/server/utils/bank'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const periodDays = [30, 90, 365].includes(Number(q.period)) ? Number(q.period) : 90
   const status = ['all', 'unreconciled', 'reconciled'].includes(q.status)

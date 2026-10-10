@@ -10,8 +10,8 @@
           </svg>
         </NuxtLink>
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Déployer un client</h1>
-          <p class="text-xs text-gray-400 mt-0.5">Tunnel de mise en production · Marque Blanche</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.deploy.title', 'Déployer un client') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.deploy.subtitle', 'Tunnel de mise en production · Marque Blanche') }}</p>
         </div>
       </div>
     </header>
@@ -51,36 +51,36 @@
       
       <div v-if="currentStep === 0" class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 space-y-5">
         <div>
-          <h2 class="text-base font-semibold text-gray-800 dark:text-slate-100 mb-1">Informations projet</h2>
-          <p class="text-sm text-gray-400">Identifiant unique, nom commercial et domaine de déploiement.</p>
+          <h2 class="text-base font-semibold text-gray-800 dark:text-slate-100 mb-1">{{ tHub('hub.ui.deploy.info_title', 'Informations projet') }}</h2>
+          <p class="text-sm text-gray-400">{{ tHub('hub.ui.deploy.info_lead', 'Identifiant unique, nom commercial et domaine de déploiement.') }}</p>
         </div>
 
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Identifiant client <span class="text-red-400">*</span></label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.client_id', 'Identifiant client') }} <span class="text-red-400">*</span></label>
               <input
                 v-model="form.id"
                 type="text"
-                placeholder="ex: monsite-fr"
+                :placeholder="tHub('hub.ui.deploy.client_id_ph', 'ex: monsite-fr')"
                 class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                 @input="form.id = ($event.target as HTMLInputElement).value.toLowerCase().replace(/[^a-z0-9-]/g, '-')"
               />
-              <p class="text-xs text-gray-400 mt-1">Slug unique, minuscules + tirets</p>
+              <p class="text-xs text-gray-400 mt-1">{{ tHub('hub.ui.deploy.client_id_hint', 'Slug unique, minuscules + tirets') }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Nom commercial <span class="text-red-400">*</span></label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.trade_name', 'Nom commercial') }} <span class="text-red-400">*</span></label>
               <input
                 v-model="form.name"
                 type="text"
-                placeholder="ex: Mon Site E-commerce"
+                :placeholder="tHub('hub.ui.deploy.trade_name_ph', 'ex: Mon Site E-commerce')"
                 class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
               />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Domaine de production <span class="text-red-400">*</span></label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.prod_domain', 'Domaine de production') }} <span class="text-red-400">*</span></label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">https://</span>
               <input
@@ -93,17 +93,17 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">VPS / IP serveur</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.vps_ip', 'VPS / IP serveur') }}</label>
             <input
               v-model="form.vps_ip"
               type="text"
-              placeholder="ex: 51.75.26.78"
+              :placeholder="tHub('hub.ui.deploy.vps_ip_ph', 'ex: 192.0.2.10')"
               class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Couleur primaire (charte)</label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.primary_color', 'Couleur primaire (charte)') }}</label>
             <div class="flex items-center gap-3">
               <input
                 v-model="form.primaryColor"
@@ -126,7 +126,7 @@
             :disabled="!form.id || !form.name || !form.domain"
             class="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Suivant
+            {{ tHub('hub.ui.deploy.next', 'Suivant') }}
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
             </svg>
@@ -137,37 +137,37 @@
       
       <div v-else-if="currentStep === 1" class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 space-y-5">
         <div>
-          <h2 class="text-base font-semibold text-gray-800 dark:text-slate-100 mb-1">Source de données</h2>
-          <p class="text-sm text-gray-400">Connexion au moteur PrestaShop et à la base de données.</p>
+          <h2 class="text-base font-semibold text-gray-800 dark:text-slate-100 mb-1">{{ tHub('hub.ui.deploy.step_datasource', 'Source de données') }}</h2>
+          <p class="text-sm text-gray-400">{{ tHub('hub.ui.deploy.datasource_lead', 'Connexion au moteur PrestaShop et à la base de données.') }}</p>
         </div>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">URL du PrestaShop <span class="text-red-400">*</span></label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.ps_url', 'URL du PrestaShop') }} <span class="text-red-400">*</span></label>
             <input
               v-model="form.api_endpoint"
               type="url"
               placeholder="https://monsite.fr"
               class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
             />
-            <p class="text-xs text-gray-400 mt-1">URL racine du PrestaShop (sans /api ni slash final)</p>
+            <p class="text-xs text-gray-400 mt-1">{{ tHub('hub.ui.deploy.ps_url_hint', 'URL racine du PrestaShop (sans /api ni slash final)') }}</p>
           </div>
 
           <hr class="border-gray-100 dark:border-slate-800" />
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest">Base de données MariaDB</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest">{{ tHub('hub.ui.deploy.db_heading', 'Base de données MariaDB') }}</p>
 
           <div class="grid grid-cols-3 gap-3">
             <div class="col-span-2">
-              <label class="block text-xs font-medium text-gray-600 mb-1">Hôte</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.host', 'Hôte') }}</label>
               <input
                 v-model="form.db_config.host"
                 type="text"
-                placeholder="localhost ou 127.0.0.1"
+                :placeholder="tHub('hub.ui.deploy.host_ph', 'localhost ou 127.0.0.1')"
                 class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Port</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.port', 'Port') }}</label>
               <input
                 v-model.number="form.db_config.port"
                 type="number"
@@ -179,7 +179,7 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Nom de la BDD</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.db_name', 'Nom de la BDD') }}</label>
               <input
                 v-model="form.db_config.name"
                 type="text"
@@ -188,7 +188,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Utilisateur BDD</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.deploy.db_user', 'Utilisateur BDD') }}</label>
               <input
                 v-model="form.db_config.user"
                 type="text"
@@ -201,7 +201,7 @@
 
         
         <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-gray-300 leading-relaxed">
-          <p class="text-gray-500 mb-2">// config/clients/{{ form.id || 'client-id' }}.ts — aperçu</p>
+          <p class="text-gray-500 mb-2">// config/clients/{{ form.id || 'client-id' }}.ts — {{ tHub('hub.ui.deploy.config_preview', 'aperçu') }}</p>
           <p><span class="text-purple-400">export default</span> <span class="text-yellow-300">config</span> <span class="text-gray-400">= &#123;</span></p>
           <p class="pl-4"><span class="text-sky-300">clientId</span><span class="text-gray-400">:</span> <span class="text-green-300">'{{ form.id || 'client-id' }}'</span><span class="text-gray-400">,</span></p>
           <p class="pl-4"><span class="text-sky-300">domain</span><span class="text-gray-400">:</span>   <span class="text-green-300">'{{ form.domain || 'domaine.fr' }}'</span><span class="text-gray-400">,</span></p>
@@ -213,7 +213,7 @@
         <div class="flex justify-between pt-2">
           <button @click="goStep(0)" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-800 dark:text-slate-100 transition-colors flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
-            Retour
+            {{ tHub('hub.ui.deploy.back', 'Retour') }}
           </button>
           <button
             @click="startDeploy"
@@ -223,7 +223,7 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
             </svg>
-            Lancer le déploiement
+            {{ tHub('hub.ui.deploy.launch', 'Lancer le déploiement') }}
           </button>
         </div>
       </div>
@@ -235,7 +235,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
           <div class="flex items-center justify-between mb-3">
             <span class="text-sm font-semibold text-gray-700 dark:text-slate-200">
-              {{ isResetting ? 'Nettoyage en cours…' : deployDone ? 'Déploiement terminé' : 'Déploiement en cours…' }}
+              {{ isResetting ? tHub('hub.ui.deploy.progress_cleaning', 'Nettoyage en cours…') : deployDone ? tHub('hub.ui.deploy.progress_done', 'Déploiement terminé') : tHub('hub.ui.deploy.progress_running', 'Déploiement en cours…') }}
             </span>
             <span class="text-sm font-bold tabular-nums" :class="deployDone ? 'text-green-600' : deployError ? 'text-red-600' : 'text-primary-600'">
               {{ progressPct }}%
@@ -276,7 +276,7 @@
             
             <div v-if="deployDone" class="flex items-center gap-2 text-green-400 mt-2">
               <span class="text-gray-600">$</span>
-              <span>Déploiement terminé avec succès ✓</span>
+              <span>{{ tHub('hub.ui.deploy.done_success', 'Déploiement terminé avec succès ✓') }}</span>
             </div>
           </div>
         </div>
@@ -291,19 +291,19 @@
                 </svg>
               </div>
               <div>
-                <p class="text-sm font-semibold text-gray-800 dark:text-slate-100">{{ form.name }} est en ligne</p>
-                <p class="text-xs text-gray-400">Fichier de config généré · Client enregistré dans le registre</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.deploy.name_online', '{name} est en ligne', { name: form.name }) }}</p>
+                <p class="text-xs text-gray-400">{{ tHub('hub.ui.deploy.done_lead', 'Fichier de config généré · Client enregistré dans le registre') }}</p>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-xs">
               <div class="bg-gray-50 dark:bg-slate-950 rounded-lg p-3 space-y-1">
-                <p class="font-semibold text-gray-500 uppercase tracking-widest text-[10px]">Config générée</p>
+                <p class="font-semibold text-gray-500 uppercase tracking-widest text-[10px]">{{ tHub('hub.ui.deploy.config_generated', 'Config générée') }}</p>
                 <p class="font-mono text-gray-700 dark:text-slate-200">config/clients/{{ form.id }}.ts</p>
               </div>
               <div class="bg-gray-50 dark:bg-slate-950 rounded-lg p-3 space-y-1">
-                <p class="font-semibold text-gray-500 uppercase tracking-widest text-[10px]">Prochaine étape</p>
-                <p class="text-gray-700 dark:text-slate-200">Personnaliser le theme + menu dans le fichier</p>
+                <p class="font-semibold text-gray-500 uppercase tracking-widest text-[10px]">{{ tHub('hub.ui.deploy.next_step', 'Prochaine étape') }}</p>
+                <p class="text-gray-700 dark:text-slate-200">{{ tHub('hub.ui.deploy.next_step_body', 'Personnaliser le theme + menu dans le fichier') }}</p>
               </div>
             </div>
 
@@ -312,19 +312,19 @@
                 to="/hub/admin/sites"
                 class="flex-1 text-center px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition-colors"
               >
-                Voir la flotte →
+                {{ tHub('hub.ui.deploy.see_fleet', 'Voir la flotte →') }}
               </NuxtLink>
               <button
                 @click="resetWizard"
                 class="px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 dark:bg-slate-950 transition-colors"
               >
-                Nouveau déploiement
+                {{ tHub('hub.ui.deploy.new_deploy', 'Nouveau déploiement') }}
               </button>
               <button
                 @click="resetInstance"
                 class="px-4 py-2.5 border border-red-200 dark:border-red-800 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
-                Reset Instance
+                {{ tHub('hub.ui.deploy.reset_instance', 'Reset Instance') }}
               </button>
             </div>
           </div>
@@ -339,11 +339,12 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
-const STEPS = [
-  { id: 'project', label: 'Projet' },
-  { id: 'datasource', label: 'Source de données' },
-  { id: 'deploy', label: 'Déploiement' },
-]
+const { t: tHub } = useHubT()
+const STEPS = computed(() => [
+  { id: 'project', label: tHub('hub.ui.deploy.step_project', 'Projet') },
+  { id: 'datasource', label: tHub('hub.ui.deploy.step_datasource', 'Source de données') },
+  { id: 'deploy', label: tHub('hub.ui.deploy.step_deploy', 'Déploiement') },
+])
 const currentStep = ref(0)
 
 const form = reactive({
@@ -416,7 +417,7 @@ function streamScript(action: 'deploy' | 'cleanup') {
       eventSource = null
       if (!deployDone.value) {
         deployError.value = true
-        termLines.value.push({ text: 'Connexion SSE perdue', type: 'error', loading: false })
+        termLines.value.push({ text: tHub('hub.ui.deploy.sse_lost', 'Connexion SSE perdue'), type: 'error', loading: false })
       }
       resolve(false)
     }
@@ -456,7 +457,7 @@ async function startDeploy() {
 }
 
 async function resetInstance() {
-  if (!confirm(`Supprimer l'instance ${form.id} ? Container, Nginx et dossier seront supprimés.`)) return
+  if (!confirm(tHub('hub.ui.deploy.confirm_reset', 'Supprimer l\'instance {id} ? Container, Nginx et dossier seront supprimés.', { id: form.id }))) return
 
   isResetting.value = true
   termLines.value   = []

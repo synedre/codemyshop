@@ -2,7 +2,10 @@
 
 import { createListWithItems } from '~/modules/quickorder/server/utils/quickorder'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     idCustomer: number
     name: string

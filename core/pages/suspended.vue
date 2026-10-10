@@ -30,6 +30,7 @@
 </template>
 
 <script setup lang="ts">
+
 definePageMeta({ layout: false })
 const { public: publicConfig } = useRuntimeConfig()
 const brandName = publicConfig.brandName as string || 'Boutique'

@@ -2,11 +2,11 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Équipe</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.team.title', 'Équipe') }}</h1>
         <p class="text-xs text-gray-400 mt-0.5">
-          {{ total }} collaborateur{{ total > 1 ? 's' : '' }}
+          {{ total > 1 ? t('hub.ui.team.members_other', '{n} collaborateurs', { n: total }) : t('hub.ui.team.members_one', '{n} collaborateur', { n: total }) }}
           <span v-if="viewerIsSaas" class="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-500 font-semibold tracking-wide">
-            SuperAdmin PaaS — vue intégrale
+            {{ t('hub.ui.team.saas_view', 'SuperAdmin PaaS — vue intégrale') }}
           </span>
         </p>
       </div>
@@ -14,25 +14,25 @@
         <input
           v-model="search"
           type="text"
-          placeholder="Nom, email…"
+          :placeholder="t('hub.ui.team.search_ph', 'Nom, email…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
         <NuxtLink
           to="/hub/team/profiles"
           class="text-xs px-4 py-1.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium"
         >
-          Permissions par profil
+          {{ t('hub.ui.team.profile_perms', 'Permissions par profil') }}
         </NuxtLink>
         <NuxtLink
           to="/hub/team/new"
           class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
         >
-          + Nouveau collaborateur
+          {{ t('hub.ui.team.new_member', '+ Nouveau collaborateur') }}
         </NuxtLink>
       </div>
     </header>
 
-    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" label="collaborateurs"
+    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.team.members_label', 'collaborateurs')"
       :per-page="perPage" :per-page-options="perPageOptions"
       @go="goPage" @update:per-page="setPerPage"
       class="border-b border-gray-100 dark:border-slate-800" />
@@ -43,18 +43,18 @@
       </div>
 
       <div v-else-if="!employees.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucun collaborateur</p>
+        <p class="text-sm">{{ t('hub.ui.team.none', 'Aucun collaborateur') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
             <th class="px-4 py-2.5 font-medium">#</th>
-            <th class="px-4 py-2.5 font-medium">Prénom</th>
-            <th class="px-4 py-2.5 font-medium">Nom</th>
-            <th class="px-4 py-2.5 font-medium">Email</th>
-            <th class="px-4 py-2.5 font-medium">Profil</th>
-            <th class="px-4 py-2.5 font-medium text-center">Actif</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.team.col_firstname', 'Prénom') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.team.col_lastname', 'Nom') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.team.col_email', 'Email') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.team.col_profile', 'Profil') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center">{{ t('hub.ui.team.col_active', 'Actif') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -74,7 +74,7 @@
                   ? 'bg-red-50 text-red-600'
                   : 'bg-primary-50 text-primary-700'"
               >
-                {{ e.profileName || `Profil #${e.profileId}` }}
+                {{ e.profileName || t('hub.ui.team.profile_n', 'Profil #{id}', { id: e.profileId }) }}
               </span>
             </td>
             <td class="px-4 py-2.5 text-center" @click.stop>
@@ -97,7 +97,7 @@
       </table>
     </div>
 
-    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" label="collaborateurs" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
+    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.team.members_label', 'collaborateurs')" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
   </div>
 </template>
 
@@ -110,6 +110,7 @@ if (!canAccess('founder_admin')) {
   navigateTo('/hub/dashboard')
 }
 
+const { t } = useHubT()
 const router = useRouter()
 
 const employees = ref<any[]>([])

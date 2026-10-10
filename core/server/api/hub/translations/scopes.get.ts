@@ -7,11 +7,19 @@ export default defineEventHandler(async (event) => {
   const db = useClientDb(event)
 
   
+  
+  
+  
+  
+  
+  
   const tables = new Set<string>()
   try {
-    const rows = await db.query<any>(`SHOW TABLES`)
+    const rows = await db.query<any>(
+      `SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE'`,
+    )
     for (const r of rows) {
-      const name = Object.values(r)[0] as string
+      const name = (r.table_name ?? Object.values(r)[0]) as string
       if (name) tables.add(name)
     }
   } catch {

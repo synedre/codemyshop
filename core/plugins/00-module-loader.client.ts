@@ -1,8 +1,12 @@
 
 
-import '~/modules/faq/client/index'
+import '../../community/modules/faq/client/index'
 
-const _clientSideEffectsCount = 1
+import '../../community/modules/store-advisor/client/index'
+
+import '../../community/modules/split-payment/client/index'
+
+const _clientSideEffectsCount = 3
 
 export default defineNuxtPlugin(() => {
   if (_clientSideEffectsCount > 0) {

@@ -10,13 +10,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'id catégorie invalide' })
   }
 
-  const body = await readBody<{ ids?: unknown }>(event)
+  const body = await readBody<{ ids?: unknown; crossFirst?: unknown }>(event)
   const rawIds = Array.isArray(body?.ids) ? body!.ids! : []
   const ids = [...new Set(
     rawIds
       .map((v) => Number(v))
       .filter((n) => Number.isInteger(n) && n > 0 && n !== hostId),
   )]
+  const crossFirst = body?.crossFirst === true || body?.crossFirst === 1 ? 1 : 0
 
   const db = useClientDb(event)
 
@@ -40,11 +41,11 @@ export default defineEventHandler(async (event) => {
 
   for (let i = 0; i < validIds.length; i++) {
     await db.run(
-      `INSERT INTO cs_category_cross (id_category, id_cross_category, position, date_add)
-       VALUES (?, ?, ?, NOW())`,
-      [hostId, validIds[i], i],
+      `INSERT INTO cs_category_cross (id_category, id_cross_category, position, cross_first, date_add)
+       VALUES (?, ?, ?, ?, NOW())`,
+      [hostId, validIds[i], i, crossFirst],
     )
   }
 
-  return { success: true, hostId, count: validIds.length, ids: validIds }
+  return { success: true, hostId, count: validIds.length, ids: validIds, crossFirst: crossFirst === 1 }
 })

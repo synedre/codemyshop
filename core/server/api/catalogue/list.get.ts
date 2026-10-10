@@ -4,6 +4,7 @@ import { useClientDb, useClientDbById } from '~/server/utils/db'
 import { resolveIdLang } from '~/server/utils/lang'
 import { buildProductImage } from '~/server/utils/ps-image'
 import { isTenantB2b, buildTaxJoinForPrice, buildPriceExprNonAgg } from '~/server/utils/ps-tax'
+import { visibiliteSql } from '~/utils/product-visibility'
 
 const SORT_MAP: Record<string, string> = {
   name_asc:   'name ASC',
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
   const taxJoin = buildTaxJoinForPrice(b2b)
   const priceExpr = buildPriceExprNonAgg(b2b, 'ps.price')
 
-  const whereClauses: string[] = ['p.active = 1', 'ps.active = 1']
+  const whereClauses: string[] = ['p.active = 1', 'ps.active = 1', visibiliteSql('ps', 'catalog')]
   const params: any[] = []
   const joins: string[] = []
 

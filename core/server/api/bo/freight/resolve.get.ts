@@ -2,7 +2,10 @@
 
 import { resolveFreightRule } from '~/modules/freight-rule/server/utils/freight-rule'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   const result = await resolveFreightRule(
     {

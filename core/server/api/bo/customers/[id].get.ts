@@ -1,9 +1,12 @@
 
 
 import { useClientDb } from '~/server/utils/db'
-import { ADDIFY_ACTIVITY_FIELD_NAME, labelForActivityCode, normalizeLegacyActivityCode } from '~/utils/customerActivity'
+import { resolveIdLang } from '~/server/utils/lang'
+
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
   const customerId = Number(id)
@@ -61,6 +64,19 @@ export default defineEventHandler(async (event) => {
 
   
   
+  const loyaltyAccount = await db.get<{ balance_points: number; total_earned: number; total_spent: number }>(`
+    SELECT balance_points, total_earned, total_spent
+    FROM cs_loyalty_account
+    WHERE id_customer = ?
+  `, [customerId])
+  const loyalty = {
+    balancePoints: Number(loyaltyAccount?.balance_points ?? 0),
+    totalEarned: Number(loyaltyAccount?.total_earned ?? 0),
+    totalSpent: Number(loyaltyAccount?.total_spent ?? 0),
+  }
+
+  
+  
   
   
   const groupRows = await db.query<any>(`
@@ -75,6 +91,8 @@ export default defineEventHandler(async (event) => {
       o.reference,
       o.id_customer AS customerId,
       o.current_state AS statusId,
+      os.color AS statusColor,
+      osl.name AS statusName,
       o.payment,
       ROUND(o.total_paid_tax_excl, 2) AS totalPaidHT,
       ROUND(o.total_paid_tax_incl, 2) AS totalPaidTTC,
@@ -82,6 +100,8 @@ export default defineEventHandler(async (event) => {
       ROUND(o.total_products, 2) AS totalProducts,
       o.date_add AS dateAdd
     FROM ps_orders o
+    LEFT JOIN ps_order_state os ON os.id_order_state = o.current_state
+    LEFT JOIN ps_order_state_lang osl ON osl.id_order_state = o.current_state AND osl.id_lang = 1
     WHERE o.id_customer = ? AND o.valid = 1
     ORDER BY o.id_order DESC
     LIMIT 20
@@ -93,24 +113,15 @@ export default defineEventHandler(async (event) => {
   
   
   
+  
+  
+  
+  
+  
   const { getCustomerActivityCode } = await import('~/modules/customer-extra/server/utils/customer-extra')
-  let activityCode: string | null = await getCustomerActivityCode(customerId, { event })
-
-  if (!activityCode) {
-    try {
-      const legacy = await db.get<{ field_value: string | null }>(`
-        SELECT field_value
-        FROM ps_addifycustomercustomdata
-        WHERE id_customer = ? AND field_name = ?
-        ORDER BY id_data DESC LIMIT 1
-      `, [customerId, ADDIFY_ACTIVITY_FIELD_NAME])
-      activityCode = normalizeLegacyActivityCode(legacy?.field_value)
-    } catch (err: any) {
-      if (err?.code !== 'ER_NO_SUCH_TABLE' && err?.errno !== 1146) {
-        console.warn('[customers/:id] addify fallback read error:', err?.message)
-      }
-    }
-  }
+  const { libelleActivite } = await import('~/modules/customer-extra/server/utils/customer-activity')
+  const activityCode: string | null = await getCustomerActivityCode(customerId, { event })
+  const activityLabel = await libelleActivite(activityCode, await resolveIdLang(event))
 
   return {
     ...customer,
@@ -118,9 +129,10 @@ export default defineEventHandler(async (event) => {
     groupIds,
     addresses,
     orders,
+    loyalty,
     extra: {
       activityCode,
-      activityLabel: labelForActivityCode(activityCode),
+      activityLabel,
     },
   }
 })

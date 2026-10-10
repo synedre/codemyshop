@@ -6,23 +6,23 @@
       </NuxtLink>
       <div class="flex-1 min-w-0">
         <h1 class="text-base font-bold text-gray-800 dark:text-slate-100 truncate">
-          {{ isNew ? 'Nouvelle caractéristique' : (form.name || '— Sans nom —') }}
+          {{ isNew ? t('hub.ui.features_detail.new_title', 'Nouvelle caractéristique') : (form.name || t('hub.ui.features_detail.unnamed', '— Sans nom —')) }}
         </h1>
         <p class="text-xs text-gray-400 mt-0.5">
           <span v-if="!isNew">#{{ form.id }}</span>
           <span v-if="!isMaster" class="ml-2 inline-flex items-center gap-1 text-amber-600">
             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" /></svg>
-            Traduction — structure verrouillée
+            {{ t('hub.ui.features_detail.translation_locked', 'Traduction — structure verrouillée') }}
           </span>
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <HubLangSelector aria-label="Langue d'édition" />
-        <span v-if="saved" class="text-xs text-green-600 font-medium">Sauvegardé</span>
+        <HubLangSelector :aria-label="t('hub.ui.features_detail.edit_lang', 'Langue d\'édition')" />
+        <span v-if="saved" class="text-xs text-green-600 font-medium">{{ t('hub.ui.features_detail.saved', 'Sauvegardé') }}</span>
         <span v-if="saveError" class="text-xs text-red-600 font-medium truncate max-w-xs" :title="saveError">{{ saveError }}</span>
-        <button v-if="!isNew" @click="remove" :disabled="saving" class="text-xs px-3 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-40 transition-colors font-medium">Supprimer</button>
+        <button v-if="!isNew" @click="remove" :disabled="saving" class="text-xs px-3 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-40 transition-colors font-medium">{{ t('hub.ui.features_detail.delete', 'Supprimer') }}</button>
         <button @click="save" :disabled="saving || loading" class="text-xs px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium">
-          {{ saving ? 'Enregistrement…' : (isNew ? 'Créer' : 'Enregistrer') }}
+          {{ saving ? t('hub.ui.features_detail.saving', 'Enregistrement…') : (isNew ? t('hub.ui.features_detail.create', 'Créer') : t('hub.ui.features_detail.save', 'Enregistrer')) }}
         </button>
       </div>
     </header>
@@ -39,23 +39,23 @@
 
         <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
           <header class="mb-4">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Identité</h2>
-            <p class="text-xs text-gray-400 mt-0.5">Nom de la caractéristique (ex: Composition, Origine, Certification).</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.features_detail.identity', 'Identité') }}</h2>
+            <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.features_detail.identity_hint', 'Nom de la caractéristique (ex: Composition, Origine, Certification).') }}</p>
           </header>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
-              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5">Nom <span class="text-red-500">*</span></label>
+              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5">{{ t('hub.ui.features_detail.name', 'Nom') }} <span class="text-red-500">*</span></label>
               <input v-model="form.name" type="text" required maxlength="128"
                 class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300" />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5">Position</label>
+              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1.5">{{ t('hub.ui.features_detail.position', 'Position') }}</label>
               <input v-model.number="form.position" type="number" min="0" :disabled="!isMaster"
                 class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300" />
             </div>
             <div v-if="!isNew" class="md:col-span-3 text-xs text-gray-500 flex gap-6 pt-2 border-t border-gray-100 dark:border-slate-800">
-              <span>{{ form.valuesCount }} valeur{{ form.valuesCount > 1 ? 's' : '' }}</span>
-              <span>{{ form.productsCount }} produit{{ form.productsCount > 1 ? 's' : '' }} utilisateur{{ form.productsCount > 1 ? 's' : '' }}</span>
+              <span>{{ form.valuesCount > 1 ? t('hub.ui.features_detail.values_other', '{n} valeurs', { n: form.valuesCount }) : t('hub.ui.features_detail.values_one', '{n} valeur', { n: form.valuesCount }) }}</span>
+              <span>{{ form.productsCount > 1 ? t('hub.ui.features_detail.products_other', '{n} produits utilisateurs', { n: form.productsCount }) : t('hub.ui.features_detail.products_one', '{n} produit utilisateur', { n: form.productsCount }) }}</span>
             </div>
           </div>
         </section>
@@ -63,17 +63,17 @@
         <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
           <header class="mb-4 flex items-center justify-between">
             <div>
-              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Valeurs prédéfinies</h2>
-              <p class="text-xs text-gray-400 mt-0.5">Liste des valeurs assignables aux produits (ex: Coton, Laine, Lin).</p>
+              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.features_detail.values_title', 'Valeurs prédéfinies') }}</h2>
+              <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.features_detail.values_hint', 'Liste des valeurs assignables aux produits (ex: Coton, Laine, Lin).') }}</p>
             </div>
-            <button type="button" @click="addValue" class="text-xs px-3 py-1.5 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors font-medium">+ Valeur</button>
+            <button type="button" @click="addValue" class="text-xs px-3 py-1.5 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors font-medium">{{ t('hub.ui.features_detail.add_value', '+ Valeur') }}</button>
           </header>
 
-          <div v-if="!values.length" class="text-center py-6 text-xs text-gray-400">Aucune valeur — ajoute-en pour les rendre sélectionnables sur les produits.</div>
+          <div v-if="!values.length" class="text-center py-6 text-xs text-gray-400">{{ t('hub.ui.features_detail.no_values', 'Aucune valeur — ajoute-en pour les rendre sélectionnables sur les produits.') }}</div>
 
           <ul v-else class="space-y-2">
             <li v-for="(v, i) in values" :key="v.id || `new-${i}`" class="flex items-center gap-2">
-              <span class="text-xs text-gray-400 font-mono w-12">{{ v.id ? `#${v.id}` : 'nouv.' }}</span>
+              <span class="text-xs text-gray-400 font-mono w-12">{{ v.id ? `#${v.id}` : t('hub.ui.features_detail.new_short', 'nouv.') }}</span>
               <input v-model="v.value" type="text" maxlength="255"
                 class="flex-1 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-300" />
               <button type="button" @click="removeValue(i)" :disabled="!isMaster" class="text-xs text-red-500 hover:text-red-700 disabled:opacity-30 px-2">×</button>
@@ -93,6 +93,7 @@ definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 const { canAccess } = useRoles()
 if (!canAccess('intelligence')) navigateTo('/hub/dashboard')
 
+const { t } = useHubT()
 const route = useRoute()
 const router = useRouter()
 const { currentLangId } = useHubLang()
@@ -129,7 +130,7 @@ async function load() {
     values.value = (data.values ?? []).map((v: any) => ({ id: v.id, value: v.value }))
     loaded.value = true
   } catch (err: any) {
-    saveError.value = err?.data?.message || err?.message || 'Erreur de chargement'
+    saveError.value = err?.data?.message || err?.message || t('hub.ui.features_detail.load_error', 'Erreur de chargement')
   } finally { loading.value = false }
 }
 
@@ -155,19 +156,19 @@ async function save() {
     if (res?.created && res?.id) router.replace(`/hub/features/${res.id}`)
     else await load()
   } catch (err: any) {
-    saveError.value = err?.data?.message || err?.message || 'Erreur de sauvegarde'
+    saveError.value = err?.data?.message || err?.message || t('hub.ui.features_detail.save_error', 'Erreur de sauvegarde')
   } finally { saving.value = false }
 }
 
 async function remove() {
-  if (!confirm(`Supprimer la caractéristique "${form.name}" ?`)) return
+  if (!confirm(t('hub.ui.features_detail.delete_confirm', 'Supprimer la caractéristique "{name}" ?', { name: form.name }))) return
   saving.value = true
   saveError.value = null
   try {
     await $fetch(`/api/bo/pim/features/${form.id}`, { method: 'DELETE' })
     router.push('/hub/features')
   } catch (err: any) {
-    saveError.value = err?.data?.message || err?.message || 'Erreur de suppression'
+    saveError.value = err?.data?.message || err?.message || t('hub.ui.features_detail.delete_error', 'Erreur de suppression')
     saving.value = false
   }
 }

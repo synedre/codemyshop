@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const { q } = getQuery(event)
   const query = String(q || '').trim()
   if (query.length < 2) return { ok: true, products: [] }

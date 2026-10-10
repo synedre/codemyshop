@@ -3,7 +3,13 @@
 import { useClientDb } from '~/server/utils/db'
 import { spawn } from 'node:child_process'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+import { loadBrandBrief } from '~/server/utils/brand-brief'
+import { importFallbackCategory } from '~/server/utils/import-fallback-category'
+import { productPromptContext } from '~/utils/product-prompt-context'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const { id_product } = getQuery(event)
   const idProduct = Number(id_product)
   if (!idProduct) {
@@ -25,12 +31,13 @@ export default defineEventHandler(async (event) => {
   }
 
   
+  const homeId = await importFallbackCategory(db)
   const cats = await db.query<{ id_category: number; silo_path: string }>(`
     WITH RECURSIVE tree AS (
       SELECT c.id_category, c.id_parent, cl.link_rewrite, 0 AS depth, cl.link_rewrite AS path
         FROM ps_category c
         JOIN ps_category_lang cl ON cl.id_category = c.id_category AND cl.id_lang = 1 AND cl.id_shop = 1
-       WHERE c.id_category = 260
+       WHERE c.id_parent = ? AND c.active = 1
       UNION ALL
       SELECT c.id_category, c.id_parent, cl.link_rewrite, t.depth + 1, CONCAT(t.path, '/', cl.link_rewrite)
         FROM ps_category c
@@ -38,19 +45,28 @@ export default defineEventHandler(async (event) => {
         JOIN tree t ON c.id_parent = t.id_category
        WHERE c.active = 1
     )
-    SELECT t.id_category, REPLACE(t.path, 'grossiste/', '') AS silo_path
+    SELECT t.id_category, t.path AS silo_path
       FROM tree t
      WHERE t.depth > 0
        AND NOT EXISTS (SELECT 1 FROM ps_category c2 WHERE c2.id_parent = t.id_category AND c2.active = 1)
      ORDER BY silo_path
-  `)
+  `, [homeId])
 
   if (!cats.length) return { ok: true, suggestions: [] }
 
   const catsBlock = cats.map(c => `${c.id_category} → ${c.silo_path}`).join('\n')
   const desc = (prod.description_short || '').replace(/<[^>]+>/g, '').slice(0, 300)
 
-  const prompt = `Tu es un classificateur de catalogue B2B (Example Shop, grossiste fruits secs / épices / olives / charcuterie / oriental).
+  
+  const shop = await db.get<{ value: string }>(
+    `SELECT value FROM ps_configuration WHERE name = 'PS_SHOP_NAME' LIMIT 1`,
+  ).catch(() => null)
+  const brief = await loadBrandBrief()
+  const context = productPromptContext({
+    shopName: shop?.value, audience: brief.audience, sectorTopics: brief.sector_topics,
+  }, 'classement')
+
+  const prompt = `${context}
 
 PRODUIT À CLASSER :
 - Nom : ${prod.name}
@@ -61,11 +77,7 @@ ${catsBlock}
 
 TÂCHE : choisir 1 à 3 catégories où ce produit appartient PRINCIPALEMENT (pas où il contient un ingrédient).
 
-EXEMPLES de discernement :
-- « Salami paprika » → charcuterie/* (le paprika est un aromate)
-- « Paprika moulu Espig » → epice/paprika
-- « Cajou curry fumé » → fruit-sec/noix-de-cajou
-- « Olives Kalamata Bocal » → olive/kalamata
+DISCERNEMENT : classe selon ce QU'EST le produit, pas selon un composant, un ingrédient ou un accessoire qu'il contient ou mentionne. Préfère la catégorie la plus précise (feuille).
 
 FORMAT RÉPONSE : array JSON pur (PAS de markdown), MAX 3 entrées, ordonnées de la plus pertinente à la moins :
 [{"id_category": int, "silo_path": "string", "reason": "5-10 mots"}]

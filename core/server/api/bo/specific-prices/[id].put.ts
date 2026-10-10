@@ -3,8 +3,7 @@
 import { useClientDb } from '~/server/utils/db'
 import { requireEmployeeSession } from '~/server/utils/session'
 
-const FROM_SENTINEL = '1970-01-01 00:00:00'
-const TO_SENTINEL   = '9999-12-31 23:59:59'
+import { FROM_SENTINEL, TO_SENTINEL } from '~/server/utils/promotion-scope'
 
 interface Body {
   reduction?: number

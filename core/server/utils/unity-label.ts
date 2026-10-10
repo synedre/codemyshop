@@ -10,6 +10,8 @@ export function unityToShortLabel(unity: string | null | undefined): string {
   return `HT/${unity}`
 }
 
+export type PriceDisplayMode = 'unit' | 'kg' | 'L' | null | undefined
+
 export interface UnitPricingInputs {
   
   priceHT: number
@@ -23,6 +25,9 @@ export interface UnitPricingInputs {
   netWeightKg?: number | null
   
   productWeightKg?: number | null
+  
+
+  priceDisplayMode?: PriceDisplayMode
 }
 
 export interface UnitPricingResult {
@@ -41,6 +46,39 @@ export function deriveUnitPricing(inp: UnitPricingInputs): UnitPricingResult {
   const unitPriceRatio = Number(inp.unitPriceRatio || 0)
   const productWeightKg = Number(inp.productWeightKg || 0)
   const netWeightKg = Number(inp.netWeightKg || 0)
+  const totalKg = netWeightKg > 0 ? netWeightKg : (productWeightKg > 0 ? productWeightKg : 0)
+
+  
+  
+  if (inp.priceDisplayMode === 'unit') {
+    
+    
+    
+    
+    const divisor = unitsPerPack > 1
+      ? unitsPerPack
+      : unitPriceRatio > 0
+        ? unitPriceRatio
+        : 1
+    return { pricePerUnit: priceHT / divisor, unitLabel: 'HT/U', divisor }
+  }
+  if (inp.priceDisplayMode === 'kg') {
+    
+    
+    const kgDivisor = unitPriceRatio > 0 ? unitPriceRatio : totalKg
+    if (kgDivisor > 0) {
+      return { pricePerUnit: priceHT / kgDivisor, unitLabel: 'HT/K', divisor: kgDivisor }
+    }
+    return { pricePerUnit: undefined, unitLabel: 'HT/K', divisor: undefined }
+  }
+  if (inp.priceDisplayMode === 'L') {
+    
+    
+    if (unitPriceRatio > 0) {
+      return { pricePerUnit: priceHT / unitPriceRatio, unitLabel: 'HT/L', divisor: unitPriceRatio }
+    }
+    return { pricePerUnit: undefined, unitLabel: 'HT/L', divisor: undefined }
+  }
 
   
   if (unitsPerPack > 1) {
@@ -57,10 +95,23 @@ export function deriveUnitPricing(inp: UnitPricingInputs): UnitPricingResult {
   }
 
   
-  const totalKg = netWeightKg > 0 ? netWeightKg : (productWeightKg > 0 ? productWeightKg : 0)
   if (totalKg > 0) {
     return { pricePerUnit: priceHT / totalKg, unitLabel: 'HT/K', divisor: totalKg }
   }
 
   return { pricePerUnit: undefined, unitLabel: 'HT', divisor: undefined }
+}
+
+export function isCountUnity(unity: string | null | undefined): boolean {
+  const u = String(unity || '').trim().toLowerCase().replace(/^par\s+/, '')
+  return /^(u|un|unit[ée]?s?|pi[èe]ces?|pce?s?|sachets?)$/.test(u)
+}
+
+export function importUnitPriceRatio(
+  ratio: number | undefined,
+  unity: string | null | undefined,
+  unitsPerPack: number | undefined,
+): number | undefined {
+  if (isCountUnity(unity) && unitsPerPack !== undefined && unitsPerPack >= 1) return unitsPerPack
+  return ratio
 }

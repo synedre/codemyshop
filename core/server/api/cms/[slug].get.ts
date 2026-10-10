@@ -2,6 +2,7 @@
 
 import { getCmsArticleBySlug } from '~/modules/cms-extra/server/utils/cms-extra'
 import { resolveIdLang } from '~/server/utils/lang'
+import { toIsoDateTime } from '~/server/utils/pg-date'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -20,13 +21,16 @@ export default defineEventHandler(async (event) => {
     return {
       id: item.id_cms,
       title: item.meta_title || '',
+      
+      
+      h1: item.head_seo_title || item.meta_title || '',
       slug: item.link_rewrite || '',
       content: item.content || '',
       metaDescription: item.meta_description || '',
       layout: item.layout || null,
       coverImage: item.image || null,
-      datePublished: item.date_published || null,
-      dateUpdated: item.date_updated || null,
+      datePublished: toIsoDateTime(item.date_published) || null,
+      dateUpdated: toIsoDateTime(item.date_updated) || null,
       active: true,
     }
   } catch (err: any) {

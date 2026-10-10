@@ -1,7 +1,7 @@
 
 
-import { generateContent, resolveClientAI } from '../../services/ai-gateway'
-import type { AIProvider } from '../../services/ai-gateway'
+import { generateContent, resolveClientAI } from '~/server/services/ai-gateway'
+import type { AIProvider } from '~/server/services/ai-gateway'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{

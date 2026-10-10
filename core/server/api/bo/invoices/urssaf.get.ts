@@ -2,7 +2,10 @@
 
 import { listUrssafDeclarations } from '~/enterprise/banking/urssaf/server/utils/urssaf'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const months = Math.min(36, Math.max(1, Number(q.months || 12)))
 

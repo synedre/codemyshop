@@ -87,26 +87,26 @@ export const STATIC_SCOPES: ScopeSpec[] = [
 
   { slug: 'cs_header_locale_lang:label', label: 'Header — Label langue switcher', table: 'cs_header_locale_lang', column: 'label', idCols: ['id_header_locale'], category: 'cms', clientScope: { masterTable: 'cs_header_locale', masterIdCol: 'id_header_locale', parentTable: 'cs_header', parentIdCol: 'id_header' } },
 
-  { slug: 'cs_homepage_section_lang:title',     label: 'Homepage — Titre section',     table: 'cs_homepage_section_lang',  column: 'title',     idCols: ['id_section'], category: 'cms' },
-  { slug: 'cs_homepage_section_lang:subtitle',  label: 'Homepage — Sous-titre section', table: 'cs_homepage_section_lang', column: 'subtitle',  idCols: ['id_section'], category: 'cms', multiline: true },
+  { slug: 'cs_homepage_section_lang:title',     label: 'Homepage — Titre section',     table: 'cs_page_section_lang',  column: 'title',     idCols: ['id_section'], category: 'cms' },
+  { slug: 'cs_homepage_section_lang:subtitle',  label: 'Homepage — Sous-titre section', table: 'cs_page_section_lang', column: 'subtitle',  idCols: ['id_section'], category: 'cms', multiline: true },
 
   { slug: 'cs_prefooter_section_lang:title',    label: 'Pré-footer — Titre section',   table: 'cs_prefooter_section_lang', column: 'title',     idCols: ['id_section'], category: 'cms' },
   { slug: 'cs_prefooter_section_lang:subtitle', label: 'Pré-footer — Sous-titre',      table: 'cs_prefooter_section_lang', column: 'subtitle',  idCols: ['id_section'], category: 'cms' },
 
   
-  { slug: 'cs_homepage_block_lang:label',       label: 'Homepage block — Label',         table: 'cs_homepage_block_lang', column: 'label',       idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:title',       label: 'Homepage block — Titre',         table: 'cs_homepage_block_lang', column: 'title',       idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:subtitle',    label: 'Homepage block — Sous-titre',    table: 'cs_homepage_block_lang', column: 'subtitle',    idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:sticker',     label: 'Homepage block — Sticker',       table: 'cs_homepage_block_lang', column: 'sticker',     idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:kicker',      label: 'Homepage block — Kicker',        table: 'cs_homepage_block_lang', column: 'kicker',      idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:description', label: 'Homepage block — Description',   table: 'cs_homepage_block_lang', column: 'description', idCols: ['id_block'], category: 'cms', multiline: true },
-  { slug: 'cs_homepage_block_lang:text',        label: 'Homepage block — Texte',         table: 'cs_homepage_block_lang', column: 'text',        idCols: ['id_block'], category: 'cms', multiline: true },
-  { slug: 'cs_homepage_block_lang:header',      label: 'Homepage block — Header',        table: 'cs_homepage_block_lang', column: 'header',      idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:footer',      label: 'Homepage block — Footer',        table: 'cs_homepage_block_lang', column: 'footer',      idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:cta_label',   label: 'Homepage block — CTA label',     table: 'cs_homepage_block_lang', column: 'cta_label',   idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:alt',         label: 'Homepage block — Alt image',     table: 'cs_homepage_block_lang', column: 'alt',         idCols: ['id_block'], category: 'cms' },
-  { slug: 'cs_homepage_block_lang:question',    label: 'Homepage block — FAQ question',  table: 'cs_homepage_block_lang', column: 'question',    idCols: ['id_block'], category: 'cms', multiline: true },
-  { slug: 'cs_homepage_block_lang:answer_html', label: 'Homepage block — FAQ réponse',   table: 'cs_homepage_block_lang', column: 'answer_html', idCols: ['id_block'], category: 'cms', multiline: true, html: true },
+  { slug: 'cs_homepage_block_lang:label',       label: 'Homepage block — Label',         table: 'cs_page_block_lang', column: 'label',       idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:title',       label: 'Homepage block — Titre',         table: 'cs_page_block_lang', column: 'title',       idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:subtitle',    label: 'Homepage block — Sous-titre',    table: 'cs_page_block_lang', column: 'subtitle',    idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:sticker',     label: 'Homepage block — Sticker',       table: 'cs_page_block_lang', column: 'sticker',     idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:kicker',      label: 'Homepage block — Kicker',        table: 'cs_page_block_lang', column: 'kicker',      idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:description', label: 'Homepage block — Description',   table: 'cs_page_block_lang', column: 'description', idCols: ['id_block'], category: 'cms', multiline: true },
+  { slug: 'cs_homepage_block_lang:text',        label: 'Homepage block — Texte',         table: 'cs_page_block_lang', column: 'text',        idCols: ['id_block'], category: 'cms', multiline: true },
+  { slug: 'cs_homepage_block_lang:header',      label: 'Homepage block — Header',        table: 'cs_page_block_lang', column: 'header',      idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:footer',      label: 'Homepage block — Footer',        table: 'cs_page_block_lang', column: 'footer',      idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:cta_label',   label: 'Homepage block — CTA label',     table: 'cs_page_block_lang', column: 'cta_label',   idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:alt',         label: 'Homepage block — Alt image',     table: 'cs_page_block_lang', column: 'alt',         idCols: ['id_block'], category: 'cms' },
+  { slug: 'cs_homepage_block_lang:question',    label: 'Homepage block — FAQ question',  table: 'cs_page_block_lang', column: 'question',    idCols: ['id_block'], category: 'cms', multiline: true },
+  { slug: 'cs_homepage_block_lang:answer_html', label: 'Homepage block — FAQ réponse',   table: 'cs_page_block_lang', column: 'answer_html', idCols: ['id_block'], category: 'cms', multiline: true, html: true },
 ]
 
 export function findScope(slug: string): ScopeSpec | null {

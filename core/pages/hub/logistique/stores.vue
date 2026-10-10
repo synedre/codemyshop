@@ -2,10 +2,10 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Boutiques</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ stores.length }} boutique{{ stores.length > 1 ? 's' : '' }} · {{ activeCount }} active{{ activeCount > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.logistique_stores.title', 'Boutiques') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.logistique_stores.summary_other', '{n} boutiques · {active} actives', { n: stores.length, active: activeCount }) }}</p>
       </div>
-      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Actualiser</button>
+      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">{{ t('hub.ui.logistique_stores.refresh', 'Actualiser') }}</button>
     </header>
 
     <div class="flex-1 overflow-auto p-6">
@@ -15,8 +15,8 @@
 
       <div v-else-if="!stores.length" class="flex flex-col items-center justify-center py-20 text-center">
         <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-3xl mb-4">🏪</div>
-        <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">Aucune boutique configurée</p>
-        <p class="text-xs text-gray-400 mt-2 max-w-md">Créez vos points de vente physiques dans PrestaShop (Préférences → Coordonnées → Boutiques) pour les afficher sur le store locator public et ici.</p>
+        <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">{{ t('hub.ui.logistique_stores.none', 'Aucune boutique configurée') }}</p>
+        <p class="text-xs text-gray-400 mt-2 max-w-md">{{ t('hub.ui.logistique_stores.none_hint', 'Créez vos points de vente physiques dans PrestaShop (Préférences → Coordonnées → Boutiques) pour les afficher sur le store locator public et ici.') }}</p>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -37,7 +37,7 @@
               </div>
               <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
                 :class="s.active ? 'bg-success-50 text-success-600' : 'bg-gray-100 dark:bg-slate-800 text-gray-500'">
-                {{ s.active ? 'Active' : 'Inactive' }}
+                {{ s.active ? t('hub.ui.logistique_stores.active', 'Active') : t('hub.ui.logistique_stores.inactive', 'Inactive') }}
               </span>
             </div>
 
@@ -50,7 +50,7 @@
             </div>
 
             <details v-if="s.hours" class="text-xs">
-              <summary class="cursor-pointer text-primary-600 hover:text-primary-700 font-semibold">Horaires</summary>
+              <summary class="cursor-pointer text-primary-600 hover:text-primary-700 font-semibold">{{ t('hub.ui.logistique_stores.hours', 'Horaires') }}</summary>
               <pre class="mt-2 p-2 bg-gray-50 dark:bg-slate-800 rounded text-[10px] text-gray-600 dark:text-slate-400 whitespace-pre-wrap">{{ formatHours(s.hours) }}</pre>
             </details>
 
@@ -67,6 +67,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+
+const { t } = useHubT()
 
 interface Store {
   id: number
@@ -94,7 +96,7 @@ function formatHours(raw: string | null): string {
   if (!raw) return ''
   try {
     const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) return parsed.map((d, i) => `Jour ${i + 1} : ${Array.isArray(d) ? d.join(' / ') : d}`).join('\n')
+    if (Array.isArray(parsed)) return parsed.map((d, i) => t('hub.ui.logistique_stores.day_line', 'Jour {n} : {value}', { n: i + 1, value: Array.isArray(d) ? d.join(' / ') : d })).join('\n')
     return JSON.stringify(parsed, null, 2)
   } catch {
     return raw

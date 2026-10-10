@@ -8,5 +8,7 @@
  * ══════════════════════════════════════════════════════════════════════════════ */
 
 .max-w-6xl {
-  max-width: var(--content-max-w, 72rem) !important;
+  /* Fallback = défaut plateforme 90rem (8xl) si aucun :root tenant ne définit
+     la var (décision Alex 2026-06-16, chantier largeur-colonne-defaut-90rem). */
+  max-width: var(--content-max-w, 90rem) !important;
 }

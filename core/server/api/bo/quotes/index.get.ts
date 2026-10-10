@@ -2,7 +2,10 @@
 
 import { countQuoteRequests, listQuoteRequests } from '~/modules/quote-request/server/utils/quote-request'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const page = Math.max(1, Number(q.page || 1))
   const perPage = Math.min(10000, Math.max(1, Number(q.perPage || 100)))

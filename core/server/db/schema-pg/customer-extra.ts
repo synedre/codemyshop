@@ -10,6 +10,9 @@ export const customerExtraVaisseau = vaisseauMereAcSchema.table(
     idCustomer: integer('id_customer').primaryKey(),
     activityCode: varchar('activity_code', { length: 32 }),
     legalName: varchar('legal_name', { length: 255 }),
+    
+
+    vatIntracom: varchar('vat_intracom', { length: 20 }),
     emailVerifiedStatus: varchar('email_verified_status', { length: 16 }),
     emailVerifiedAt: timestamp('email_verified_at', { mode: 'date', precision: 0 }),
     linkedinUrl: varchar('linkedin_url', { length: 255 }),

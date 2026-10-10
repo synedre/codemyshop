@@ -3,11 +3,11 @@
 import { unlinkSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { execSync } from 'node:child_process'
-import { verifyToken } from '~/server/utils/session-crypto'
+import { readHubSessionToken } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
   
-  const session = verifyToken<any>(getCookie(event, 'hub_session'))
+  const session = readHubSessionToken<any>(getCookie(event, 'hub_session'))
   if (!session) throw createError({ statusCode: 401, message: 'Non authentifié' })
   if (!session.isAdmin) throw createError({ statusCode: 403, message: 'Accès admin requis' })
 
@@ -46,12 +46,8 @@ export default defineEventHandler(async (event) => {
   }
 
   
-  try {
-    execSync('docker exec ac_nginx nginx -s reload 2>&1', { timeout: 5000 })
-    steps.push('Nginx rechargé')
-  } catch {
-    steps.push('Nginx reload échoué (vérifier manuellement)')
-  }
+  
+  
 
   
   const { deactivateClientVps } = await import('~/internal/hub/server/utils/hub')

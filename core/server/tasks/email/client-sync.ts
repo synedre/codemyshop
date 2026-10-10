@@ -1,6 +1,6 @@
 
 
-import { defineTask } from 'nitropack/runtime'
+import { defineLeaderTask } from '~/server/utils/schedule-leader'
 import { withAutomateLock } from '~/server/utils/automate-lock'
 import { runAutomate } from '~/server/utils/automate-logger'
 import { fetchRecentMessages } from '~/server/utils/imap'
@@ -15,12 +15,20 @@ function deriveImapHost(smtpHost: string): string {
   return smtpHost
 }
 
-export default defineTask({
+function inboxSyncEnabled(): boolean {
+  const v = (process.env.INBOX_SYNC_ENABLED || '').toLowerCase()
+  return v === '1' || v === 'true' || v === 'yes'
+}
+
+export default defineLeaderTask({
   meta: {
     name:        'email:client-sync',
     description: 'Sync IMAP → cs_email_message (mailbox tab Mail du hub).',
   },
   async run() {
+    if (!inboxSyncEnabled()) {
+      return { result: 'skipped: INBOX_SYNC_ENABLED not set (mothership-only task)' }
+    }
     return await withAutomateLock(AUTOMATE_KEY, async () => {
       return await runAutomate(AUTOMATE_KEY, async () => {
         const user = process.env.SMTP_USER || process.env.IMAP_USER

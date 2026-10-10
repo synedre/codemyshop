@@ -2,7 +2,10 @@
 
 import { upsertTier } from '~/enterprise/misc/pricing/server/utils/pricing'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     idGroup: number
     idProduct: number

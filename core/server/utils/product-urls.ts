@@ -31,8 +31,9 @@ export function buildImageUrl(
   size: 'home' | 'cart' | 'medium' | 'large' = 'large',
   linkRewrite?: string | null,
   _clientId?: string,
+  fallback?: string,
 ): string | undefined {
-  if (!imageId || imageId <= 0) return undefined
+  if (!imageId || imageId <= 0) return fallback
   const width = SIZE_TO_WIDTH[size] ?? 1200
   const digits = String(imageId).split('').join('/')
   const slug = normalizeSlug(linkRewrite)

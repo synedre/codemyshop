@@ -1,41 +1,37 @@
 
 
-import { resolveClientId } from '~/server/utils/db'
+import { useClientDb } from '~/server/utils/db'
 import { requireRoleOrSaas } from '~/server/utils/session'
-import { getLatestStatusForCategory, countQueueAhead } from '~/enterprise/ai/category-queue/server/utils/category-queue'
+import { seoBulkItemQueueStatus } from '~/server/utils/seo-bulk-queue'
 
 export default defineEventHandler(async (event) => {
   requireRoleOrSaas(event, ['root', 'founder', 'market'])
 
-  const { id_category } = getQuery(event) as { id_category: string }
-  const idCategory = Number(id_category)
+  const idCategory = Number((getQuery(event) as { id_category?: string }).id_category)
   if (!idCategory) {
     throw createError({ statusCode: 422, message: 'id_category requis' })
   }
 
-  const tenant = resolveClientId(event) || 'ac-hub'
-
   try {
-    const row = await getLatestStatusForCategory(tenant, idCategory, { event })
-    if (!row) return { found: false, status: null }
+    const st = await seoBulkItemQueueStatus(event, 'category', idCategory)
+    if (!st.found) return { found: false, status: null }
+    if (st.status !== 'done') return { found: true, status: st.status, error_msg: st.error_msg }
 
-    let queuePosition = 0
-    let estimatedSeconds = 0
-    if (row.status === 'pending' || row.status === 'processing') {
-      try {
-        queuePosition = await countQueueAhead(row.id_redaction, { event })
-        estimatedSeconds = queuePosition * 180 
-        if (row.status === 'processing') {
-          const elapsed = Math.floor((Date.now() - new Date(row.date_upd).getTime()) / 1000)
-          estimatedSeconds = Math.max(30, 180 - elapsed)
-          queuePosition = 0
-        }
-      } catch {  }
-    }
-
-    return { found: true, ...row, queuePosition, estimatedSeconds }
+    const db = useClientDb(event)
+    const row = await db.get<any>(
+      `SELECT '' AS short_description, description AS long_description,
+              meta_title, meta_description, link_rewrite AS optimized_slug
+         FROM ps_category_lang WHERE id_category = ? AND id_lang = 1 LIMIT 1`,
+      [idCategory],
+    )
+    const faq = await db.get<any>(
+      `SELECT COUNT(*)::int AS n FROM cs_faq
+        WHERE parent_type = 'category' AND parent_id = ? AND active = 1`,
+      [idCategory],
+    )
+    return { found: true, status: 'done', ...(row || {}), faq_count: Number(faq?.n || 0) }
   } catch (err: any) {
-    console.error('[categories/content-status] DB error:', err?.message)
+    console.error('[categories/content-status] error:', err?.message)
     return { found: false, status: null }
   }
 })

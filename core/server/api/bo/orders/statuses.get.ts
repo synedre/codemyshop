@@ -2,8 +2,10 @@
 
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
+import { requireEmployeeSession } from '~/server/utils/session'
 
-export default defineEventHandler(async (_event) => {
+export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const d = usePocPg()
   const statuses: any[] = await d.execute(sql`
     SELECT os.id_order_state AS "id", osl.name, os.color

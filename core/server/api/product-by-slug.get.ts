@@ -6,9 +6,14 @@ export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const slug = String(q.slug ?? '').trim()
 
-  if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+  
+  
+  
+  
+  if (!slug || !/^[a-z0-9_-]+$/.test(slug)) {
     return { found: false }
   }
+  const normalizedSlug = slug.replace(/_/g, '-')
 
   const db = useClientDb(event)
   const idLang = await resolveIdLang(event)
@@ -18,7 +23,7 @@ export default defineEventHandler(async (event) => {
   
   
   
-  const m = slug.match(/^(.+)-(\d+)$/)
+  const m = normalizedSlug.match(/^(.+)-(\d+)$/)
   const slugPrefix = m ? m[1] : null
   const idFromSlug = m ? Number(m[2]) : null
 
@@ -57,7 +62,7 @@ export default defineEventHandler(async (event) => {
            JOIN ps_product_lang pl ON pl.id_product = p.id_product AND pl.id_lang = ?
           WHERE pl.link_rewrite = ? AND p.active = 1
           LIMIT 1`,
-        [idLang, slug],
+        [idLang, normalizedSlug],
       )
       if (!rows.length && idLang !== 1) {
         rows = await db.query<{ id_product: number; name: string; id_category_default: number }>(
@@ -66,7 +71,7 @@ export default defineEventHandler(async (event) => {
              JOIN ps_product_lang pl ON pl.id_product = p.id_product AND pl.id_lang = 1
             WHERE pl.link_rewrite = ? AND p.active = 1
             LIMIT 1`,
-          [slug],
+          [normalizedSlug],
         )
       }
     }

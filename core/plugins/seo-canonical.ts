@@ -18,7 +18,10 @@ export default defineNuxtPlugin(() => {
 
     if (!siteUrl) return {}
 
-    const canonical = `${siteUrl}${path}`
+    
+    
+    const cleanPath = path === '/' ? '' : path.replace(/\/+$/, '')
+    const canonical = `${siteUrl}${cleanPath}`
 
     return {
       link: [{ rel: 'canonical', href: canonical }],

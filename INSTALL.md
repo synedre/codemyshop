@@ -25,7 +25,7 @@ This guide covers the **Community** install (self-host). For Managed plans, see 
 The fastest way to try CodeMyShop locally:
 
 ```bash
-docker run --rm -p 3000:3000 ghcr.io/codemyshop/codemyshop:latest
+docker run --rm -p 3000:3000 ghcr.io/synedre/codemyshop:latest
 # → http://localhost:3000
 ```
 
@@ -33,7 +33,7 @@ This boots a single container with an in-process SQLite-less stack — useful
 for a smoke test only. For a real deployment, use the full `docker-compose.yml`:
 
 ```bash
-git clone https://github.com/codemyshop/codemyshop.git
+git clone https://github.com/synedre/codemyshop.git
 cd codemyshop
 cp .env.example .env
 # Edit .env: at minimum set PG_PASSWORD, REDIS_PASSWORD, NUXT_SECRET
@@ -45,7 +45,7 @@ Services started:
 
 | Service | Image | Purpose |
 |---------|-------|---------|
-| `nuxt`     | `ghcr.io/codemyshop/codemyshop:latest` | Nuxt 4 SSR + Nitro server |
+| `nuxt`     | `ghcr.io/synedre/codemyshop:latest` | Nuxt 4 SSR + Nitro server |
 | `postgres` | `pgvector/pgvector:pg16`               | DB with vector extension |
 | `redis`    | `redis:7-alpine`                       | Sessions, rate-limit, cache |
 | `nginx`    | `nginx:alpine`                         | Reverse proxy (TLS, static) |
@@ -61,7 +61,7 @@ out `image:` and uncomment `build: .` under the `nuxt` service in
 ## Quick start from source
 
 ```bash
-git clone https://github.com/codemyshop/codemyshop.git
+git clone https://github.com/synedre/codemyshop.git
 cd codemyshop
 cp .env.example .env
 # Edit .env: PG_PASSWORD, NUXT_SECRET, etc.
@@ -226,7 +226,7 @@ The Managed Standard plan includes catalog migration. For Community, see `docume
 
 ### Where do I report a bug?
 
-[GitHub Issues](https://github.com/codemyshop/codemyshop/issues). Use the bug template. **Security issues**: see [SECURITY.md](SECURITY.md), do not open a public issue.
+[GitHub Issues](https://github.com/synedre/codemyshop/issues). Use the bug template. **Security issues**: see [SECURITY.md](SECURITY.md), do not open a public issue.
 
 ### Can I use a managed PostgreSQL service (Supabase, RDS) ?
 

@@ -1,9 +1,12 @@
 
 
 import { useClientDb } from '~/server/utils/db'
-import { isValidActivityCode } from '~/utils/customerActivity'
+import { activiteValide } from '~/modules/customer-extra/server/utils/customer-activity'
+
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
   const customerId = Number(id)
@@ -24,7 +27,23 @@ export default defineEventHandler(async (event) => {
   const cp: any[] = []
   if (body.firstname !== undefined) { cf.push('firstname = ?'); cp.push(String(body.firstname || '').trim()) }
   if (body.lastname !== undefined) { cf.push('lastname = ?'); cp.push(String(body.lastname || '').trim()) }
-  if (body.email !== undefined) { cf.push('email = ?'); cp.push(String(body.email || '').trim()) }
+  
+  
+  
+  
+  
+  if (body.email !== undefined) {
+    const emailNorm = String(body.email || '').trim().toLowerCase()
+    const dup = await db.get<{ id_customer: number }>(
+      `SELECT id_customer FROM ps_customer
+        WHERE LOWER(email) = ? AND id_customer != ? AND deleted = 0 LIMIT 1`,
+      [emailNorm, customerId],
+    )
+    if (dup) {
+      throw createError({ statusCode: 409, message: 'Un autre client utilise déjà cet email.' })
+    }
+    cf.push('email = ?'); cp.push(emailNorm)
+  }
   if (body.company !== undefined) { cf.push('company = ?'); cp.push(String(body.company || '')) }
   if (body.siret !== undefined) { cf.push('siret = ?'); cp.push(String(body.siret || '')) }
   if (body.active !== undefined) { cf.push('active = ?'); cp.push(body.active ? 1 : 0) }
@@ -115,9 +134,13 @@ export default defineEventHandler(async (event) => {
   
   
   
+  
+  
+  
+  
   if (body.activityCode !== undefined) {
     const raw = body.activityCode === null || body.activityCode === '' ? null : String(body.activityCode)
-    if (raw !== null && !isValidActivityCode(raw)) {
+    if (raw !== null && !(await activiteValide(raw))) {
       throw createError({ statusCode: 400, message: 'Code activité invalide' })
     }
     const { upsertCustomerActivityCode, deleteCustomerExtra } = await import('~/modules/customer-extra/server/utils/customer-extra')

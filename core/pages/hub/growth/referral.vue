@@ -5,11 +5,11 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Partenariat &amp; Croissance</h1>
-          <p class="text-xs text-gray-400 mt-0.5">Programme de recommandation premium entre dirigeants</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.growth_referral.title', 'Partenariat & Croissance') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.growth_referral.subtitle', 'Programme de recommandation premium entre dirigeants') }}</p>
         </div>
         <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-primary-100 text-primary-700 border border-primary-200">
-          Phase 3 &middot; Flywheel
+          {{ t('hub.ui.growth_referral.phase', 'Phase 3 · Flywheel') }}
         </span>
       </div>
     </header>
@@ -26,28 +26,28 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
               </svg>
             </div>
-            <p class="text-xs font-semibold text-primary-400 uppercase tracking-widest">Club Partenaires</p>
+            <p class="text-xs font-semibold text-primary-400 uppercase tracking-widest">{{ t('hub.ui.growth_referral.club', 'Club Partenaires') }}</p>
           </div>
           <h2 class="text-2xl lg:text-3xl font-extrabold leading-tight mb-4">
-            Recommandez CodeMyShop<br />à un confrère dirigeant.
+            {{ t('hub.ui.growth_referral.promise_l1', 'Recommandez CodeMyShop') }}<br />{{ t('hub.ui.growth_referral.promise_l2', 'à un confrère dirigeant.') }}
           </h2>
           <p class="text-gray-300 text-base leading-relaxed mb-6 max-w-lg">
-            S'il d&eacute;ploie son infrastructure, nous vous offrons
-            <span class="text-white font-bold">2 mois d'infog&eacute;rance</span>
-            <span class="text-primary-400 font-bold">(valeur : 1 600 &euro;)</span>.
+            {{ t('hub.ui.growth_referral.reward_pre', 'S\'il déploie son infrastructure, nous vous offrons') }}
+            <span class="text-white font-bold">{{ t('hub.ui.growth_referral.reward_what', '2 mois d\'infogérance') }}</span>
+            <span class="text-primary-400 font-bold">{{ t('hub.ui.growth_referral.reward_value', '(valeur : 1 600 €)') }}</span>.
           </p>
           <div class="flex items-center gap-6 text-sm">
             <div class="flex items-center gap-2 text-gray-400">
               <svg class="w-4 h-4 text-primary-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>
-              Sans engagement
+              {{ t('hub.ui.growth_referral.b_free', 'Sans engagement') }}
             </div>
             <div class="flex items-center gap-2 text-gray-400">
               <svg class="w-4 h-4 text-primary-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>
-              100% confidentiel
+              {{ t('hub.ui.growth_referral.b_conf', '100% confidentiel') }}
             </div>
             <div class="flex items-center gap-2 text-gray-400">
               <svg class="w-4 h-4 text-primary-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>
-              Entre dirigeants
+              {{ t('hub.ui.growth_referral.b_peers', 'Entre dirigeants') }}
             </div>
           </div>
         </div>
@@ -55,41 +55,41 @@
 
       
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 lg:p-8">
-        <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">Introduire un confrère</h3>
-        <p class="text-xs text-gray-400 mb-6">Nous le contacterons de votre part avec discr&eacute;tion et professionnalisme.</p>
+        <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">{{ t('hub.ui.growth_referral.form_title', 'Introduire un confrère') }}</h3>
+        <p class="text-xs text-gray-400 mb-6">{{ t('hub.ui.growth_referral.form_sub', 'Nous le contacterons de votre part avec discrétion et professionnalisme.') }}</p>
 
         <form @submit.prevent="submitInvite" class="space-y-5">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Entreprise *</label>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{{ t('hub.ui.growth_referral.f_company', 'Entreprise *') }}</label>
               <input
                 v-model="form.companyName"
                 required
                 type="text"
-                placeholder="Ex: Maison Dupont, VapeStore Lyon..."
+                :placeholder="t('hub.ui.growth_referral.ph_company', 'Ex: Ma Boutique, Maison Dupont...')"
                 class="w-full px-4 py-3 text-sm border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white dark:bg-slate-900"
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Email du dirigeant *</label>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{{ t('hub.ui.growth_referral.f_email', 'Email du dirigeant *') }}</label>
               <input
                 v-model="form.contactEmail"
                 required
                 type="email"
-                placeholder="direction@entreprise.fr"
+                :placeholder="t('hub.ui.growth_referral.ph_email', 'direction@entreprise.fr')"
                 class="w-full px-4 py-3 text-sm border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white dark:bg-slate-900"
               />
             </div>
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-              Message personnalis&eacute;
-              <span class="text-gray-400 font-normal normal-case ml-1">(optionnel)</span>
+              {{ t('hub.ui.growth_referral.f_msg', 'Message personnalisé') }}
+              <span class="text-gray-400 font-normal normal-case ml-1">{{ t('hub.ui.growth_referral.optional', '(optionnel)') }}</span>
             </label>
             <textarea
               v-model="form.message"
               rows="3"
-              placeholder="Un mot pour contextualiser l'introduction — ex: « On en a parlé lors du salon... »"
+              :placeholder="t('hub.ui.growth_referral.ph_msg', 'Un mot pour contextualiser l\'introduction — ex: « On en a parlé lors du salon... »')"
               class="w-full px-4 py-3 text-sm border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white dark:bg-slate-900 resize-none"
             />
           </div>
@@ -108,7 +108,7 @@
             <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
             </svg>
-            {{ submitting ? 'Envoi en cours...' : 'Envoyer l\'introduction' }}
+            {{ submitting ? t('hub.ui.growth_referral.sending', 'Envoi en cours...') : t('hub.ui.growth_referral.send_intro', 'Envoyer l\'introduction') }}
           </button>
         </form>
 
@@ -123,8 +123,8 @@
               <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
             </svg>
             <div>
-              <p class="text-sm font-semibold text-success-700">Introduction envoy&eacute;e avec succ&egrave;s</p>
-              <p class="text-xs text-success-600">Alexandre prendra contact sous 24h. Merci pour votre confiance.</p>
+              <p class="text-sm font-semibold text-success-700">{{ t('hub.ui.growth_referral.sent_ok', 'Introduction envoyée avec succès') }}</p>
+              <p class="text-xs text-success-600">{{ t('hub.ui.growth_referral.sent_hint', 'Alexandre prendra contact sous 24h. Merci pour votre confiance.') }}</p>
             </div>
           </div>
         </Transition>
@@ -134,12 +134,12 @@
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100">Vos introductions</h3>
-            <p class="text-xs text-gray-400 mt-0.5">{{ referrals.length }} introduction(s) &middot; {{ deployedCount }} d&eacute;ploy&eacute;e(s)</p>
+            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.growth_referral.list_title', 'Vos introductions') }}</h3>
+            <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.growth_referral.list_summary', '{count} introduction(s) · {deployed} déployée(s)', { count: referrals.length, deployed: deployedCount }) }}</p>
           </div>
           <div v-if="deployedCount > 0" class="flex items-center gap-1.5 bg-success-50 text-success-700 text-xs font-bold px-3 py-1.5 rounded-full border border-success-100">
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>
-            {{ deployedCount * 1600 }} &euro; &eacute;conomis&eacute;s
+            {{ t('hub.ui.growth_referral.saved', '{amount} € économisés', { amount: deployedCount * 1600 }) }}
           </div>
         </div>
 
@@ -151,8 +151,8 @@
           <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
             <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
           </svg>
-          <p class="text-sm">Aucune introduction pour le moment</p>
-          <p class="text-xs text-gray-300 mt-1">Utilisez le formulaire ci-dessus pour recommander un confrère</p>
+          <p class="text-sm">{{ t('hub.ui.growth_referral.empty', 'Aucune introduction pour le moment') }}</p>
+          <p class="text-xs text-gray-300 mt-1">{{ t('hub.ui.growth_referral.empty_hint', 'Utilisez le formulaire ci-dessus pour recommander un confrère') }}</p>
         </div>
 
         <div v-else>
@@ -197,6 +197,7 @@ import type { Referral, ReferralStatus } from '~/server/utils/referrals'
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
+const { t } = useHubT()
 const { resolvedClientId } = useClientDetection()
 const { header } = useHeaderDb()
 
@@ -237,7 +238,7 @@ async function submitInvite() {
     await loadReferrals()
     setTimeout(() => { success.value = false }, 5000)
   } catch (e: any) {
-    error.value = e.data?.message || 'Erreur lors de l\'envoi'
+    error.value = e.data?.message || t('hub.ui.growth_referral.err_send', 'Erreur lors de l\'envoi')
   } finally {
     submitting.value = false
   }
@@ -266,21 +267,21 @@ function statusStyle(status: ReferralStatus) {
   switch (status) {
     case 'deployed':
       return {
-        label: 'Infrastructure d\u00e9ploy\u00e9e — R\u00e9compense d\u00e9bloqu\u00e9e !',
+        label: t('hub.ui.growth_referral.st_deployed', 'Infrastructure déployée — Récompense débloquée !'),
         badge: 'bg-success-50 text-success-700 border border-success-100',
         dot:   'bg-success-400',
         bg:    'bg-success-100 text-success-700',
       }
     case 'audit':
       return {
-        label: 'Audit en cours',
+        label: t('hub.ui.growth_referral.st_audit', 'Audit en cours'),
         badge: 'bg-primary-50 text-primary-700 border border-primary-100',
         dot:   'bg-primary-400',
         bg:    'bg-primary-100 text-primary-700',
       }
     default:
       return {
-        label: 'Invitation envoy\u00e9e',
+        label: t('hub.ui.growth_referral.st_invited', 'Invitation envoyée'),
         badge: 'bg-gray-100 dark:bg-slate-800 text-gray-600 border border-gray-200 dark:border-slate-700',
         dot:   'bg-gray-400',
         bg:    'bg-gray-100 dark:bg-slate-800 text-gray-600',

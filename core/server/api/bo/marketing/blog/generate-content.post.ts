@@ -16,13 +16,13 @@ export default defineEventHandler(async (event) => {
   const slug = String(body.slug || '').trim()
   const metaDesc = String(body.metaDescription || '').trim()
   const instructions = String(body.instructions || '').trim() || null
-  const model = String(body.model || 'gemini-2.5-flash').trim()
+  const model = String(body.model || 'claude-sonnet-5').trim()
 
   if (!idCms || !title || !slug) {
     throw createError({ statusCode: 422, message: 'id_cms, title et slug requis' })
   }
 
-  const tenant = resolveClientId(event) || 'ac-hub'
+  const tenant = resolveClientId(event)
 
   try {
     const existing = await findExistingPendingProcessing(tenant, idCms, { event })

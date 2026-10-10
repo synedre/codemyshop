@@ -30,6 +30,10 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
+import { useDisplayTimeZone } from '../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
+
 interface ActiveSession {
   idSession: number
   idEmployee: number
@@ -79,7 +83,7 @@ function formatTime(iso: string): string {
   if (!iso) return '—'
   try {
     const d = new Date(iso)
-    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    return d.toLocaleTimeString('fr-FR', { timeZone: displayTz, hour: '2-digit', minute: '2-digit' })
   } catch {
     return iso.slice(11, 16)
   }

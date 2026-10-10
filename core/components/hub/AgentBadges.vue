@@ -38,7 +38,7 @@
                 <h3 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ selectedAgent.nickname }}</h3>
                 <p class="text-sm text-primary-600 dark:text-primary-400 font-medium">{{ selectedAgent.role }}</p>
                 <p class="text-[10px] font-mono text-gray-400 mt-0.5">@{{ selectedAgent.codename }}</p>
-                <p v-if="selectedAgent.inspiration" class="text-xs text-gray-500 dark:text-slate-400 mt-1 italic">Inspiré par {{ selectedAgent.inspiration }}</p>
+                <p v-if="selectedAgent.inspiration" class="text-xs text-gray-500 dark:text-slate-400 mt-1 italic">{{ t('hub.ui.agent_badges.inspired_by', 'Inspiré par {name}', { name: selectedAgent.inspiration }) }}</p>
               </div>
               <button @click="selectedAgent = null" class="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -54,22 +54,22 @@
           
           <div class="p-6 space-y-5 text-xs text-gray-600 dark:text-slate-300">
             <div v-if="selectedAgent.description">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Description</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.description', 'Description') }}</h4>
               <p class="leading-relaxed">{{ selectedAgent.description }}</p>
             </div>
 
             <div v-if="selectedAgent.personality">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Personnalité</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.personality', 'Personnalité') }}</h4>
               <p class="leading-relaxed">{{ selectedAgent.personality }}</p>
             </div>
 
             <div v-if="selectedAgent.mission">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Mission</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.mission', 'Mission') }}</h4>
               <p class="leading-relaxed">{{ selectedAgent.mission }}</p>
             </div>
 
             <div v-if="selectedAgent.perimeter">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Périmètre</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.perimeter', 'Périmètre') }}</h4>
               <ul v-if="Array.isArray(selectedAgent.perimeter)" class="list-disc list-inside space-y-0.5">
                 <li v-for="(p, i) in selectedAgent.perimeter" :key="i">{{ p }}</li>
               </ul>
@@ -77,7 +77,7 @@
             </div>
 
             <div v-if="selectedAgent.responsibilities">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Responsabilités</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.responsibilities', 'Responsabilités') }}</h4>
               <ul v-if="Array.isArray(selectedAgent.responsibilities)" class="list-disc list-inside space-y-0.5">
                 <li v-for="(r, i) in selectedAgent.responsibilities" :key="i">{{ r }}</li>
               </ul>
@@ -85,7 +85,7 @@
             </div>
 
             <div v-if="selectedAgent.keyChecks">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Points de contrôle</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.key_checks', 'Points de contrôle') }}</h4>
               <ul v-if="Array.isArray(selectedAgent.keyChecks)" class="list-disc list-inside space-y-0.5">
                 <li v-for="(c, i) in selectedAgent.keyChecks" :key="i">{{ c }}</li>
               </ul>
@@ -93,7 +93,7 @@
             </div>
 
             <div v-if="selectedAgent.cognitiveFrame">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Cadre cognitif</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.cognitive_frame', 'Cadre cognitif') }}</h4>
               <template v-if="typeof selectedAgent.cognitiveFrame === 'object'">
                 <div v-for="(val, key) in selectedAgent.cognitiveFrame" :key="key" class="mb-2">
                   <span class="font-medium text-gray-700 dark:text-slate-200 capitalize">{{ key }} :</span>
@@ -104,7 +104,7 @@
             </div>
 
             <div v-if="selectedAgent.heritage" class="pt-3 border-t border-gray-100 dark:border-slate-800">
-              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">Héritage</h4>
+              <h4 class="font-bold text-gray-800 dark:text-slate-100 mb-1.5 text-sm">{{ t('hub.ui.agent_badges.heritage', 'Héritage') }}</h4>
               <p class="leading-relaxed text-gray-500 dark:text-slate-400">{{ selectedAgent.heritage }}</p>
             </div>
           </div>
@@ -115,6 +115,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 interface Agent {
   codename: string
   nickname: string

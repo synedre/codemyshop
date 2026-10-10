@@ -2,21 +2,21 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Déclinaisons</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ filtered.length }} groupe{{ filtered.length > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.variants.title', 'Déclinaisons') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ filtered.length > 1 ? t('hub.ui.variants.groups_other', '{n} groupes', { n: filtered.length }) : t('hub.ui.variants.groups_one', '{n} groupe', { n: filtered.length }) }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <HubLangSelector aria-label="Langue d'affichage" />
+        <HubLangSelector :aria-label="t('hub.ui.variants.display_lang', 'Langue d\'affichage')" />
         <input
           v-model="search"
           type="text"
-          placeholder="Nom…"
+          :placeholder="t('hub.ui.variants.name_ph', 'Nom…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
         <NuxtLink
           to="/hub/variants/new"
           class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
-        >+ Nouveau groupe</NuxtLink>
+        >{{ t('hub.ui.variants.new_group', '+ Nouveau groupe') }}</NuxtLink>
       </div>
     </header>
 
@@ -26,18 +26,18 @@
       </div>
 
       <div v-else-if="!filtered.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucun groupe de déclinaisons</p>
+        <p class="text-sm">{{ t('hub.ui.variants.none', 'Aucun groupe de déclinaisons') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
             <th class="px-4 py-2.5 font-medium w-14">#</th>
-            <th class="px-4 py-2.5 font-medium">Nom</th>
-            <th class="px-4 py-2.5 font-medium">Public</th>
-            <th class="px-4 py-2.5 font-medium text-center w-20">Type</th>
-            <th class="px-4 py-2.5 font-medium text-center w-24">Attributs</th>
-            <th class="px-4 py-2.5 font-medium text-center w-28">Combinaisons</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.variants.col_name', 'Nom') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.variants.col_public', 'Public') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-20">{{ t('hub.ui.variants.col_type', 'Type') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-24">{{ t('hub.ui.variants.col_attributes', 'Attributs') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-28">{{ t('hub.ui.variants.col_combinations', 'Combinaisons') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -73,6 +73,7 @@ definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 const { canAccess } = useRoles()
 if (!canAccess('intelligence')) navigateTo('/hub/dashboard')
 
+const { t } = useHubT()
 const router = useRouter()
 const { currentLangId } = useHubLang()
 

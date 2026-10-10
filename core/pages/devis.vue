@@ -1,16 +1,34 @@
 
 <script setup lang="ts">
-definePageMeta({ layout: 'funnel' })
+definePageMeta({
+  layout: 'funnel',
+  
+  
+  
+  middleware: () => {
+    
+    
+    
+    
+    const hasWizard = !!(useRuntimeConfig().public as any)?.quoteWizardCode
+    const { isB2b } = useB2bVisibility()
+    if (!hasWizard && !isB2b.value) return navigateTo('/contact', { redirectCode: 301 })
+  },
+})
+const { localePath } = useLocalePath()
 
 const router = useRouter()
 const { items, updateQuantity, removeFromQuote, totalItems, clearQuote } = useQuoteCart()
 const { showPrices } = useB2bVisibility()
 const customerAuth = useCustomerAuth()
 const { t } = useHubT()
+const { trackLead } = useAnalytics()
 
 const _cfg = useRuntimeConfig()
 const _clientId = String((_cfg.public as any).clientId ?? '')
 const _brand = String((_cfg.public as any).brandName ?? '')
+
+const wizardCode = String((_cfg.public as any).quoteWizardCode ?? '')
 
 const { addToCart, initServerCart } = useServerCart(_clientId)
 
@@ -44,7 +62,7 @@ async function loginAndConvert() {
       }, item.quantity)
     }
     clearQuote()
-    router.push('/commander')
+    router.push(localePath('/commander'))
   } catch (err: any) {
     loginError.value = err?.data?.message || t('devis.devis_login_error_generic')
   } finally {
@@ -82,6 +100,95 @@ const submitting = ref(false)
 const submitted = ref(false)
 const errorMsg = ref('')
 
+const emailCheck = reactive<{ exists: boolean; checking: boolean }>({
+  exists: false,
+  checking: false,
+})
+let emailCheckTimer: ReturnType<typeof setTimeout> | null = null
+watch(() => form.email, (val) => {
+  if (emailCheckTimer) clearTimeout(emailCheckTimer)
+  const trimmed = (val || '').trim().toLowerCase()
+  if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    emailCheck.exists = false
+    emailCheck.checking = false
+    return
+  }
+  emailCheck.checking = true
+  emailCheckTimer = setTimeout(async () => {
+    try {
+      const r = await $fetch<{ exists: boolean }>('/api/catalogue/customer/check-email', {
+        query: { email: trimmed },
+      })
+      emailCheck.exists = !!r.exists
+    } catch {
+      emailCheck.exists = false
+    } finally {
+      emailCheck.checking = false
+    }
+  }, 500)
+})
+
+function switchToLoginWithEmail() {
+  loginForm.email = form.email
+  activeTab.value = 'login'
+}
+
+interface SiretInfo {
+  valid: boolean
+  siret?: string; siren?: string; companyName?: string; legalForm?: string
+  city?: string; postalCode?: string; address?: string
+  nafCode?: string; nafLabel?: string; staffSize?: string; creationDate?: string
+  error?: string
+}
+const siretCheck = reactive<{
+  status: 'idle' | 'checking' | 'valid' | 'invalid'
+  info: SiretInfo | null
+  error: string
+}>({
+  status: 'idle',
+  info: null,
+  error: '',
+})
+
+let siretTimer: ReturnType<typeof setTimeout> | null = null
+watch(() => form.siret, (val) => {
+  if (siretTimer) clearTimeout(siretTimer)
+  const cleaned = (val || '').replace(/\D/g, '')
+  if (cleaned.length === 0) {
+    siretCheck.status = 'idle'
+    siretCheck.info = null
+    siretCheck.error = ''
+    return
+  }
+  if (cleaned.length < 14) {
+    siretCheck.status = 'idle'
+    siretCheck.info = null
+    siretCheck.error = ''
+    return
+  }
+  siretCheck.status = 'checking'
+  siretTimer = setTimeout(async () => {
+    try {
+      const r = await $fetch<SiretInfo>('/api/siret-verify', { query: { siret: cleaned } })
+      if (r.valid) {
+        siretCheck.status = 'valid'
+        siretCheck.info = r
+        siretCheck.error = ''
+        
+        if (!form.company.trim() && r.companyName) form.company = r.companyName
+      } else {
+        siretCheck.status = 'invalid'
+        siretCheck.info = null
+        siretCheck.error = r.error || t('devis.devis_siret_not_found', 'SIRET introuvable dans la base INSEE')
+      }
+    } catch {
+      siretCheck.status = 'invalid'
+      siretCheck.info = null
+      siretCheck.error = t('devis.devis_siret_unavailable', 'Vérification SIRET indisponible')
+    }
+  }, 500)
+})
+
 async function submitQuote() {
   errorMsg.value = ''
 
@@ -97,14 +204,20 @@ async function submitQuote() {
     errorMsg.value = t('devis.devis_validation_company')
     return
   }
-  if (!items.value.length) {
-    errorMsg.value = t('devis.devis_validation_empty')
+  if (siretCheck.status === 'checking') {
+    errorMsg.value = t('devis.devis_validation_siret_checking', 'Vérification SIRET en cours…')
     return
   }
+  if (siretCheck.status === 'invalid') {
+    errorMsg.value = t('devis.devis_validation_siret_invalid', 'SIRET invalide ou introuvable INSEE')
+    return
+  }
+  
+  
 
   submitting.value = true
   try {
-    await $fetch('/api/quote/submit', {
+    const res = await $fetch<{ success: boolean; eventId: string }>('/api/quote/submit', {
       method: 'POST',
       body: {
         ...form,
@@ -114,8 +227,17 @@ async function submitQuote() {
           reference: i.reference,
           quantity: i.quantity,
         })),
+        
+        
+        
+        
+        attribution: useAdAttribution(),
       },
     })
+    
+    
+    
+    trackLead({ leadId: res.eventId, source: 'devis' })
     submitted.value = true
     clearQuote()
   } catch (err: any) {
@@ -125,12 +247,29 @@ async function submitQuote() {
   }
 }
 
-useHead({ title: _brand ? `Demande de devis — ${_brand}` : 'Demande de devis' })
+const { activeLang: _devisLang } = useRouteLang()
+const { data: _devisMeta } = await useFetch<{ title: string | null; description: string | null }>('/api/page-meta', {
+  query: { page: 'devis', lang: _devisLang },
+  watch: [_devisLang],
+  default: () => ({ title: null, description: null }),
+})
+const _devisTitleFallback = _brand ? `${t('devis.head_title', 'Demande de devis')} — ${_brand}` : t('devis.head_title', 'Demande de devis')
+useHead({
+  title: computed(() => String(_devisMeta.value?.title || _devisTitleFallback)),
+  meta: computed(() => _devisMeta.value?.description ? [{ name: 'description', content: _devisMeta.value.description }] : []),
+})
 </script>
 
 <template>
   <div class="bg-white">
 
+    
+    <div v-if="wizardCode" class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <QuoteWizard :code="wizardCode" />
+    </div>
+
+    
+    <template v-else>
       
       <div class="bg-gray-50 border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3">
@@ -281,7 +420,7 @@ useHead({ title: _brand ? `Demande de devis — ${_brand}` : 'Demande de devis' 
 
                     <p class="text-[10px] text-gray-400 text-center">
                       {{ t('devis.devis_no_account') }}
-                      <NuxtLink to="/inscription" class="text-primary-600 hover:underline">{{ t('auth.login_create_account') }}</NuxtLink>
+                      <NuxtLink :to="localePath('/inscription')" class="text-primary-600 hover:underline">{{ t('auth.login_create_account') }}</NuxtLink>
                     </p>
                   </form>
                 </div>
@@ -322,9 +461,23 @@ useHead({ title: _brand ? `Demande de devis — ${_brand}` : 'Demande de devis' 
                         v-model="form.email"
                         type="email"
                         required
-                        class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-primary-600 focus:ring-1 focus:ring-primary-600 focus:outline-none"
+                        class="w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-1 focus:outline-none"
+                        :class="emailCheck.exists
+                          ? 'border-amber-300 focus:border-amber-400 focus:ring-amber-400'
+                          : 'border-gray-200 focus:border-primary-600 focus:ring-primary-600'"
                         :placeholder="t('devis.devis_placeholder_email')"
                       />
+                      
+                      <div v-if="emailCheck.exists" class="mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs flex items-start gap-2">
+                        <span class="text-amber-600">⚠</span>
+                        <div class="flex-1 text-amber-800">
+                          {{ t('devis.devis_email_exists', 'Vous avez déjà un compte avec cet email.') }}
+                          <button type="button" @click="switchToLoginWithEmail"
+                            class="ml-1 font-semibold text-amber-900 underline hover:no-underline">
+                            {{ t('devis.devis_email_exists_login', 'Se connecter →') }}
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     <div>
@@ -356,10 +509,29 @@ useHead({ title: _brand ? `Demande de devis — ${_brand}` : 'Demande de devis' 
                         required
                         pattern="\d{3}\s?\d{3}\s?\d{3}\s?\d{5}"
                         :title="t('devis.devis_label_siret_help', '14 chiffres — votre numéro SIRET (ex: 123 456 789 00001)')"
-                        class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-primary-600 focus:ring-1 focus:ring-primary-600 focus:outline-none"
+                        class="w-full px-3 py-2.5 border rounded-lg text-sm focus:ring-1 focus:outline-none"
+                        :class="{
+                          'border-gray-200 focus:border-primary-600 focus:ring-primary-600': siretCheck.status === 'idle' || siretCheck.status === 'checking',
+                          'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500': siretCheck.status === 'valid',
+                          'border-red-400 focus:border-red-500 focus:ring-red-500': siretCheck.status === 'invalid',
+                        }"
                         placeholder="123 456 789 00001"
                         maxlength="17"
                       />
+                      
+                      <p v-if="siretCheck.status === 'checking'" class="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-gray-400 animate-pulse" />
+                        {{ t('devis.devis_siret_checking', 'Vérification INSEE…') }}
+                      </p>
+                      <p v-else-if="siretCheck.status === 'valid' && siretCheck.info" class="text-[11px] text-emerald-700 mt-1 leading-relaxed">
+                        ✓ <span class="font-semibold">{{ siretCheck.info.companyName }}</span>
+                        <span v-if="siretCheck.info.city"> — {{ siretCheck.info.postalCode }} {{ siretCheck.info.city }}</span>
+                        <br v-if="siretCheck.info.nafLabel" />
+                        <span v-if="siretCheck.info.nafLabel" class="text-gray-500">{{ siretCheck.info.nafLabel }}</span>
+                      </p>
+                      <p v-else-if="siretCheck.status === 'invalid'" class="text-[11px] text-red-600 mt-1">
+                        ✗ {{ siretCheck.error }}
+                      </p>
                     </div>
 
                     <div>
@@ -386,9 +558,12 @@ useHead({ title: _brand ? `Demande de devis — ${_brand}` : 'Demande de devis' 
                       {{ errorMsg }}
                     </p>
 
+                    
+                    <PrivacyNotice />
+
                     <button
                       type="submit"
-                      :disabled="submitting || !items.length"
+                      :disabled="submitting"
                       class="w-full py-3.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm transition-colors"
                     >
                       {{ submitting ? t('devis.devis_submitting') : t('devis.devis_submit') }}
@@ -404,5 +579,6 @@ useHead({ title: _brand ? `Demande de devis — ${_brand}` : 'Demande de devis' 
           </div>
         </template>
       </div>
+    </template>
     </div>
 </template>

@@ -2,20 +2,20 @@
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Catégories produits liées</h2>
+        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.cms_category_linker.title', 'Catégories produits liées') }}</h2>
         <p class="text-[11px] text-gray-400 mt-0.5">
-          Associe cet article à des catégories produits. Pivot
+          {{ t('hub.ui.cms_category_linker.subtitle', 'Associe cet article à des catégories produits.') }} {{ t('hub.ui.cms_category_linker.pivot', 'Pivot') }}
           <span class="font-mono">cs_category_cms</span>.
         </p>
       </div>
-      <span class="text-[10px] uppercase tracking-wide text-gray-400 font-mono">{{ model.length }} liées</span>
+      <span class="text-[10px] uppercase tracking-wide text-gray-400 font-mono">{{ t('hub.ui.cms_category_linker.linked_count', '{count} liées', { count: model.length }) }}</span>
     </div>
 
     <div class="relative">
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Rechercher une catégorie par nom…"
+        :placeholder="t('hub.ui.cms_category_linker.search_ph', 'Rechercher une catégorie par nom…')"
         @focus="open = true"
         @input="onSearch"
         class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
@@ -28,7 +28,7 @@
         v-if="open && (results.length || searching)"
         class="absolute z-20 mt-1 w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-h-80 overflow-auto"
       >
-        <div v-if="searching" class="px-3 py-2 text-xs text-gray-400">Recherche…</div>
+        <div v-if="searching" class="px-3 py-2 text-xs text-gray-400">{{ t('hub.ui.cms_category_linker.searching', 'Recherche…') }}</div>
         <ul v-else>
           <li
             v-for="r in results"
@@ -39,17 +39,17 @@
           >
             <div class="flex-1 min-w-0">
               <p class="text-gray-800 dark:text-slate-100 truncate font-medium">{{ r.name }}</p>
-              <p class="text-[10px] text-gray-400 font-mono">#{{ r.id }} — {{ r.nbProducts ?? '?' }} produits</p>
+              <p class="text-[10px] text-gray-400 font-mono">#{{ r.id }} — {{ t('hub.ui.cms_category_linker.products_count', '{count} produits', { count: r.nbProducts ?? '?' }) }}</p>
             </div>
-            <span v-if="isLinked(r.id)" class="text-[10px] uppercase text-emerald-600">Déjà liée</span>
-            <span v-else class="text-[10px] text-primary-600">+ Lier</span>
+            <span v-if="isLinked(r.id)" class="text-[10px] uppercase text-emerald-600">{{ t('hub.ui.cms_category_linker.already_linked', 'Déjà liée') }}</span>
+            <span v-else class="text-[10px] text-primary-600">{{ t('hub.ui.cms_category_linker.link', '+ Lier') }}</span>
           </li>
         </ul>
       </div>
     </div>
 
     <div v-if="!model.length" class="text-center py-10 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
-      <p class="text-xs text-gray-400">Aucune catégorie liée. Tapez une recherche pour associer des catégories produits.</p>
+      <p class="text-xs text-gray-400">{{ t('hub.ui.cms_category_linker.empty', 'Aucune catégorie liée. Tapez une recherche pour associer des catégories produits.') }}</p>
     </div>
 
     <ul v-else class="space-y-2">
@@ -63,13 +63,13 @@
           <p class="text-sm text-gray-800 dark:text-slate-100 truncate font-medium">{{ cat.name }}</p>
           <p class="text-[10px] text-gray-400 font-mono">id_category: {{ cat.id }}</p>
         </div>
-        <button type="button" @click="move(idx, -1)" :disabled="idx === 0" title="Monter" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+        <button type="button" @click="move(idx, -1)" :disabled="idx === 0" :title="t('hub.ui.cms_category_linker.move_up', 'Monter')" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>
         </button>
-        <button type="button" @click="move(idx, 1)" :disabled="idx === model.length - 1" title="Descendre" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+        <button type="button" @click="move(idx, 1)" :disabled="idx === model.length - 1" :title="t('hub.ui.cms_category_linker.move_down', 'Descendre')" class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
         </button>
-        <button type="button" @click="unlink(idx)" title="Délier" class="text-gray-400 hover:text-red-600 transition-colors ml-1">
+        <button type="button" @click="unlink(idx)" :title="t('hub.ui.cms_category_linker.unlink', 'Délier')" class="text-gray-400 hover:text-red-600 transition-colors ml-1">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
@@ -80,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 import { onMounted, onUnmounted, ref } from 'vue'
 
 export interface LinkedCategory {

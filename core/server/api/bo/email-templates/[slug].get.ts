@@ -2,15 +2,17 @@
 
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const slug = String(getRouterParam(event, 'slug') || '')
   if (!slug) throw createError({ statusCode: 400, statusMessage: 'slug requis' })
   const sql = getPgClient()
   const tpl = await sql<any[]>`
     SELECT slug, audience, trigger_hint, active,
-           recipient_to, recipient_cc, recipient_bcc, priority
+           recipient_to, recipient_cc, recipient_bcc, priority, attach_invoice
     FROM ${sql(PG_SCHEMA)}.cs_email_template WHERE slug = ${slug}
   `
   if (tpl.length === 0) throw createError({ statusCode: 404, statusMessage: 'Template introuvable' })

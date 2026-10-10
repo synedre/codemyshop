@@ -177,7 +177,7 @@ export async function savReply(input: SavReplyInput, event?: any): Promise<SavRe
   
   const from = shopEmail
     ? `${fromName} <${shopEmail}>`
-    : (process.env.RESEND_DEFAULT_FROM || 'Service client <noreply@codemyshop.com>')
+    : (process.env.RESEND_DEFAULT_FROM || 'Service client <noreply@example.com>')
 
   const sent = await sendEmailViaQueue({
     to: ctx.email,

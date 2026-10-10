@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id) throw createError({ statusCode: 400, message: 'ID transporteur requis' })
 
@@ -12,12 +15,13 @@ export default defineEventHandler(async (event) => {
     delay?: string
     maxWeight?: number
     isFree?: boolean
+    isClickCollect?: boolean
   }>(event)
 
   const db = useClientDb(event)
 
   
-  const carrier = await db.get<any>('SELECT id_carrier FROM ps_carrier WHERE id_carrier = ? AND deleted = 0', [id])
+  const carrier = await db.get<any>('SELECT id_carrier, id_reference FROM ps_carrier WHERE id_carrier = ? AND deleted = 0', [id])
   if (!carrier) throw createError({ statusCode: 404, message: 'Transporteur introuvable' })
 
   
@@ -37,6 +41,17 @@ export default defineEventHandler(async (event) => {
   
   if (body.delay !== undefined) {
     await db.run('UPDATE ps_carrier_lang SET delay = ? WHERE id_carrier = ?', [body.delay.trim(), id])
+  }
+
+  
+  if (body.isClickCollect !== undefined) {
+    await db.run(
+      `INSERT INTO cs_carrier_meta (id_carrier_reference, is_click_collect, date_upd)
+       VALUES (?, ?, NOW())
+       ON CONFLICT (id_carrier_reference)
+       DO UPDATE SET is_click_collect = EXCLUDED.is_click_collect, date_upd = NOW()`,
+      [carrier.id_reference, body.isClickCollect ? 1 : 0],
+    )
   }
 
   return { success: true }

@@ -7,6 +7,7 @@ import {
   readAiQueue,
   updateTask,
 } from '~/server/utils/ai-queue'
+import { resolveClientId } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event)
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
 
     const task = await createAiTask({
       name:         body.name.trim(),
-      clientId:     body.clientId?.trim() || 'ac-hub',
+      clientId:     body.clientId?.trim() || resolveClientId(event),
       model:        body.model || 'claude-sonnet-4-6',
       systemPrompt: body.systemPrompt.trim(),
       userPrompt:   body.userPrompt?.trim() || '',

@@ -4,12 +4,12 @@
     
     <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 dark:border-slate-800 flex items-center justify-between shrink-0">
       <div>
-        <h2 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">Derniers leads</h2>
-        <p class="text-xs text-gray-400 mt-0.5">{{ leads.length }} contacts récents</p>
+        <h2 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">{{ t('hub.ui.recent_leads.title', 'Derniers leads') }}</h2>
+        <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.recent_leads.recent_contacts', '{count} contacts récents', { count: leads.length }) }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <NuxtLink to="/hub/contacts" class="text-xs text-primary-600 hover:underline font-medium hidden sm:block">
-          Voir tout →
+        <NuxtLink :to="hasCrmAccounts ? '/hub/crm/comptes' : '/hub/leads'" class="text-xs text-primary-600 hover:underline font-medium hidden sm:block">
+          {{ t('hub.ui.recent_leads.see_all', 'Voir tout →') }}
         </NuxtLink>
         <button
           @click="showQuoteModal = true"
@@ -18,17 +18,18 @@
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Nouveau devis
+          {{ t('hub.ui.recent_leads.new_quote', 'Nouveau devis') }}
         </button>
       </div>
     </div>
 
     
     <div class="divide-y divide-gray-50 flex-1">
-      <div
+      <NuxtLink
         v-for="lead in leads"
         :key="lead.id"
-        class="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group"
+        :to="leadLink(lead)"
+        class="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group cursor-pointer"
       >
         
         <div
@@ -46,17 +47,17 @@
 
         
         <span :class="sourceBadge(lead.source)" class="text-xs font-medium px-2 py-0.5 rounded-full shrink-0 hidden md:inline-block">
-          {{ lead.source }}
+          {{ sourceLabel(lead.source) }}
         </span>
 
         
         <span :class="leadStatusBadge(lead.status)" class="text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0">
-          {{ lead.status }}
+          {{ statusLabel(lead.status) }}
         </span>
 
         
         <span class="text-xs text-gray-400 shrink-0 hidden lg:block w-20 text-right">{{ lead.date }}</span>
-      </div>
+      </NuxtLink>
     </div>
 
   </div>
@@ -85,7 +86,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                 </svg>
               </div>
-              <h3 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">Nouveau devis</h3>
+              <h3 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">{{ t('hub.ui.recent_leads.new_quote', 'Nouveau devis') }}</h3>
             </div>
             <button @click="showQuoteModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -97,43 +98,43 @@
           
           <div class="px-6 py-5 space-y-4">
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Titre du devis</label>
-              <input v-model="quote.title" type="text" placeholder="ex: Refonte site e-commerce" class="field" />
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.recent_leads.quote_title', 'Titre du devis') }}</label>
+              <input v-model="quote.title" type="text" :placeholder="t('hub.ui.recent_leads.quote_title_ph', 'ex: Refonte site e-commerce')" class="field" />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Client</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.recent_leads.client', 'Client') }}</label>
               <select v-model="quote.clientId" class="field">
-                <option value="">— Sélectionner un lead —</option>
+                <option value="">{{ t('hub.ui.recent_leads.select_lead', '— Sélectionner un lead —') }}</option>
                 <option v-for="l in leads" :key="l.id" :value="l.id">{{ l.name }}</option>
               </select>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Montant estimé (€)</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.recent_leads.amount', 'Montant estimé (€)') }}</label>
                 <input v-model.number="quote.amount" type="number" placeholder="0.00" class="field" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Échéance</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.recent_leads.deadline', 'Échéance') }}</label>
                 <input v-model="quote.deadline" type="date" class="field" />
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
-              <textarea v-model="quote.notes" rows="3" placeholder="Contexte, besoins…" class="field resize-none" />
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.recent_leads.notes', 'Notes') }}</label>
+              <textarea v-model="quote.notes" rows="3" :placeholder="t('hub.ui.recent_leads.notes_ph', 'Contexte, besoins…')" class="field resize-none" />
             </div>
           </div>
 
           
           <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-slate-800 dark:border-slate-800">
             <button @click="showQuoteModal = false" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 dark:text-slate-200 transition-colors">
-              Annuler
+              {{ t('hub.ui.recent_leads.cancel', 'Annuler') }}
             </button>
             <button
               @click="submitQuote"
               :disabled="!quote.title"
               class="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40"
             >
-              Créer le devis
+              {{ t('hub.ui.recent_leads.create_quote', 'Créer le devis') }}
             </button>
           </div>
         </div>
@@ -143,6 +144,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 export interface Lead {
   id:          number
   name:        string
@@ -151,6 +153,9 @@ export interface Lead {
   date:        string
   status:      'Nouveau' | 'Contacté' | 'Qualifié'
   avatarShade: '500' | '600' | '700'
+  
+
+  kind?:       'lead' | 'customer-noorder' | 'contact'
 }
 
 defineProps<{ leads: Lead[] }>()
@@ -165,8 +170,46 @@ function submitQuote() {
   showQuoteModal.value = false
 }
 
+const router = useRouter()
+function sourceLabel(source: string) {
+  switch (source) {
+    case 'Formulaire': return t('hub.ui.recent_leads.source_form', 'Formulaire')
+    case 'WhatsApp': return t('hub.ui.recent_leads.source_whatsapp', 'WhatsApp')
+    case 'LinkedIn': return t('hub.ui.recent_leads.source_linkedin', 'LinkedIn')
+    case 'Direct': return t('hub.ui.recent_leads.source_direct', 'Direct')
+    default: return source
+  }
+}
+
+function statusLabel(status: string) {
+  switch (status) {
+    case 'Nouveau': return t('hub.ui.recent_leads.status_new', 'Nouveau')
+    case 'Contacté': return t('hub.ui.recent_leads.status_contacted', 'Contacté')
+    case 'Qualifié': return t('hub.ui.recent_leads.status_qualified', 'Qualifié')
+    default: return status
+  }
+}
+
+const hasCrmAccounts = computed(() => router.getRoutes().some(r => r.path === '/hub/crm/comptes'))
+
 function initials(name: string) {
   return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
+}
+
+function leadLink(lead: Lead) {
+  if (hasCrmAccounts.value) {
+    const q = (lead.name || '').trim() || (lead.email || '').trim()
+    return q ? `/hub/crm/comptes?q=${encodeURIComponent(q)}` : '/hub/crm/comptes'
+  }
+  
+  
+  
+  if (lead.id && lead.kind) {
+    return `/hub/leads/${lead.id}?kind=${lead.kind}`
+  }
+  
+  const q = (lead.name || '').trim() || (lead.email || '').trim()
+  return q ? `/hub/leads?search=${encodeURIComponent(q)}` : '/hub/leads'
 }
 
 function leadStatusBadge(status: Lead['status']) {

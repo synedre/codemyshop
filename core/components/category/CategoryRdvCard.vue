@@ -1,15 +1,27 @@
 
 <script setup lang="ts">
 const { t } = useT()
+const { localePath } = useLocalePath()
+const { activeLang } = useRouteLang()
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     ctaHref?: string
     
     variant?: 'card' | 'flat'
+    
+    ctaLabel?: string | null
   }>(),
-  { ctaHref: '/rdv', variant: 'card' },
+  { ctaHref: '/rdv', variant: 'card', ctaLabel: null },
 )
+
+const ctaTo = computed(() => localePath(props.ctaHref))
+
+const ctaText = computed(() => {
+  const override = props.ctaLabel?.trim()
+  if (override && activeLang.value === 'fr') return override
+  return t('silo.rdv.cta')
+})
 
 const bulletKeys = ['1', '2', '3', '4', '5', '6'] as const
 const bullets = computed<string[]>(() =>
@@ -37,7 +49,7 @@ const hasAvatar = computed(() => !!avatarUrl.value && !avatarUrl.value.startsWit
         <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
           <NuxtLink
             v-if="hasAvatar"
-            :to="ctaHref"
+            :to="ctaTo"
             class="shrink-0"
           >
             
@@ -70,7 +82,7 @@ const hasAvatar = computed(() => !!avatarUrl.value && !avatarUrl.value.startsWit
       
       <ul
         v-if="bullets.length"
-        class="hidden space-y-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 lg:col-span-4 lg:block"
+        class="space-y-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 sm:grid sm:grid-cols-2 sm:gap-2 sm:space-y-0 lg:col-span-4 lg:block lg:space-y-1.5"
       >
         <li v-for="(b, i) in bullets" :key="i" class="flex items-start gap-2">
           <span class="mt-0.5 font-bold text-primary-600 dark:text-primary-400">✓</span>
@@ -81,7 +93,7 @@ const hasAvatar = computed(() => !!avatarUrl.value && !avatarUrl.value.startsWit
       
       <div class="text-center lg:col-span-3 lg:text-right">
         <NuxtLink
-          :to="ctaHref"
+          :to="ctaTo"
           class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-base font-bold text-white shadow transition hover:bg-slate-800 dark:bg-primary-600 dark:hover:bg-primary-500"
         >
           <svg
@@ -95,7 +107,7 @@ const hasAvatar = computed(() => !!avatarUrl.value && !avatarUrl.value.startsWit
           >
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
           </svg>
-          <span>{{ t('silo.rdv.cta') }}</span>
+          <span>{{ ctaText }}</span>
         </NuxtLink>
       </div>
     </div>

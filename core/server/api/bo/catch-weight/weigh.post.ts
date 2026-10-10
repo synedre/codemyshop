@@ -2,7 +2,10 @@
 
 import { recordWeigh } from '~/enterprise/vertical-food/catchweight/server/utils/catchweight'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     idLineWeight: number
     weightShippedKg: number
@@ -27,7 +30,12 @@ export default defineEventHandler(async (event) => {
       },
       { event },
     )
-    return { ok: true, priceFinalHt: result.priceFinalHt }
+    return {
+      ok: true,
+      priceFinalHt: result.priceFinalHt,
+      reportedOnOrder: result.reportedOnOrder,
+      regularisation: result.regularisation,
+    }
   } catch (e: any) {
     if (e?.statusCode === 404) {
       throw createError({ statusCode: 404, statusMessage: 'ligne introuvable' })

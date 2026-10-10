@@ -2,7 +2,9 @@
 
 import { savReply, type SavStatus } from '~/server/utils/sav-reply'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
   const threadId = Number(id)

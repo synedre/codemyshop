@@ -4,8 +4,8 @@
     
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">File d'attente Blog IA</h1>
-        <p class="text-xs text-gray-400 mt-0.5">Rédactions IA (Claude CLI) — relecture, application et publication</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.autoblog.title', 'File d\'attente Blog IA') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.autoblog.subtitle', 'Rédactions IA (Claude CLI) — relecture, application et publication') }}</p>
       </div>
       <button
         @click="loadQueue"
@@ -15,7 +15,7 @@
         <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': loading }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
         </svg>
-        Rafraîchir
+        {{ t('hub.ui.autoblog.refresh', 'Rafraîchir') }}
       </button>
     </header>
 
@@ -25,6 +25,41 @@
         <span class="w-2 h-2 rounded-full" :class="stat.dot" />
         <span class="text-xs text-gray-500">{{ stat.label }}</span>
         <span class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ stat.count }}</span>
+      </div>
+
+      
+      <div
+        v-if="cadence && cadence.perDay > 0"
+        class="flex items-center gap-2 pl-6 border-l border-gray-100 dark:border-slate-800"
+      >
+        <span class="w-2 h-2 rounded-full" :class="cadence.state === 'ouverte' ? 'bg-emerald-400' : 'bg-slate-300'" />
+        <span class="text-xs text-gray-500">{{ t('hub.autoblog_cadence', 'Cadence') }}</span>
+        <span class="text-sm font-bold text-gray-800 dark:text-slate-100">
+          {{ t('hub.autoblog_cadence_rate', '{n}/jour').replace('{n}', String(cadence.perDay)) }}
+        </span>
+        <span v-if="cadence.window" class="text-xs text-gray-400">{{ cadence.window }}</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300">
+          {{ cadenceLabel }}
+        </span>
+      </div>
+
+      
+      <div v-if="spend" class="flex items-center gap-6 ml-auto pl-6 border-l border-gray-100 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-500">{{ t('hub.autoblog_spend_month', 'Coût du mois') }}</span>
+          <span class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ formatUsd(spend.costUsd) }}</span>
+          <span
+            v-if="spend.articlesSansPrix"
+            class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+            :title="t('hub.autoblog_spend_partial_hint', 'Des articles ont été générés avec un modèle absent de la grille de prix : le total est incomplet.')"
+          >
+            {{ t('hub.autoblog_spend_partial', 'partiel') }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-500">{{ t('hub.autoblog_tokens_month', 'Tokens') }}</span>
+          <span class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ formatTokens(spend.tokens) }}</span>
+        </div>
       </div>
     </div>
 
@@ -46,7 +81,7 @@
         <input
           v-model="search"
           type="text"
-          placeholder="Rechercher un titre…"
+          :placeholder="t('hub.ui.autoblog.search_ph', 'Rechercher un titre…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-52 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
       </div>
@@ -63,8 +98,8 @@
         <svg class="w-12 h-12 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
         </svg>
-        <p class="text-sm">Aucun article dans la queue</p>
-        <p class="text-xs mt-1">Les rédactions IA apparaissent ici quand vous cliquez "Rédaction IA" depuis un article</p>
+        <p class="text-sm">{{ t('hub.ui.autoblog.empty_title', 'Aucun article dans la queue') }}</p>
+        <p class="text-xs mt-1">{{ t('hub.ui.autoblog.empty_hint', 'Les rédactions IA apparaissent ici quand vous cliquez "Rédaction IA" depuis un article') }}</p>
       </div>
 
       <div v-else class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
@@ -72,12 +107,12 @@
           <thead>
             <tr class="border-b border-gray-100 dark:border-slate-800 bg-gray-50">
               <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-12">#</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">Titre</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-24">Mots</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-20">FAQ</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-28">Statut</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-20">Cover</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-32">Date</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500">{{ t('hub.ui.autoblog.col_title', 'Titre') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-24">{{ t('hub.ui.autoblog.col_words', 'Mots') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-20">{{ t('hub.ui.autoblog.col_faq', 'FAQ') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-28">{{ t('hub.ui.autoblog.col_status', 'Statut') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-20">{{ t('hub.ui.autoblog.col_cover', 'Cover') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-32">{{ t('hub.ui.autoblog.col_date', 'Date') }}</th>
               <th class="w-16 px-4 py-3" />
             </tr>
           </thead>
@@ -119,14 +154,14 @@
                   :to="`/hub/marketing/blog/${article.id_cms}`"
                   class="opacity-0 group-hover:opacity-100 text-xs px-2.5 py-1 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200 transition-all"
                 >
-                  Ouvrir
+                  {{ t('hub.ui.autoblog.open', 'Ouvrir') }}
                 </NuxtLink>
                 <button
                   v-if="article.status === 'error'"
                   @click="retryArticle(article)"
                   class="opacity-0 group-hover:opacity-100 text-xs px-2.5 py-1 border border-red-200 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
                 >
-                  Relancer
+                  {{ t('hub.ui.autoblog.retry', 'Relancer') }}
                 </button>
               </td>
             </tr>
@@ -158,22 +193,42 @@ interface QueueItem {
   date_upd: string
 }
 
-const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
-  pending:    { label: 'En attente',  badge: 'bg-amber-50 text-amber-700 border-amber-200',     dot: 'bg-amber-400'   },
-  processing: { label: 'En cours',   badge: 'bg-violet-50 text-violet-700 border-violet-200',   dot: 'bg-violet-400'  },
-  done:       { label: 'Terminé',    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-400' },
-  error:      { label: 'Erreur',     badge: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-400'     },
+const STATUS_CONFIG = computed((): Record<string, { label: string; badge: string; dot: string }> => ({
+  pending:    { label: t('hub.ui.autoblog.pending', 'En attente'),  badge: 'bg-amber-50 text-amber-700 border-amber-200',     dot: 'bg-amber-400'   },
+  processing: { label: t('hub.ui.autoblog.processing', 'En cours'),   badge: 'bg-violet-50 text-violet-700 border-violet-200',   dot: 'bg-violet-400'  },
+  done:       { label: t('hub.ui.autoblog.done', 'Terminé'),    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-400' },
+  error:      { label: t('hub.ui.autoblog.error', 'Erreur'),     badge: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-400'     },
+}))
+
+const STATUS_TABS = computed(() => [
+  { value: '',           label: t('hub.ui.autoblog.tab_all', 'Tous') },
+  { value: 'pending',    label: t('hub.ui.autoblog.pending', 'En attente') },
+  { value: 'processing', label: t('hub.ui.autoblog.processing', 'En cours') },
+  { value: 'done',       label: t('hub.ui.autoblog.tab_done', 'Terminés') },
+  { value: 'error',      label: t('hub.ui.autoblog.tab_errors', 'Erreurs') },
+])
+
+interface QueueSpend {
+  since: string
+  costUsd: number
+  tokens: number
+  articles: number
+  articlesSansPrix: number
 }
 
-const STATUS_TABS = [
-  { value: '',           label: 'Tous'       },
-  { value: 'pending',    label: 'En attente' },
-  { value: 'processing', label: 'En cours'   },
-  { value: 'done',       label: 'Terminés'   },
-  { value: 'error',      label: 'Erreurs'    },
-]
+interface QueueCadence {
+  state: 'desactivee' | 'ouverte' | 'quota' | 'hors-fenetre' | 'jour-off'
+  perDay: number
+  window: string | null
+  publishedToday: number | null
+  timezone: string
+}
+
+const { t } = useHubT()
 
 const queue        = ref<QueueItem[]>([])
+const spend        = ref<QueueSpend | null>(null)
+const cadence      = ref<QueueCadence | null>(null)
 const loading      = ref(false)
 const filterStatus = ref('')
 const search       = ref('')
@@ -189,16 +244,35 @@ const filtered = computed(() => {
 })
 
 const computedStats = computed(() => [
-  { label: 'Total',      count: queue.value.length,                                           dot: 'bg-gray-400'    },
-  { label: 'En attente', count: queue.value.filter(a => a.status === 'pending').length,       dot: 'bg-amber-400'   },
-  { label: 'Terminés',   count: queue.value.filter(a => a.status === 'done').length,          dot: 'bg-emerald-400' },
-  { label: 'Erreurs',    count: queue.value.filter(a => a.status === 'error').length,         dot: 'bg-red-400'     },
+  { label: t('hub.ui.autoblog.stat_total', 'Total'),      count: queue.value.length,                                           dot: 'bg-gray-400'    },
+  { label: t('hub.ui.autoblog.pending', 'En attente'), count: queue.value.filter(a => a.status === 'pending').length,       dot: 'bg-amber-400'   },
+  { label: t('hub.ui.autoblog.tab_done', 'Terminés'),   count: queue.value.filter(a => a.status === 'done').length,          dot: 'bg-emerald-400' },
+  { label: t('hub.ui.autoblog.tab_errors', 'Erreurs'),    count: queue.value.filter(a => a.status === 'error').length,         dot: 'bg-red-400'     },
 ])
+
+const formatUsd = (v: number) => {
+  const n = Number(v || 0)
+  return n < 1 ? `$${n.toFixed(4)}` : `$${n.toFixed(2)}`
+}
+
+const formatTokens = (v: number) => {
+  const n = Number(v || 0)
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
+}
 
 const formatDate = (d: string) => {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
+
+const cadenceLabel = computed(() => {
+  const c = cadence.value
+  if (!c) return ''
+  if (c.state === 'quota') return t('hub.autoblog_cadence_done', 'article du jour publié')
+  if (c.state === 'hors-fenetre') return t('hub.autoblog_cadence_waiting', 'prochaine parution demain')
+  if (c.state === 'jour-off') return t('hub.autoblog_cadence_day_off', "pas de parution aujourd'hui")
+  return t('hub.autoblog_cadence_open', 'parution possible maintenant')
+})
 
 const getCountByStatus = (status: string) =>
   status ? queue.value.filter(a => a.status === status).length : queue.value.length
@@ -206,10 +280,16 @@ const getCountByStatus = (status: string) =>
 const loadQueue = async () => {
   loading.value = true
   try {
-    const res = await $fetch<{ queue: QueueItem[] }>('/api/bo/marketing/blog/queue')
+    const res = await $fetch<{ queue: QueueItem[]; spend: QueueSpend | null; cadence: QueueCadence | null }>(
+      '/api/bo/marketing/blog/queue',
+    )
     queue.value = res.queue ?? []
+    spend.value = res.spend ?? null
+    cadence.value = res.cadence ?? null
   } catch {
     queue.value = []
+    spend.value = null
+    cadence.value = null
   } finally {
     loading.value = false
   }

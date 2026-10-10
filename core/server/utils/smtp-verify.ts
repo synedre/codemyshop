@@ -19,10 +19,20 @@ export interface EmailVerifyResult {
 }
 
 const TIMEOUT_MS = 8000
-const HELO_DOMAIN = 'codemyshop.com'
-const MAIL_FROM   = 'verify@codemyshop.com'
 
-export async function verifyEmailViaSmtp(rawEmail: string): Promise<EmailVerifyResult> {
+export interface VerifyEmailOptions {
+  
+  heloDomain?: string
+  
+  mailFrom?:   string
+}
+
+export async function verifyEmailViaSmtp(
+  rawEmail: string,
+  opts: VerifyEmailOptions = {},
+): Promise<EmailVerifyResult> {
+  const HELO_DOMAIN = opts.heloDomain || 'example.com'
+  const MAIL_FROM   = opts.mailFrom   || 'verify@example.com'
   const email = (rawEmail || '').trim().toLowerCase()
   if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) {
     return { status: 'invalid_input' }

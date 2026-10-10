@@ -14,7 +14,7 @@ const { data: mod, error } = await useFetch(`/api/academy/${moduleSlug}`)
 const { data: academyData } = await useFetch('/api/academy')
 
 if (error.value || !mod.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Module introuvable', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: 'Module introuvable' })
 }
 
 const mentorKey = mod.value.mentor as string | undefined
@@ -29,7 +29,7 @@ const lessonIndex = mod.value.lessons?.findIndex((l: any) => l.slug === lessonSl
 const lessonData = lessonIndex >= 0 ? mod.value.lessons[lessonIndex] : null
 
 if (!lessonData) {
-  throw createError({ statusCode: 404, statusMessage: 'Leçon introuvable', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: 'Leçon introuvable' })
 }
 
 async function loadMentorQuote() {

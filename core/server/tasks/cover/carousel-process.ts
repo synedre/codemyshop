@@ -1,6 +1,6 @@
 
 
-import { defineTask } from 'nitropack/runtime'
+import { defineLeaderTask } from '~/server/utils/schedule-leader'
 import { skipIfNotAcInternal } from '~/server/utils/cron-context'
 import { withAutomateLock } from '~/server/utils/automate-lock'
 import { runAutomate } from '~/server/utils/automate-logger'
@@ -21,7 +21,7 @@ async function pgSchemaExists(schema: string): Promise<boolean> {
   return rows[0]?.exists ?? false
 }
 
-export default defineTask({
+export default defineLeaderTask({
   meta: {
     name: 'cover:carousel-process',
     description: 'Consumer cs_carousel_queue (port ac_carouselgen, Wave 4B)',

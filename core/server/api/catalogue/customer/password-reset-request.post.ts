@@ -22,14 +22,27 @@ export default defineEventHandler(async (event) => {
   const email = String(body.email).trim().toLowerCase()
   const db = useClientDb(event)
 
+  
+  
+  
+  
+  
+  
+  
+  
   const customer = await db.get<{ id_customer: number; firstname: string }>(
-    `SELECT id_customer, firstname FROM ps_customer WHERE email = ? AND deleted = 0 AND active = 1 LIMIT 1`,
+    `SELECT id_customer, firstname FROM ps_customer
+      WHERE LOWER(email) = ? AND deleted = 0 AND active = 1
+      ORDER BY id_customer DESC LIMIT 1`,
     [email],
   )
 
-  
   if (!customer) {
-    return { success: true }
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Aucun compte associé à cet email',
+      data: { code: 'EMAIL_NOT_FOUND' },
+    })
   }
 
   const { randomBytes } = await import('node:crypto')

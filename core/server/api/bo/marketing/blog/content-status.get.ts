@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: 'id_cms requis' })
   }
 
-  const tenant = resolveClientId(event) || 'ac-hub'
+  const tenant = resolveClientId(event)
 
   try {
     const row = await getLatestStatusForCms(tenant, idCms, { event })

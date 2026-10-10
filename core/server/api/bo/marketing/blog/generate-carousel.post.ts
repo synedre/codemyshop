@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: 'id_cms, title, slug et slides (min 3) requis' })
   }
 
-  const tenant = resolveClientId(event) || 'ac-hub'
+  const tenant = resolveClientId(event)
 
   try {
     const existing = await findPendingCarousel(tenant, idCms, { event })

@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: false })
+const { localePath } = useLocalePath()
 
 const { t } = useHubT()
 const router = useRouter()
@@ -17,6 +18,11 @@ function safeNext(): string {
   const raw = String(route.query.next || '').trim()
   if (!raw.startsWith('/') || raw.startsWith('//')) return '/'
   return raw
+}
+
+await customerAuth.checkSession()
+if (customerAuth.loggedIn.value) {
+  await navigateTo(safeNext(), { replace: true })
 }
 
 async function onSubmit() {
@@ -36,7 +42,7 @@ async function onSubmit() {
   }
 }
 
-useHead({ title: brand ? `Se connecter — ${brand}` : 'Se connecter' })
+useHead({ title: brand ? `${t('auth.head_title_login', 'Se connecter')} — ${brand}` : t('auth.head_title_login', 'Se connecter') })
 </script>
 
 <template>
@@ -63,14 +69,14 @@ useHead({ title: brand ? `Se connecter — ${brand}` : 'Se connecter' })
           </button>
 
           <p class="text-xs text-gray-400 text-center pt-1">
-            <NuxtLink to="/mot-de-passe-oublie" class="text-primary-600 hover:underline">
+            <NuxtLink :to="localePath('/mot-de-passe-oublie')" class="text-primary-600 hover:underline">
               {{ t('auth.login_forgot_password', 'Mot de passe oublié ?') }}
             </NuxtLink>
           </p>
         </form>
 
         <p class="text-xs text-gray-400 text-center mt-4">
-          {{ t('auth.login_no_account') }} <NuxtLink to="/inscription" class="text-primary-600 hover:underline">{{ t('auth.login_create_account') }}</NuxtLink>
+          {{ t('auth.login_no_account') }} <NuxtLink :to="localePath('/inscription')" class="text-primary-600 hover:underline">{{ t('auth.login_create_account') }}</NuxtLink>
         </p>
       </div>
     </div>

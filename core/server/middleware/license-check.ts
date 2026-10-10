@@ -18,7 +18,7 @@ export default defineEventHandler((event) => {
     if (url.startsWith('/api/')) {
       throw createError({
         statusCode: 403,
-        message: 'Licence CodeMyShop expirée. Contactez support@codemyshop.com',
+        message: 'Licence CodeMyShop expirée. Contactez l\'administrateur de la boutique.',
       })
     }
     

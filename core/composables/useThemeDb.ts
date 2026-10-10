@@ -41,6 +41,9 @@ export function useThemeDb() {
   const builderTheme = useState<ThemeDbData | null>('theme_builder_override', () => null)
 
   
+  const dirty = useState<boolean>('theme_dirty', () => false)
+
+  
   const theme = computed<ThemeDbData>(() => {
     if (builderTheme.value) return builderTheme.value
     if (data.value?.theme) return data.value.theme
@@ -50,6 +53,7 @@ export function useThemeDb() {
   
   function loadIntoBuilder() {
     builderTheme.value = JSON.parse(JSON.stringify(data.value?.theme || DEFAULT_THEME))
+    dirty.value = false
   }
 
   
@@ -62,6 +66,7 @@ export function useThemeDb() {
       typography: { ...builderTheme.value!.typography, ...patch.typography },
       ui: { ...builderTheme.value!.ui, ...patch.ui },
     }
+    dirty.value = true
   }
 
   function updateColor(key: string, value: string) {
@@ -70,6 +75,7 @@ export function useThemeDb() {
       ...builderTheme.value!,
       colors: { ...builderTheme.value!.colors, [key]: value },
     }
+    dirty.value = true
   }
 
   function updateTypography(key: string, value: string) {
@@ -78,6 +84,7 @@ export function useThemeDb() {
       ...builderTheme.value!,
       typography: { ...builderTheme.value!.typography, [key]: value },
     }
+    dirty.value = true
   }
 
   function updateUi(key: string, value: string | boolean) {
@@ -86,6 +93,7 @@ export function useThemeDb() {
       ...builderTheme.value!,
       ui: { ...builderTheme.value!.ui, [key]: value },
     }
+    dirty.value = true
   }
 
   
@@ -96,16 +104,19 @@ export function useThemeDb() {
       body: { theme: builderTheme.value },
     })
     await refreshNuxtData('theme-db')
+    dirty.value = false
   }
 
   function clearBuilderOverride() {
     builderTheme.value = null
+    dirty.value = false
   }
 
   return {
     theme,
     status,
     builderTheme,
+    dirty,
     loadIntoBuilder,
     updateBuilderTheme,
     updateColor,

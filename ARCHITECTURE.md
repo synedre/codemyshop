@@ -210,13 +210,15 @@ core/modules/
 └── ...
 ```
 
-## Centaure AI
+## Agentic AI, MCP & Autonomous Fleet
 
-Centaure is the integrated AI subsystem for autonomous content generation:
+CodeMyShop embeds native agentic AI capabilities for autonomous commerce operations:
 
-- **Inputs**: product catalog, GSC data, Matomo analytics, customer messages
-- **Outputs**: SEO articles, enriched product descriptions, structured JSON-LD, FAQ entries, image alt-text
-- **Providers**: pluggable via env (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`). The default routing logic prefers cheapest-capable provider per task.
+- **Inputs**: product catalog, Google Search Console, analytics, customer messages, inventory feeds
+- **Outputs**: SEO articles, enriched product descriptions, structured JSON-LD, FAQ entries, image alt-text, B2B quotes
+- **Model Context Protocol (MCP)**: native MCP server exposing read/write catalog and operational tools directly to Claude Desktop, Cursor, and IDEs
+- **Autonomous Fleet Access**: managed tiers (Pro Cloud & Enterprise Scale) connect directly to dedicated autonomous AI agents for continuous custom development, UX iterations, and catalog enrichment
+- **Providers**: pluggable via env (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`). The default routing logic prefers the cheapest-capable provider per task.
 - **Open prompts**: every prompt is open-source under AGPL-3.0 in `core/server/prompts/`. You can audit them, modify them, or replace them with your own.
 
 ## Security model
@@ -242,9 +244,7 @@ For security disclosure, see [SECURITY.md](SECURITY.md).
 To keep the public repo focused and the dependency tree manageable:
 
 - Tenant-specific configurations (`clients/*`)
-- Internal documentation (strategy, roadmap, fiscal doctrine)
-- Memory and personal notes
-- Atlas / OSINT scripts (specific to AC's prospecting needs)
+- Internal prospecting & operational automation scripts
 - Marketing copy of codemyshop.com (lives in a separate tenant)
 
 These are not necessary for installing and running CodeMyShop.

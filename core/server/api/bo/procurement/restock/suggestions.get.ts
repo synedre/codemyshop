@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const thresholdDays = Math.max(1, Math.min(60, Number(q.threshold || 15)))
   const targetCoverDays = Math.max(7, Math.min(180, Number(q.targetCover || 60)))

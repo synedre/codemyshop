@@ -3,6 +3,7 @@
 import type { LoyaltyAccountResponse } from '~/server/api/loyalty/account.get'
 
 const props = defineProps<{ totalTtc: number }>()
+const { localePath } = useLocalePath()
 
 const { t } = useT()
 const { customer, checkSession } = useCustomerAuth()
@@ -63,7 +64,7 @@ const formatEur = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'curren
         <p v-else-if="balance >= tierPoints" class="text-[11px] text-emerald-600 mt-1 font-medium">
           {{ t('cart.loyalty.tier_reached', { points: formatPts(tierPoints), value: formatEur(tierValue) }) }}
         </p>
-        <NuxtLink to="/mon-compte/fidelite" class="inline-block text-xs text-primary-600 hover:underline mt-1">
+        <NuxtLink :to="localePath('/mon-compte/fidelite')" class="inline-block text-xs text-primary-600 hover:underline mt-1">
           {{ t('cart.loyalty.cta_view_points') }}
         </NuxtLink>
       </div>

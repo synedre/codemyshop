@@ -1,9 +1,12 @@
 
 
 import { useClientDb } from '~/server/utils/db'
-import { resolveCustomerIdForRequest } from '~/server/utils/customer-session'
+import { requireCustomer, resolveCustomerIdForRequest } from '~/server/utils/customer-session'
 
 export default defineEventHandler(async (event) => {
+  
+  
+  requireCustomer(event)
   const body = await readBody(event)
   const { customerId, alias, company, firstname, lastname, address1, address2, postcode, city, countryId, phone, vatNumber } = body || {}
   const resolvedId = resolveCustomerIdForRequest(event, customerId)

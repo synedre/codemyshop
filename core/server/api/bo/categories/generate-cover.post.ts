@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: 'id_category, name et slug requis' })
   }
 
-  const tenant = resolveClientId(event) || 'ac-hub'
+  const tenant = resolveClientId(event)
 
   try {
     

@@ -5,7 +5,10 @@ import {
   createStudentLink,
   findLearnerByEmail,
 } from '~/internal/academy/server/utils/academy'
-import { signToken } from '~/server/utils/session-crypto'
+import { setHubSessionCookie } from '~/server/utils/session'
+import { resolveClientId } from '~/server/utils/db'
+
+const ACADEMY_SESSION_MAX_AGE_S = 60 * 60 * 24 * 30
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{
@@ -46,16 +49,11 @@ export default defineEventHandler(async (event) => {
       email,
       pseudo,
       role: 'student',
-      clientId: 'ac-hub',
+      clientId: resolveClientId(event),
+      
+      userType: 'customer',
     }
-    const token = signToken(sessionData)
-    setCookie(event, 'hub_session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-    })
+    setHubSessionCookie(event, sessionData, ACADEMY_SESSION_MAX_AGE_S)
 
     return {
       success: true,

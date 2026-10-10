@@ -2,6 +2,10 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~/utils/api-error'
 
+import { useDisplayTimeZone } from '../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
+
 definePageMeta({ layout: 'funnel' })
 
 interface Slot {
@@ -111,9 +115,18 @@ const todayM = Number(todayISO.slice(5, 7)) - 1
 const viewYear = ref(todayY)
 const viewMonth = ref(todayM) 
 
+const { activeLang } = useRouteLang()
+const dateLocale = computed(() => {
+  if (activeLang.value === 'en') return 'en-GB'
+  if (activeLang.value === 'de') return 'de-DE'
+  return 'fr-FR'
+})
+
 const monthLabel = computed(() => {
-  const d = new Date(viewYear.value, viewMonth.value, 1)
-  const s = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+  
+  
+  const d = new Date(Date.UTC(viewYear.value, viewMonth.value, 1, 12))
+  const s = d.toLocaleDateString(dateLocale.value, { timeZone: displayTz, month: 'long', year: 'numeric' })
   return s.charAt(0).toUpperCase() + s.slice(1)
 })
 
@@ -190,8 +203,8 @@ const selectedDateSlots = computed<Slot[]>(() => {
 
 const selectedDateLabel = computed(() => {
   if (!selectedDate.value) return ''
-  const d = new Date(`${selectedDate.value}T12:00:00`)
-  const s = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+  const d = new Date(`${selectedDate.value}T12:00:00Z`)
+  const s = d.toLocaleDateString(dateLocale.value, { timeZone: displayTz, weekday: 'long', day: 'numeric', month: 'long' })
   return s.charAt(0).toUpperCase() + s.slice(1)
 })
 
@@ -212,14 +225,14 @@ function backToCalendar() {
 }
 
 function fmtTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('fr-FR', {
+  return new Date(iso).toLocaleTimeString(dateLocale.value, {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'Europe/Paris',
   })
 }
 function fmtDateLong(iso: string): string {
-  const s = new Date(iso).toLocaleString('fr-FR', {
+  const s = new Date(iso).toLocaleString(dateLocale.value, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

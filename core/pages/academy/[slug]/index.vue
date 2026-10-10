@@ -12,7 +12,7 @@ const slug = route.params.slug as string
 const { data: mod, error } = await useFetch(`/api/academy/${slug}`)
 
 if (error.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Module introuvable', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: 'Module introuvable' })
 }
 
 const mentor = computed(() => mod.value?.mentorData || null)

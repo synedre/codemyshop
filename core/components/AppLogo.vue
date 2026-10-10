@@ -1,5 +1,7 @@
 
 <script setup lang="ts">
+import { resolveLogoInitial } from '~/utils/logo-initial'
+
 const props = withDefaults(defineProps<{
   size?: number
   color?: string
@@ -10,19 +12,18 @@ const props = withDefaults(defineProps<{
 
 const { config } = useClientDetection()
 
+const cfg = useRuntimeConfig()
+
 const resolvedColor = computed(() => {
   if (props.color) return props.color
-
-  const clientId = config.value?.clientId ?? 'ac-hub'
-
-  switch (clientId) {
-    case 'codemyshop':
-      return '#06b6d4' 
-    case 'ac-hub':
-    default:
-      return '#4F46E5' 
-  }
+  const brand = (cfg.public as any)?.brandColor as string | undefined
+  return brand || '#64748b' 
 })
+
+const initial = computed(() => resolveLogoInitial([
+  config.value?.clientId as string | undefined,
+  (cfg.public as any)?.clientId as string | undefined,
+]))
 
 const gradientId = `logo-grad-${useId()}`
 </script>
@@ -51,11 +52,15 @@ const gradientId = `logo-grad-${useId()}`
     />
 
     
-    <path
-      d="M50 18L26 78h12l4-12h16l4 12h12L50 18zm-4 38l4-14 4 14h-8z"
+    <text
+      x="50" y="68"
+      text-anchor="middle"
+      font-family="system-ui, -apple-system, sans-serif"
+      font-size="56"
+      font-weight="700"
       fill="white"
       fill-opacity="0.95"
-    />
+    >{{ initial }}</text>
 
     
     <rect

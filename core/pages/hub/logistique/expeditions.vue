@@ -2,27 +2,27 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Expéditions</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ total }} expédition{{ total > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.logistique_expeditions.title', 'Expéditions') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ total > 1 ? tHub('hub.ui.logistique_expeditions.count_other', '{n} expéditions', { n: total }) : tHub('hub.ui.logistique_expeditions.count_one', '{n} expédition', { n: total }) }}</p>
       </div>
       <div class="flex items-center gap-2">
         <div class="flex border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
           <button @click="setFilter(4)" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 4 ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50'">
-            Expédiées
+            {{ tHub('hub.ui.logistique_expeditions.shipped', 'Expédiées') }}
           </button>
           <button @click="setFilter(5)" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 5 ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-50'">
-            Livrées
+            {{ tHub('hub.ui.logistique_expeditions.delivered', 'Livrées') }}
           </button>
           <button @click="setFilter(0)" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 0 ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">
-            Toutes
+            {{ tHub('hub.ui.logistique_expeditions.all', 'Toutes') }}
           </button>
         </div>
-        <input v-model="search" type="text" placeholder="Réf, client…" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-40" @keyup.enter="load" />
-        <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors">Actualiser</button>
+        <input v-model="search" type="text" :placeholder="tHub('hub.ui.logistique_expeditions.search_ph', 'Réf, client…')" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-40" @keyup.enter="load" />
+        <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors">{{ tHub('hub.ui.logistique_expeditions.refresh', 'Actualiser') }}</button>
       </div>
     </header>
 
-    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" label="expéditions"
+    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" :label="tHub('hub.ui.logistique_expeditions.shipments_label', 'expéditions')"
       :per-page="perPage" :per-page-options="perPageOptions"
       @go="goPage" @update:per-page="setPerPage"
       class="border-b border-gray-100 dark:border-slate-800" />
@@ -33,20 +33,20 @@
       </div>
 
       <div v-else-if="!orders.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucune expédition</p>
+        <p class="text-sm">{{ tHub('hub.ui.logistique_expeditions.empty', 'Aucune expédition') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-            <th class="px-4 py-2.5 font-medium">Réf</th>
-            <th class="px-4 py-2.5 font-medium">Client</th>
-            <th class="px-4 py-2.5 font-medium">Société</th>
-            <th class="px-4 py-2.5 font-medium text-right">Total TTC</th>
-            <th class="px-4 py-2.5 font-medium text-right">Frais port</th>
-            <th class="px-4 py-2.5 font-medium">Date</th>
-            <th class="px-4 py-2.5 font-medium">Statut</th>
-            <th class="px-4 py-2.5 font-medium text-center">Actions</th>
+            <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.logistique_expeditions.col_ref', 'Réf') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.logistique_expeditions.col_customer', 'Client') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.logistique_expeditions.col_company', 'Société') }}</th>
+            <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.logistique_expeditions.col_total', 'Total TTC') }}</th>
+            <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.logistique_expeditions.col_shipping', 'Frais port') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.logistique_expeditions.col_date', 'Date') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.logistique_expeditions.col_status', 'Statut') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center">{{ tHub('hub.ui.logistique_expeditions.col_actions', 'Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -66,10 +66,10 @@
               <div class="flex items-center justify-center gap-1">
                 <button v-if="o.statusId === 4" @click="markDelivered(o)" :disabled="updating === o.id"
                   class="text-[11px] px-2.5 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-40">
-                  Livré
+                  {{ tHub('hub.ui.logistique_expeditions.mark_delivered', 'Livré') }}
                 </button>
                 <NuxtLink :to="`/hub/orders/${o.id}`" class="text-[11px] px-2 py-1 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors">
-                  Détail
+                  {{ tHub('hub.ui.logistique_expeditions.detail', 'Détail') }}
                 </NuxtLink>
               </div>
             </td>
@@ -78,13 +78,14 @@
       </table>
     </div>
 
-    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" label="expéditions" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
+    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :label="tHub('hub.ui.logistique_expeditions.shipments_label', 'expéditions')" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
   </div>
 </template>
 
 <script setup lang="ts">
 
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 const orders = ref<any[]>([])
 const total = ref(0)

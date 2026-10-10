@@ -1,9 +1,11 @@
 
 
 import { getPgClient } from '~/server/utils/db-pg-adapter'
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const account = process.env.SMTP_USER || process.env.IMAP_USER
   if (!account) throw createError({ statusCode: 503, statusMessage: 'SMTP_USER non configuré.' })
   const body = await readBody<{ bodyText?: string; bodyHtml?: string }>(event)

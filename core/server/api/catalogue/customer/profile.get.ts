@@ -1,9 +1,12 @@
 
 
 import { useClientDb } from '~/server/utils/db'
-import { resolveCustomerIdForRequest } from '~/server/utils/customer-session'
+import { requireCustomer, resolveCustomerIdForRequest } from '~/server/utils/customer-session'
+import { toIsoDate } from '~/server/utils/pg-date'
 
 export default defineEventHandler(async (event) => {
+  
+  requireCustomer(event)
   const { customerId } = getQuery(event) as Record<string, string>
   const resolvedId = resolveCustomerIdForRequest(event, customerId)
   if (!resolvedId) throw createError({ statusCode: 400, message: 'customerId requis' })
@@ -27,7 +30,7 @@ export default defineEventHandler(async (event) => {
     company: String(row.company || ''),
     siret: String(row.siret || ''),
     ape: String(row.ape || ''),
-    birthday: row.birthday ? String(row.birthday) : null,
+    birthday: toIsoDate(row.birthday),
     newsletter: Number(row.newsletter) === 1,
     optin: Number(row.optin) === 1,
     website: String(row.website || ''),

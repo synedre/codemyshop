@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: false })
+const { localePath } = useLocalePath()
 
 const { t } = useHubT()
 const route = useRoute()
@@ -12,9 +13,56 @@ const amount = computed(() => {
   return (cents / 100).toFixed(2)
 })
 
-const isSuccess = computed(() => ['AUTHORISED', 'CAPTURED'].includes(transStatus.value))
-const isRefused = computed(() => transStatus.value === 'REFUSED')
-const isCancelled = computed(() => ['CANCELLED', 'ABANDONED'].includes(transStatus.value))
+const stripeSessionId = computed(() => String(route.query.session_id || ''))
+const estStripe = computed(() => stripeSessionId.value !== '')
+const estPaypal = computed(() => String(route.query.method || '') === 'paypal')
+const paypalAnnule = computed(() => estPaypal.value && String(route.query.cancel || '') === '1')
+
+const estRelu = computed(() => estStripe.value || (estPaypal.value && !paypalAnnule.value))
+const stripe = ref<{ statut: 'payee' | 'en_attente' | 'refusee' | 'invalide'; reference?: string; montant?: number } | null>(null)
+const { trackPurchase } = useAnalytics()
+
+onMounted(async () => {
+  if (estPaypal.value && !paypalAnnule.value) {
+    
+    stripe.value = await $fetch<typeof stripe.value>('/api/payment/paypal-capture', {
+      method: 'POST',
+      body: { orderId: Number(route.query.order_id), paypalOrderId: String(route.query.token || '') },
+    }).catch(() => ({ statut: 'invalide' as const }))
+  } else if (estStripe.value) {
+    stripe.value = await $fetch<typeof stripe.value>('/api/checkout/stripe/retour', {
+    query: { order_id: route.query.order_id, session_id: stripeSessionId.value },
+  }).catch(() => ({ statut: 'invalide' as const }))
+  }
+  if (stripe.value?.statut === 'payee' && stripe.value.reference) {
+    trackPurchase({ transactionId: stripe.value.reference, value: Number(stripe.value.montant) || 0, currency: 'EUR' })
+  }
+})
+
+const stripeRef = computed(() => stripe.value?.reference || '')
+const stripeMontant = computed(() => (Number(stripe.value?.montant) || 0).toFixed(2))
+const verification = computed(() => estRelu.value && stripe.value === null)
+const enAttente = computed(() => estRelu.value && stripe.value?.statut === 'en_attente')
+
+const isSuccess = computed(() => estRelu.value
+  ? stripe.value?.statut === 'payee'
+  : ['AUTHORISED', 'CAPTURED'].includes(transStatus.value))
+const isRefused = computed(() => estRelu.value
+  ? stripe.value?.statut === 'refusee'
+  : transStatus.value === 'REFUSED')
+const isCancelled = computed(() => paypalAnnule.value
+  || (!estRelu.value && ['CANCELLED', 'ABANDONED'].includes(transStatus.value)))
+const recuRef = computed(() => (estRelu.value ? stripeRef.value : orderRef.value))
+const recuMontant = computed(() => (estRelu.value ? stripeMontant.value : amount.value))
+
+const refAnnulation = computed(() => orderRef.value || String(derniereCommande.value.reference || ''))
+
+const derniereCommande = ref<{ id?: number; reference?: string }>({})
+onMounted(() => {
+  try { derniereCommande.value = JSON.parse(sessionStorage.getItem('cs_derniere_commande') || '{}') || {} } catch {  }
+})
+const avisOrderId = computed(() => Number(route.query.order_id || 0) || Number(derniereCommande.value.id || 0))
+const avisReference = computed(() => recuRef.value || String(derniereCommande.value.reference || ''))
 </script>
 
 <template>
@@ -22,17 +70,32 @@ const isCancelled = computed(() => ['CANCELLED', 'ABANDONED'].includes(transStat
     <div class="min-h-screen bg-gray-50 py-16 px-4">
       <div class="max-w-lg mx-auto">
         
-        <div v-if="isSuccess" class="bg-white rounded-2xl p-8 shadow-sm text-center">
+        <div v-if="verification" class="bg-white rounded-2xl p-8 shadow-sm text-center">
+          <p class="text-sm text-gray-500">{{ t('payment.payment_verifying', 'Vérification de votre paiement…') }}</p>
+        </div>
+
+        
+        <div v-else-if="isSuccess" class="bg-white rounded-2xl p-8 shadow-sm text-center">
           <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
+          <CheckoutAvisGoogleOptin :order-id="avisOrderId" :reference="avisReference" />
           <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ t('payment.payment_accepted_title') }}</h1>
-          <p class="text-sm text-gray-500 mb-6" v-html="t('payment.payment_accepted_body', 'Votre paiement de <strong class=&quot;text-gray-900&quot;>{amount} €</strong> pour la commande <strong class=&quot;text-gray-900&quot;>#{orderRef}</strong> a été validé.').replace('{amount}', amount).replace('{orderRef}', orderRef)" />
+          <p class="text-sm text-gray-500 mb-6" v-html="t('payment.payment_accepted_body', 'Votre paiement de <strong class=&quot;text-gray-900&quot;>{amount} €</strong> pour la commande <strong class=&quot;text-gray-900&quot;>#{orderRef}</strong> a été validé.').replace('{amount}', recuMontant).replace('{orderRef}', recuRef)" />
           <p class="text-sm text-gray-500 mb-8">
             {{ t('payment.payment_accepted_note') }}
           </p>
+          <NuxtLink to="/" class="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm transition-colors">
+            {{ t('payment.payment_back_to_shop') }}
+          </NuxtLink>
+        </div>
+
+        
+        <div v-else-if="enAttente" class="bg-white rounded-2xl p-8 shadow-sm text-center">
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ t('payment.payment_pending_title', 'Paiement en cours de validation') }}</h1>
+          <p class="text-sm text-gray-500 mb-8">{{ t('payment.payment_pending_body') }}</p>
           <NuxtLink to="/" class="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm transition-colors">
             {{ t('payment.payment_back_to_shop') }}
           </NuxtLink>
@@ -46,11 +109,11 @@ const isCancelled = computed(() => ['CANCELLED', 'ABANDONED'].includes(transStat
             </svg>
           </div>
           <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ t('payment.payment_refused_title') }}</h1>
-          <p class="text-sm text-gray-500 mb-6" v-html="t('payment.payment_refused_body', 'Le paiement pour la commande <strong class=&quot;text-gray-900&quot;>#{orderRef}</strong> a été refusé par votre banque.').replace('{orderRef}', orderRef)" />
+          <p class="text-sm text-gray-500 mb-6" v-html="t('payment.payment_refused_body', 'Le paiement pour la commande <strong class=&quot;text-gray-900&quot;>#{orderRef}</strong> a été refusé par votre banque.').replace('{orderRef}', refAnnulation)" />
           <p class="text-sm text-gray-500 mb-8">
             {{ t('payment.payment_refused_note') }}
           </p>
-          <NuxtLink to="/panier" class="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm transition-colors">
+          <NuxtLink :to="localePath('/panier')" class="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm transition-colors">
             {{ t('payment.payment_back_to_cart') }}
           </NuxtLink>
         </div>
@@ -63,11 +126,11 @@ const isCancelled = computed(() => ['CANCELLED', 'ABANDONED'].includes(transStat
             </svg>
           </div>
           <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ t('payment.payment_cancelled_title') }}</h1>
-          <p class="text-sm text-gray-500 mb-6" v-html="t('payment.payment_cancelled_body', 'Vous avez annulé le paiement pour la commande <strong class=&quot;text-gray-900&quot;>#{orderRef}</strong>.').replace('{orderRef}', orderRef)" />
+          <p class="text-sm text-gray-500 mb-6" v-html="t('payment.payment_cancelled_body', 'Vous avez annulé le paiement pour la commande <strong class=&quot;text-gray-900&quot;>#{orderRef}</strong>.').replace('{orderRef}', refAnnulation)" />
           <p class="text-sm text-gray-500 mb-8">
             {{ t('payment.payment_cancelled_note') }}
           </p>
-          <NuxtLink to="/panier" class="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm transition-colors">
+          <NuxtLink :to="localePath('/panier')" class="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm transition-colors">
             {{ t('payment.payment_back_to_cart') }}
           </NuxtLink>
         </div>

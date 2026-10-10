@@ -1,6 +1,7 @@
 
 
 import { useClientDb } from '~/server/utils/db'
+import { isMissingTable } from '~/server/utils/missing-table'
 
 export interface ClientLang {
   id_lang: number
@@ -37,6 +38,13 @@ export default defineEventHandler(async (event) => {
 
     return { langs }
   } catch (err: any) {
+    
+    
+    
+    if (isMissingTable(err)) {
+      console.warn('[client-langs] tables PS absentes sur ce tenant → langs=[]')
+      return { langs: [] as ClientLang[] }
+    }
     console.error('[client-langs] DB error:', err.message)
     throw createError({ statusCode: 500, message: 'DB error: ' + err.message })
   }

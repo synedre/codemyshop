@@ -1,8 +1,8 @@
 <template>
   <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-4">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Images du produit</h2>
-      <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ images.length }} image(s)</span>
+      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.product_images.title', 'Images du produit') }}</h2>
+      <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ t('hub.ui.product_images.count', '{count} image(s)', { count: images.length }) }}</span>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -16,7 +16,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
         </svg>
-        <span class="text-[11px] font-medium text-gray-500 group-hover:text-primary-600">Ajouter</span>
+        <span class="text-[11px] font-medium text-gray-500 group-hover:text-primary-600">{{ t('hub.ui.product_images.add', 'Ajouter') }}</span>
       </button>
 
       
@@ -28,7 +28,7 @@
         <img
           v-if="img.url"
           :src="img.url"
-          :alt="`Image ${index + 1}`"
+          :alt="t('hub.ui.product_images.image_alt', 'Image {n}', { n: index + 1 })"
           class="w-full h-full object-cover"
           loading="lazy"
         />
@@ -40,18 +40,28 @@
 
         
         <div
-          v-if="index === 0"
+          v-if="img.cover"
           class="absolute bottom-0 inset-x-0 bg-gray-900/70 backdrop-blur-sm text-white text-[10px] font-medium text-center py-1"
         >
-          Image de couverture
+          {{ t('hub.product.images.cover_badge', 'Image de couverture') }}
         </div>
+
+        
+        <button
+          v-else-if="canSetCover(img)"
+          type="button"
+          @click="$emit('set-cover', img.id)"
+          class="absolute bottom-1 inset-x-1 rounded-md bg-white/90 dark:bg-slate-900/90 text-gray-700 dark:text-slate-200 text-[10px] font-medium py-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity shadow-sm hover:bg-primary-600 hover:text-white"
+        >
+          {{ t('hub.product.images.set_cover', 'Définir en couverture') }}
+        </button>
 
         
         <button
           type="button"
           @click="$emit('remove', img.id)"
           class="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/90 dark:bg-slate-900/90 text-gray-600 dark:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-sm hover:bg-red-500 hover:text-white"
-          aria-label="Supprimer l'image"
+          :aria-label="t('hub.ui.product_images.remove_aria', 'Supprimer l\'image')"
         >
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -61,7 +71,7 @@
     </div>
 
     <p v-if="!images.length" class="text-[11px] text-gray-400">
-      Aucune image. Les emplacements ci-dessus sont des exemples.
+      {{ t('hub.ui.product_images.empty', 'Aucune image. Les emplacements ci-dessus sont des exemples.') }}
     </p>
   </div>
 </template>
@@ -79,7 +89,15 @@ const props = defineProps<{ images: ProductImage[] }>()
 defineEmits<{
   (e: 'upload-request'): void
   (e: 'remove', id: number | string): void
+  (e: 'set-cover', id: number | string): void
 }>()
+
+const { t } = useHubT()
+
+function canSetCover(img: ProductImage): boolean {
+  const id = Number(img.id)
+  return Number.isInteger(id) && id > 0 && !String(img.url ?? '').startsWith('/img/cdn')
+}
 
 const mockImages: ProductImage[] = [
   { id: 'mock-1' },

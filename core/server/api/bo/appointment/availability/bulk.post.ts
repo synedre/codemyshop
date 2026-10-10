@@ -3,6 +3,8 @@
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 function frenchHolidays(yearStart: number, yearEnd: number): string[] {
   const out: string[] = []
   for (let y = yearStart; y <= yearEnd; y++) {
@@ -44,6 +46,7 @@ function frenchHolidays(yearStart: number, yearEnd: number): string[] {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody(event)
   const dateFrom = String(body?.dateFrom ?? '').trim()
   const dateTo = String(body?.dateTo ?? '').trim()

@@ -1,6 +1,6 @@
 
 
-const PRODUCT_IMAGE_WIDTHS = [400, 600, 800, 1200] as const
+const PRODUCT_IMAGE_WIDTHS = [160, 400, 600, 800, 1200] as const
 const DEFAULT_WIDTH = 800
 
 export interface ProductImage {

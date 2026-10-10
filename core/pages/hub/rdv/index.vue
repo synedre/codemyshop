@@ -2,6 +2,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub' })
 
+const { t: tHub } = useHubT()
+
 interface Slot {
   id_availability: number
   date_start: string
@@ -48,7 +50,7 @@ const errorMsg = ref('')
 
 async function onCreateSlot() {
   if (creating.value) return
-  if (!newSlot.dateStart) { errorMsg.value = 'Date/heure requis'; return }
+  if (!newSlot.dateStart) { errorMsg.value = tHub('hub.ui.appointments.err_date', 'Date/heure requis'); return }
   creating.value = true
   errorMsg.value = ''
   try {
@@ -65,7 +67,7 @@ async function onCreateSlot() {
     await refresh()
   }
   catch (err: any) {
-    errorMsg.value = err?.statusMessage || err?.data?.statusMessage || 'Création impossible'
+    errorMsg.value = err?.statusMessage || err?.data?.statusMessage || tHub('hub.ui.appointments.err_create', 'Création impossible')
   }
   finally { creating.value = false }
 }
@@ -106,7 +108,7 @@ async function onBulk() {
     await refresh()
   }
   catch (err: any) {
-    bulkError.value = err?.statusMessage || err?.data?.statusMessage || 'Génération impossible'
+    bulkError.value = err?.statusMessage || err?.data?.statusMessage || tHub('hub.ui.appointments.err_bulk', 'Génération impossible')
   }
   finally { bulkLoading.value = false }
 }
@@ -126,13 +128,13 @@ watch(openSlots, () => {
 })
 
 async function onDeleteSlot(id: number) {
-  if (!confirm('Supprimer ce créneau ?')) return
+  if (!confirm(tHub('hub.ui.appointments.delete_confirm', 'Supprimer ce créneau ?'))) return
   try {
     await $fetch(`/api/bo/appointment/availability/${id}`, { method: 'DELETE' })
     await refresh()
   }
   catch (err: any) {
-    alert(err?.statusMessage || err?.data?.statusMessage || 'Suppression impossible')
+    alert(err?.statusMessage || err?.data?.statusMessage || tHub('hub.ui.appointments.err_delete', 'Suppression impossible'))
   }
 }
 
@@ -142,21 +144,26 @@ async function onChangeStatus(id: number, status: string) {
     await refresh()
   }
   catch (err: any) {
-    alert(err?.statusMessage || err?.data?.statusMessage || 'Maj impossible')
+    alert(err?.statusMessage || err?.data?.statusMessage || tHub('hub.ui.appointments.err_update', 'Maj impossible'))
   }
 }
 
-const dowLabels: Array<{ iso: number; short: string }> = [
-  { iso: 1, short: 'L' }, { iso: 2, short: 'M' }, { iso: 3, short: 'M' },
-  { iso: 4, short: 'J' }, { iso: 5, short: 'V' }, { iso: 6, short: 'S' }, { iso: 7, short: 'D' },
-]
+const dowLabels = computed<Array<{ iso: number; short: string }>>(() => [
+  { iso: 1, short: tHub('hub.ui.appointments.dow_1', 'L') },
+  { iso: 2, short: tHub('hub.ui.appointments.dow_2', 'M') },
+  { iso: 3, short: tHub('hub.ui.appointments.dow_3', 'M') },
+  { iso: 4, short: tHub('hub.ui.appointments.dow_4', 'J') },
+  { iso: 5, short: tHub('hub.ui.appointments.dow_5', 'V') },
+  { iso: 6, short: tHub('hub.ui.appointments.dow_6', 'S') },
+  { iso: 7, short: tHub('hub.ui.appointments.dow_7', 'D') },
+])
 </script>
 
 <template>
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 shrink-0">
-      <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Rendez-vous</h1>
-      <p class="text-xs text-gray-400 mt-0.5">Page publique : <NuxtLink to="/rdv" target="_blank" class="text-primary-600 hover:underline">/rdv</NuxtLink></p>
+      <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.appointments.title', 'Rendez-vous') }}</h1>
+      <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.appointments.public_page', 'Page publique :') }} <NuxtLink to="/rdv" target="_blank" class="text-primary-600 hover:underline">/rdv</NuxtLink></p>
 
       
       <nav class="flex items-center gap-1 mt-4 -mb-2">
@@ -172,9 +179,9 @@ const dowLabels: Array<{ iso: number; short: string }> = [
           ]"
           @click="tab = t"
         >
-          {{ t === 'requests' ? `Demandes (${data?.appointments?.length ?? 0})`
-            : t === 'slots' ? `Créneaux (${openSlots.length})`
-            : 'Configuration' }}
+          {{ t === 'requests' ? tHub('hub.ui.appointments.tab_requests', 'Demandes ({count})', { count: data?.appointments?.length ?? 0 })
+            : t === 'slots' ? tHub('hub.ui.appointments.tab_slots', 'Créneaux ({count})', { count: openSlots.length })
+            : tHub('hub.ui.appointments.tab_config', 'Configuration') }}
         </button>
       </nav>
     </header>
@@ -184,19 +191,19 @@ const dowLabels: Array<{ iso: number; short: string }> = [
       
       <section v-if="tab === 'requests'">
         <div v-if="!data?.appointments?.length" class="text-xs text-gray-500 dark:text-slate-400">
-          Aucune demande de RDV pour le moment.
+          {{ tHub('hub.ui.appointments.no_requests', 'Aucune demande de RDV pour le moment.') }}
         </div>
         <div v-else class="overflow-x-auto bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl">
           <table class="w-full text-sm">
             <thead class="text-xs uppercase tracking-wider text-gray-500 dark:text-slate-400 border-b border-gray-200 dark:border-slate-700">
               <tr>
-                <th class="text-left px-3 py-2">Date</th>
-                <th class="text-left px-3 py-2">Prospect</th>
-                <th class="text-left px-3 py-2">Email</th>
-                <th class="text-left px-3 py-2">Tél</th>
-                <th class="text-left px-3 py-2">Lead/Projet</th>
-                <th class="text-left px-3 py-2">Statut</th>
-                <th class="text-left px-3 py-2">Actions</th>
+                <th class="text-left px-3 py-2">{{ tHub('hub.ui.appointments.col_date', 'Date') }}</th>
+                <th class="text-left px-3 py-2">{{ tHub('hub.ui.appointments.col_prospect', 'Prospect') }}</th>
+                <th class="text-left px-3 py-2">{{ tHub('hub.ui.appointments.col_email', 'Email') }}</th>
+                <th class="text-left px-3 py-2">{{ tHub('hub.ui.appointments.col_phone', 'Tél') }}</th>
+                <th class="text-left px-3 py-2">{{ tHub('hub.ui.appointments.col_lead', 'Lead/Projet') }}</th>
+                <th class="text-left px-3 py-2">{{ tHub('hub.ui.appointments.col_status', 'Statut') }}</th>
+                <th class="text-left px-3 py-2">{{ tHub('hub.ui.appointments.col_actions', 'Actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -208,7 +215,7 @@ const dowLabels: Array<{ iso: number; short: string }> = [
                 <td class="px-3 py-2 text-gray-900 dark:text-slate-100">
                   {{ fmtDateTime(a.date_appointment) }}
                   <br>
-                  <span class="text-xs text-gray-500 dark:text-slate-400">{{ a.duration_min }} min</span>
+                  <span class="text-xs text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.appointments.minutes', '{n} min', { n: a.duration_min }) }}</span>
                 </td>
                 <td class="px-3 py-2 text-gray-900 dark:text-slate-100">{{ a.prospect_name }}</td>
                 <td class="px-3 py-2"><a :href="`mailto:${a.prospect_email}`" class="text-primary-600 hover:underline">{{ a.prospect_email }}</a></td>
@@ -216,9 +223,9 @@ const dowLabels: Array<{ iso: number; short: string }> = [
                 <td class="px-3 py-2 text-xs">
                   <NuxtLink
                     v-if="a.id_ac_smartlead"
-                    :to="`/hub/contacts/${a.id_ac_smartlead}`"
+                    :to="`/hub/customer/${a.id_ac_smartlead}`"
                     class="text-primary-600 hover:underline"
-                  >Lead #{{ a.id_ac_smartlead }}</NuxtLink>
+                  >{{ tHub('hub.ui.appointments.lead_n', 'Lead #{id}', { id: a.id_ac_smartlead }) }}</NuxtLink>
                   <span v-else class="text-gray-400">—</span>
                 </td>
                 <td class="px-3 py-2">
@@ -233,9 +240,9 @@ const dowLabels: Array<{ iso: number; short: string }> = [
                   >{{ a.status }}</span>
                 </td>
                 <td class="px-3 py-2 space-x-1 text-xs whitespace-nowrap">
-                  <button v-if="a.status !== 'confirmed'" type="button" class="text-emerald-600 hover:underline" @click="onChangeStatus(a.id_appointment, 'confirmed')">Confirmer</button>
-                  <button v-if="a.status !== 'done'" type="button" class="text-gray-600 hover:underline" @click="onChangeStatus(a.id_appointment, 'done')">Fait</button>
-                  <button v-if="a.status !== 'cancelled'" type="button" class="text-red-600 hover:underline" @click="onChangeStatus(a.id_appointment, 'cancelled')">Annuler</button>
+                  <button v-if="a.status !== 'confirmed'" type="button" class="text-emerald-600 hover:underline" @click="onChangeStatus(a.id_appointment, 'confirmed')">{{ tHub('hub.ui.appointments.confirm', 'Confirmer') }}</button>
+                  <button v-if="a.status !== 'done'" type="button" class="text-gray-600 hover:underline" @click="onChangeStatus(a.id_appointment, 'done')">{{ tHub('hub.ui.appointments.done', 'Fait') }}</button>
+                  <button v-if="a.status !== 'cancelled'" type="button" class="text-red-600 hover:underline" @click="onChangeStatus(a.id_appointment, 'cancelled')">{{ tHub('hub.ui.appointments.cancel', 'Annuler') }}</button>
                 </td>
               </tr>
             </tbody>
@@ -245,8 +252,8 @@ const dowLabels: Array<{ iso: number; short: string }> = [
 
       
       <section v-else-if="tab === 'slots'">
-        <div v-if="pending" class="text-xs text-gray-500 dark:text-slate-400">Chargement…</div>
-        <div v-else-if="!openSlots.length" class="text-xs text-gray-500 dark:text-slate-400">Aucun créneau ouvert. Onglet « Configuration » pour générer.</div>
+        <div v-if="pending" class="text-xs text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.appointments.loading', 'Chargement…') }}</div>
+        <div v-else-if="!openSlots.length" class="text-xs text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.appointments.no_slots', 'Aucun créneau ouvert. Onglet « Configuration » pour générer.') }}</div>
         <template v-else>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
             <div
@@ -256,10 +263,10 @@ const dowLabels: Array<{ iso: number; short: string }> = [
             >
               <div>
                 <div class="text-sm font-semibold text-gray-900 dark:text-slate-100">{{ fmtDateTime(s.date_start) }}</div>
-                <div class="text-xs text-gray-500 dark:text-slate-400">{{ s.duration_min }} min{{ s.notes ? ` — ${s.notes}` : '' }}</div>
+                <div class="text-xs text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.appointments.minutes', '{n} min', { n: s.duration_min }) }}{{ s.notes ? ` — ${s.notes}` : '' }}</div>
               </div>
               <button type="button" class="text-xs text-red-600 hover:text-red-700 hover:underline" @click="onDeleteSlot(s.id_availability)">
-                Retirer
+                {{ tHub('hub.ui.appointments.remove', 'Retirer') }}
               </button>
             </div>
           </div>
@@ -267,8 +274,7 @@ const dowLabels: Array<{ iso: number; short: string }> = [
           
           <div class="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-slate-400">
             <div>
-              {{ (slotsPage - 1) * slotsPageSize + 1 }}–{{ Math.min(slotsPage * slotsPageSize, openSlots.length) }}
-              sur {{ openSlots.length }}
+              {{ tHub('hub.ui.appointments.range', '{from}–{to} sur {total}', { from: (slotsPage - 1) * slotsPageSize + 1, to: Math.min(slotsPage * slotsPageSize, openSlots.length), total: openSlots.length }) }}
             </div>
             <div class="flex items-center gap-1">
               <button
@@ -283,7 +289,7 @@ const dowLabels: Array<{ iso: number; short: string }> = [
                 class="px-2 py-1 rounded border border-gray-200 dark:border-slate-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-slate-800"
                 @click="slotsPage--"
               >‹</button>
-              <span class="px-2 py-1">Page {{ slotsPage }} / {{ slotsTotalPages }}</span>
+              <span class="px-2 py-1">{{ tHub('hub.ui.appointments.page_of', 'Page {page} / {total}', { page: slotsPage, total: slotsTotalPages }) }}</span>
               <button
                 type="button"
                 :disabled="slotsPage >= slotsTotalPages"
@@ -306,33 +312,33 @@ const dowLabels: Array<{ iso: number; short: string }> = [
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">Ouverture en lot</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">{{ tHub('hub.ui.appointments.bulk_title', 'Ouverture en lot') }}</h2>
           <p class="text-xs text-gray-500 dark:text-slate-400 mb-4">
-            Génère tous les créneaux d'une période, par tranches horaires. Les créneaux déjà existants sont ignorés (NOT EXISTS sur date_start).
+            {{ tHub('hub.ui.appointments.bulk_hint', 'Génère tous les créneaux d\'une période, par tranches horaires. Les créneaux déjà existants sont ignorés (NOT EXISTS sur date_start).') }}
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-6 gap-3">
             <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Du</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.from', 'Du') }}</label>
               <input v-model="bulk.dateFrom" type="date" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Au</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.to', 'Au') }}</label>
               <input v-model="bulk.dateTo" type="date" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Heure début</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.hour_start', 'Heure début') }}</label>
               <input v-model.number="bulk.hourStart" type="number" min="0" max="23" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Heure fin</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.hour_end', 'Heure fin') }}</label>
               <input v-model.number="bulk.hourEnd" type="number" min="1" max="24" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Durée slot (min)</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.slot_duration', 'Durée slot (min)') }}</label>
               <input v-model.number="bulk.slotMinutes" type="number" min="5" max="240" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div class="sm:col-span-4">
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Jours ouvrés</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.working_days', 'Jours ouvrés') }}</label>
               <div class="flex flex-wrap gap-1.5">
                 <button
                   v-for="d in dowLabels"
@@ -351,7 +357,7 @@ const dowLabels: Array<{ iso: number; short: string }> = [
             <div class="sm:col-span-6">
               <label class="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-slate-200 cursor-pointer">
                 <input v-model="bulk.excludeFrenchHolidays" type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                Exclure les jours fériés français (1ᵉʳ janv., Pâques, 1/8 mai, Ascension, Pentecôte, 14 juill., 15 août, 1/11 nov., 25 déc.)
+                {{ tHub('hub.ui.appointments.exclude_holidays', 'Exclure les jours fériés français (1ᵉʳ janv., Pâques, 1/8 mai, Ascension, Pentecôte, 14 juill., 15 août, 1/11 nov., 25 déc.)') }}
               </label>
             </div>
             <div class="sm:col-span-6 flex items-center gap-3">
@@ -361,10 +367,10 @@ const dowLabels: Array<{ iso: number; short: string }> = [
                 class="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-semibold rounded-lg text-sm transition-colors"
                 @click="onBulk"
               >
-                {{ bulkLoading ? '…' : 'Générer les créneaux' }}
+                {{ bulkLoading ? '…' : tHub('hub.ui.appointments.generate', 'Générer les créneaux') }}
               </button>
               <span v-if="bulkResult" class="text-xs text-emerald-600 dark:text-emerald-400">
-                ✓ {{ bulkResult.inserted }} créneau{{ bulkResult.inserted > 1 ? 'x' : '' }} créé{{ bulkResult.inserted > 1 ? 's' : '' }}
+                {{ bulkResult.inserted > 1 ? tHub('hub.ui.appointments.created_other', '✓ {count} créneaux créés', { count: bulkResult.inserted }) : tHub('hub.ui.appointments.created_one', '✓ {count} créneau créé', { count: bulkResult.inserted }) }}
               </span>
               <span v-else-if="bulkError" class="text-xs text-red-600 dark:text-red-400">{{ bulkError }}</span>
             </div>
@@ -373,24 +379,24 @@ const dowLabels: Array<{ iso: number; short: string }> = [
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">Ouvrir un créneau ponctuel</h2>
-          <p class="text-xs text-gray-500 dark:text-slate-400 mb-4">Pour ajouter un seul horaire hors planning récurrent.</p>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">{{ tHub('hub.ui.appointments.single_title', 'Ouvrir un créneau ponctuel') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-slate-400 mb-4">{{ tHub('hub.ui.appointments.single_hint', 'Pour ajouter un seul horaire hors planning récurrent.') }}</p>
           <form class="grid grid-cols-1 sm:grid-cols-4 gap-3" @submit.prevent="onCreateSlot">
             <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Date &amp; heure</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.date_time', 'Date & heure') }}</label>
               <input v-model="newSlot.dateStart" type="datetime-local" required class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Durée (min)</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.duration', 'Durée (min)') }}</label>
               <input v-model.number="newSlot.durationMin" type="number" min="5" max="240" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div class="flex items-end">
               <button type="submit" :disabled="creating" class="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-semibold rounded-lg text-sm transition-colors">
-                {{ creating ? '…' : 'Ouvrir' }}
+                {{ creating ? '…' : tHub('hub.ui.appointments.open', 'Ouvrir') }}
               </button>
             </div>
             <div class="sm:col-span-4">
-              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Notes interne (optionnel)</label>
+              <label class="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">{{ tHub('hub.ui.appointments.notes', 'Notes interne (optionnel)') }}</label>
               <input v-model="newSlot.notes" type="text" maxlength="255" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg text-sm focus:border-primary-600 focus:outline-none" />
             </div>
             <div v-if="errorMsg" class="sm:col-span-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-2 text-xs text-red-700 dark:text-red-300">

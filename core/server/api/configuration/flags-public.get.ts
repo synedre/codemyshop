@@ -4,11 +4,38 @@ import { useClientDb } from '~/server/utils/db'
 
 const PUBLIC_WHITELIST = [
   'PS_B2B_ENABLE',
+  
+  'CMS_COMMERCE_MODE',
   'PS_CATALOG_MODE',
   'PS_GUEST_CHECKOUT_ENABLED',
+  
+  
+  
+  'PS_PWA_INSTALL_BANNER',
+  
+  
+  'PS_PRICE_ROUND_UP',
+  
+  
+  
+  
+  
+  
+  'PRO_SITE_URL',
+  
+  
+  
+  
+  
+  
+  'CHECKOUT_PHONE_REQUIRED',
 ] as const
 
 type PublicFlagKey = typeof PUBLIC_WHITELIST[number]
+
+const FLAG_DEFAULTS: Partial<Record<PublicFlagKey, string>> = {
+  PS_PWA_INSTALL_BANNER: '1',
+}
 
 export default defineEventHandler(async (event) => {
   try {
@@ -20,7 +47,7 @@ export default defineEventHandler(async (event) => {
     )
 
     const flags: Record<PublicFlagKey, string> = {} as Record<PublicFlagKey, string>
-    for (const key of PUBLIC_WHITELIST) flags[key] = '0'
+    for (const key of PUBLIC_WHITELIST) flags[key] = FLAG_DEFAULTS[key] ?? '0'
     for (const row of rows) {
       if ((PUBLIC_WHITELIST as readonly string[]).includes(row.name)) {
         flags[row.name as PublicFlagKey] = row.value
@@ -35,6 +62,6 @@ export default defineEventHandler(async (event) => {
   } catch (err: any) {
     console.error('[configuration/flags-public] DB error:', err.message)
     
-    return { flags: Object.fromEntries(PUBLIC_WHITELIST.map(k => [k, '0'])) }
+    return { flags: Object.fromEntries(PUBLIC_WHITELIST.map(k => [k, FLAG_DEFAULTS[k] ?? '0'])) }
   }
 })

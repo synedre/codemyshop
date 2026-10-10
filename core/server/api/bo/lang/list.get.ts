@@ -3,7 +3,10 @@
 import { useClientDb } from '~/server/utils/db'
 import type { HubLang, HubLangListResponse } from '~/types/hub/lang'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event): Promise<HubLangListResponse> => {
+  requireEmployeeSession(event)
   const db = useClientDb(event)
 
   const rows = await db.query<any>(`

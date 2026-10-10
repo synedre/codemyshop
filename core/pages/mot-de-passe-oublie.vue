@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: false })
+const { localePath } = useLocalePath()
 
 const { t } = useHubT()
 const cfg = useRuntimeConfig()
@@ -10,9 +11,11 @@ const email = ref('')
 const loading = ref(false)
 const submitted = ref(false)
 const error = ref('')
+const emailNotFound = ref(false)
 
 async function onSubmit() {
   error.value = ''
+  emailNotFound.value = false
   loading.value = true
   try {
     await $fetch('/api/catalogue/customer/password-reset-request', {
@@ -21,13 +24,18 @@ async function onSubmit() {
     })
     submitted.value = true
   } catch (err: any) {
-    error.value = err.data?.message ?? t('auth.reset_request_error', 'Une erreur est survenue, réessayez.')
+    const code = err?.data?.data?.code
+    if (code === 'EMAIL_NOT_FOUND') {
+      emailNotFound.value = true
+    } else {
+      error.value = err.data?.message ?? t('auth.reset_request_error', 'Une erreur est survenue, réessayez.')
+    }
   } finally {
     loading.value = false
   }
 }
 
-useHead({ title: brand ? `Mot de passe oublié — ${brand}` : 'Mot de passe oublié' })
+useHead({ title: brand ? `${t('auth.reset_request_title', 'Mot de passe oublié')} — ${brand}` : t('auth.reset_request_title', 'Mot de passe oublié') })
 </script>
 
 <template>
@@ -42,7 +50,33 @@ useHead({ title: brand ? `Mot de passe oublié — ${brand}` : 'Mot de passe oub
         </p>
 
         <div v-if="submitted" class="rounded-xl bg-green-50 border border-green-200 p-4 text-sm text-green-800">
-          {{ t('auth.reset_request_success', 'Si un compte existe avec cet email, un lien vient de vous être envoyé. Vérifiez votre boîte de réception (et les spams).') }}
+          {{ t('auth.reset_request_success', 'Un lien vient de vous être envoyé. Vérifiez votre boîte de réception (et les spams).') }}
+        </div>
+
+        <div v-else-if="emailNotFound" class="space-y-4">
+          <div class="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+            <p class="font-semibold mb-1">
+              {{ t('auth.reset_email_not_found_title', 'Cet email n\'est pas reconnu') }}
+            </p>
+            <p>
+              {{ t('auth.reset_email_not_found_body', 'Aucun compte client n\'est associé à cet email. Vérifiez la saisie (typo, autre adresse) ou contactez notre service client si le problème persiste.') }}
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <button
+              type="button"
+              @click="emailNotFound = false"
+              class="w-full py-3 border border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold rounded-xl text-sm transition-colors"
+            >
+              {{ t('auth.reset_try_another_email', 'Essayer un autre email') }}
+            </button>
+            <NuxtLink
+              :to="localePath('/contact')"
+              class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm transition-colors text-center"
+            >
+              {{ t('auth.reset_contact_support', 'Contacter le service client') }}
+            </NuxtLink>
+          </div>
         </div>
 
         <form v-else class="space-y-4" @submit.prevent="onSubmit">
@@ -72,7 +106,7 @@ useHead({ title: brand ? `Mot de passe oublié — ${brand}` : 'Mot de passe oub
         </form>
 
         <p class="text-xs text-gray-400 text-center mt-4">
-          <NuxtLink to="/connexion" class="text-primary-600 hover:underline">
+          <NuxtLink :to="localePath('/connexion')" class="text-primary-600 hover:underline">
             {{ t('auth.reset_back_to_login', 'Retour à la connexion') }}
           </NuxtLink>
         </p>

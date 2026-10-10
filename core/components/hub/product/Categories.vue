@@ -1,13 +1,13 @@
 <template>
   <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-5">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Catégories associées</h2>
-      <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ categories.length }} sélectionnée(s)</span>
+      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.product_categories.title', 'Catégories associées') }}</h2>
+      <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ t('hub.ui.product_categories.selected_count', '{count} sélectionnée(s)', { count: categories.length }) }}</span>
     </div>
 
     
     <div>
-      <label class="block text-xs font-medium text-gray-500 mb-2">Catégories sélectionnées</label>
+      <label class="block text-xs font-medium text-gray-500 mb-2">{{ t('hub.ui.product_categories.selected', 'Catégories sélectionnées') }}</label>
       <div v-if="categories.length" class="flex flex-wrap gap-2">
         <span
           v-for="cat in categories"
@@ -19,7 +19,7 @@
             type="button"
             @click="$emit('remove', cat.id)"
             class="hover:text-red-300 transition-colors"
-            aria-label="Retirer cette catégorie"
+            :aria-label="t('hub.ui.product_categories.remove_aria', 'Retirer cette catégorie')"
           >
             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -27,21 +27,21 @@
           </button>
         </span>
       </div>
-      <p v-else class="text-xs text-gray-400">Aucune catégorie.</p>
+      <p v-else class="text-xs text-gray-400">{{ t('hub.ui.product_categories.none', 'Aucune catégorie.') }}</p>
     </div>
 
     
     <div>
-      <label class="block text-xs font-medium text-gray-500 mb-1">Catégorie par défaut</label>
+      <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.product_categories.default_cat', 'Catégorie par défaut') }}</label>
       <select
         v-model.number="defaultId"
         class="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/40"
       >
-        <option :value="0" disabled>— Sélectionner une catégorie —</option>
+        <option :value="0" disabled>{{ t('hub.ui.product_categories.select_cat', '— Sélectionner une catégorie —') }}</option>
         <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
       </select>
       <p class="text-[10px] text-gray-400 mt-1">
-        Cette catégorie sera utilisée pour générer le fil d'Ariane principal.
+        {{ t('hub.ui.product_categories.default_help', 'Cette catégorie sera utilisée pour générer le fil d\'Ariane principal.') }}
       </p>
     </div>
 
@@ -55,13 +55,14 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        Ajouter des catégories
+        {{ t('hub.ui.product_categories.add', 'Ajouter des catégories') }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 interface Category {
   id: number
   name: string

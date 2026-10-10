@@ -2,7 +2,10 @@
 
 import { deleteExperiment } from '~/enterprise/misc/ab-testing/server/utils/ab-testing'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const id = Number(q.id || 0)
   if (!id) throw createError({ statusCode: 400, statusMessage: 'id requis' })

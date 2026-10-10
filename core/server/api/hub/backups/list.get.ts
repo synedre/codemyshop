@@ -2,15 +2,13 @@
 
 import { listS3Objects } from '~/server/utils/s3-sign'
 import { resolveClientId } from '~/server/utils/db'
-
-const CLIENT_TO_BACKUP_TENANT: Record<string, string> = {
-  'ac-hub':           'vaisseau-mere-ac',  
-  'codemyshop':       'codemyshop',
-  'example-shop':       'example-shop',
-  'example-vape': 'example-vape',
-}
+import { resolveBackupPrefix } from '~/server/utils/backup-prefix'
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  
+  
+  requireEmployeeSession(event)
   const cfg = useRuntimeConfig(event)
   if (!cfg.scwAccessKey || !cfg.scwSecretKey) {
     throw createError({
@@ -19,8 +17,11 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  
+  
+  
   const clientId = resolveClientId(event)
-  const tenant = CLIENT_TO_BACKUP_TENANT[clientId]
+  const tenant = resolveBackupPrefix(clientId, cfg.backupS3Prefix)
   if (!tenant) {
     throw createError({
       statusCode: 404,

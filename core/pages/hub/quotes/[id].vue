@@ -7,7 +7,7 @@
         </svg>
       </NuxtLink>
       <div v-if="quote" class="flex-1">
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Devis #{{ quote.id }}</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.quotes_detail.title', 'Devis #{id}', { id: quote.id }) }}</h1>
         <p class="text-xs text-gray-400 mt-0.5">{{ quote.firstname }} {{ quote.lastname }} — {{ formatDate(quote.dateAdd) }}</p>
       </div>
     </header>
@@ -21,38 +21,38 @@
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Statut</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ t('hub.ui.quotes_detail.status', 'Statut') }}</h2>
           <select v-model="newStatus" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 mb-2">
-            <option value="pending">En attente</option>
-            <option value="processing">En cours de traitement</option>
-            <option value="sent">Devis envoyé</option>
-            <option value="accepted">Accepté</option>
-            <option value="refused">Refusé</option>
-            <option value="expired">Expiré</option>
+            <option value="pending">{{ t('hub.ui.quotes_detail.st_pending', 'En attente') }}</option>
+            <option value="processing">{{ t('hub.ui.quotes_detail.st_processing', 'En cours de traitement') }}</option>
+            <option value="sent">{{ t('hub.ui.quotes_detail.st_sent', 'Devis envoyé') }}</option>
+            <option value="accepted">{{ t('hub.ui.quotes_detail.st_accepted', 'Accepté') }}</option>
+            <option value="refused">{{ t('hub.ui.quotes_detail.st_refused', 'Refusé') }}</option>
+            <option value="expired">{{ t('hub.ui.quotes_detail.st_expired', 'Expiré') }}</option>
           </select>
-          <textarea v-model="noteInterne" placeholder="Note interne…" rows="3" class="w-full text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 mb-2 resize-none" />
+          <textarea v-model="noteInterne" :placeholder="t('hub.ui.quotes_detail.note_ph', 'Note interne…')" rows="3" class="w-full text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 mb-2 resize-none" />
           <button @click="updateStatus" :disabled="updating" class="w-full text-xs py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors">
-            {{ updating ? 'Mise à jour…' : 'Mettre à jour' }}
+            {{ updating ? t('hub.ui.quotes_detail.updating', 'Mise à jour…') : t('hub.ui.quotes_detail.update', 'Mettre à jour') }}
           </button>
         </div>
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Contact</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ t('hub.ui.quotes_detail.contact', 'Contact') }}</h2>
           <dl class="space-y-1.5 text-sm">
-            <div><dt class="text-[10px] text-gray-400 uppercase">Nom</dt><dd class="font-medium">{{ quote.firstname }} {{ quote.lastname }}</dd></div>
-            <div><dt class="text-[10px] text-gray-400 uppercase">Email</dt><dd><a :href="`mailto:${quote.email}`" class="text-primary-600 hover:underline">{{ quote.email }}</a></dd></div>
-            <div v-if="quote.phone"><dt class="text-[10px] text-gray-400 uppercase">Téléphone</dt><dd>{{ quote.phone }}</dd></div>
+            <div><dt class="text-[10px] text-gray-400 uppercase">{{ t('hub.ui.quotes_detail.name', 'Nom') }}</dt><dd class="font-medium">{{ quote.firstname }} {{ quote.lastname }}</dd></div>
+            <div><dt class="text-[10px] text-gray-400 uppercase">{{ t('hub.ui.quotes_detail.email', 'Email') }}</dt><dd><a :href="`mailto:${quote.email}`" class="text-primary-600 hover:underline">{{ quote.email }}</a></dd></div>
+            <div v-if="quote.phone"><dt class="text-[10px] text-gray-400 uppercase">{{ t('hub.ui.quotes_detail.phone', 'Téléphone') }}</dt><dd>{{ quote.phone }}</dd></div>
           </dl>
         </div>
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Entreprise</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ t('hub.ui.quotes_detail.company_title', 'Entreprise') }}</h2>
           <dl class="space-y-1.5 text-sm">
-            <div><dt class="text-[10px] text-gray-400 uppercase">Société</dt><dd class="font-medium">{{ quote.company || '—' }}</dd></div>
+            <div><dt class="text-[10px] text-gray-400 uppercase">{{ t('hub.ui.quotes_detail.company', 'Société') }}</dt><dd class="font-medium">{{ quote.company || '—' }}</dd></div>
             <div v-if="quote.siret"><dt class="text-[10px] text-gray-400 uppercase">SIRET</dt><dd>{{ quote.siret }}</dd></div>
-            <div><dt class="text-[10px] text-gray-400 uppercase">Activité</dt><dd>{{ quote.activite || '—' }}</dd></div>
+            <div><dt class="text-[10px] text-gray-400 uppercase">{{ t('hub.ui.quotes_detail.activity', 'Activité') }}</dt><dd>{{ quote.activite || '—' }}</dd></div>
           </dl>
           <p v-if="quote.message" class="mt-3 text-xs text-gray-500 italic border-t border-gray-100 dark:border-slate-800 pt-2">{{ quote.message }}</p>
         </div>
@@ -61,15 +61,15 @@
       
       <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-800">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Produits demandés ({{ items.length }})</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.quotes_detail.products', 'Produits demandés ({n})', { n: items.length }) }}</h2>
         </div>
         <table class="w-full text-sm">
           <thead>
             <tr class="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
               <th class="px-5 py-2.5 font-medium">ID</th>
-              <th class="px-5 py-2.5 font-medium">Produit</th>
-              <th class="px-5 py-2.5 font-medium">Réf.</th>
-              <th class="px-5 py-2.5 font-medium text-center">Qté demandée</th>
+              <th class="px-5 py-2.5 font-medium">{{ t('hub.ui.quotes_detail.col_product', 'Produit') }}</th>
+              <th class="px-5 py-2.5 font-medium">{{ t('hub.ui.quotes_detail.col_ref', 'Réf.') }}</th>
+              <th class="px-5 py-2.5 font-medium text-center">{{ t('hub.ui.quotes_detail.col_qty', 'Qté demandée') }}</th>
             </tr>
           </thead>
           <tbody>

@@ -1,7 +1,7 @@
 
 
 import {
-  serial, integer, varchar, text, timestamp, boolean, pgSchema, index, uniqueIndex,
+  serial, bigserial, integer, varchar, text, timestamp, boolean, numeric, pgSchema, index, uniqueIndex,
 } from 'drizzle-orm/pg-core'
 
 export const vaisseauMereAcSchema = pgSchema('cs_main')
@@ -150,5 +150,35 @@ export const chatbotConversationProduct = vaisseauMereAcSchema.table(
   },
   (t) => ({
     kConv: index('idx_chatbot_conv_product_conv').on(t.idConversation),
+  }),
+)
+
+export const chatbotAiLog = vaisseauMereAcSchema.table(
+  'cs_chatbot_ai_log',
+  {
+    idLog:          bigserial('id_log', { mode: 'number' }).primaryKey(),
+    idConversation: integer('id_conversation'),
+    idLang:         integer('id_lang').notNull(),
+    question:       text('question').notNull(),
+    answer:         text('answer'),
+    productIds:     text('product_ids'),
+    model:          varchar('model', { length: 64 }),
+    tokensIn:       integer('tokens_in').notNull().default(0),
+    tokensOut:      integer('tokens_out').notNull().default(0),
+    costUsd:        numeric('cost_usd', { precision: 12, scale: 6 }).notNull().default('0'),
+    durationMs:     integer('duration_ms').notNull().default(0),
+    searchMode:     varchar('search_mode', { length: 16 }),
+    status:         varchar('status', { length: 24 }).notNull(),
+    error:          varchar('error', { length: 300 }),
+    ipHash:         varchar('ip_hash', { length: 32 }),
+    
+    answerDraft:    text('answer_draft'),
+    
+    verification:   varchar('verification', { length: 16 }),
+    dateAdd:        timestamp('date_add', { mode: 'date', precision: 0 }).notNull().defaultNow(),
+  },
+  (t) => ({
+    kDate: index('idx_ps_ac_chatbot_ai_log_date').on(t.dateAdd),
+    kConv: index('idx_ps_ac_chatbot_ai_log_conv').on(t.idConversation),
   }),
 )

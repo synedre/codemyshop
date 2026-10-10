@@ -57,8 +57,20 @@ export function requireCustomer(event: H3Event): CustomerSession {
 }
 
 export function resolveCustomerIdForRequest(event: H3Event, providedId: any): number {
+  
   const impersonated = resolveImpersonatedCustomer(event)
   if (impersonated && impersonated.idCustomer > 0) return impersonated.idCustomer
+  
+  
+  
+  
+  
+  const raw = verifyToken<any>(getCookie(event, 'ac_session'))
+  const sessionId = Number(raw?.customerId)
+  if (Number.isFinite(sessionId) && sessionId > 0) return sessionId
+  
+  
+  
   const n = Number(providedId)
   return Number.isFinite(n) && n > 0 ? n : 0
 }

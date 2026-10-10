@@ -631,37 +631,61 @@ export class PrestashopConnector implements BaseConnector {
   async getClientContext(): Promise<ClientContext> {
     const clientName = this.clientId
     try {
-      const prodData = await psFetch<{ products?: any[] }>(this.creds, 'products', {
-        'filter[active]': '[1]', display: '[id,price,id_category_default]', limit: 500,
-      })
-      const products = prodData?.products ?? []
+      const { useClientDbById } = await import('../utils/db')
+      const db = useClientDbById(this.clientId)
 
-      const catsData = await psFetch<{ categories?: any[] }>(this.creds, 'categories', {
-        'filter[active]': '[1]', display: '[id,name]', limit: 200,
-      })
-      const cats = (catsData?.categories ?? []).filter((c: any) => Number(c.id) > 2)
+      const stats = await db.get<{
+        total_products: number
+        avg_price: number
+        min_price: number
+        max_price: number
+        total_categories: number
+      }>(`
+        SELECT 
+          (SELECT count(*)::int FROM ps_product WHERE active = 1) as total_products,
+          (SELECT COALESCE(avg(price), 0)::float FROM ps_product WHERE active = 1) as avg_price,
+          (SELECT COALESCE(min(price), 0)::float FROM ps_product WHERE active = 1) as min_price,
+          (SELECT COALESCE(max(price), 0)::float FROM ps_product WHERE active = 1) as max_price,
+          (SELECT count(*)::int FROM ps_category WHERE active = 1 AND id_category > 2) as total_categories
+      `)
 
-      const prices = products.map((p: any) => Number(p.price || 0)).filter((p: number) => p > 0)
-      const avgPrice = prices.length ? prices.reduce((a: number, b: number) => a + b, 0) / prices.length : 0
+      const topCatRows = await db.query<{ name: string }>(`
+        SELECT cl.name 
+        FROM ps_category_lang cl 
+        JOIN (
+          SELECT id_category_default, count(*) as cnt 
+          FROM ps_product 
+          WHERE active = 1 
+          GROUP BY id_category_default 
+          ORDER BY cnt DESC 
+          LIMIT 5
+        ) top ON cl.id_category = top.id_category_default 
+        WHERE cl.id_lang = 1
+      `)
 
-      const catCount: Record<string, number> = {}
-      for (const p of products) catCount[String(p.id_category_default)] = (catCount[String(p.id_category_default)] ?? 0) + 1
-      const topCatIds = Object.entries(catCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id]) => id)
-      const topCategories = topCatIds.map(id => { const c = cats.find((c: any) => String(c.id) === id); return c ? getLang(c.name) : `Cat #${id}` })
+      const totalProducts = Number(stats?.total_products || 0)
+      const totalCategories = Number(stats?.total_categories || 0)
+      const avgPrice = Math.round(Number(stats?.avg_price || 0) * 100) / 100
+      const minPrice = Math.round(Number(stats?.min_price || 0) * 100) / 100
+      const maxPrice = Math.round(Number(stats?.max_price || 0) * 100) / 100
+      const topCategories = (topCatRows || []).map((r: any) => r.name).filter(Boolean)
 
       return {
-        clientId: this.clientId, clientName,
-        totalProducts: products.length, totalCategories: cats.length,
-        avgPrice: Math.round(avgPrice * 100) / 100,
+        clientId: this.clientId,
+        clientName,
+        totalProducts,
+        totalCategories,
+        avgPrice,
         avgPriceFormatted: new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(avgPrice),
-        priceRange: { min: Math.round((prices.length ? Math.min(...prices) : 0) * 100) / 100, max: Math.round((prices.length ? Math.max(...prices) : 0) * 100) / 100 },
-        topCategories, businessType: avgPrice > 50 ? 'B2B' : avgPrice > 15 ? 'Mixte' : 'B2C',
-        catalogStrength: products.length > 500 ? 'Large' : products.length > 100 ? 'Moyen' : 'Petit',
+        priceRange: { min: minPrice, max: maxPrice },
+        topCategories,
+        businessType: avgPrice > 50 ? 'B2B' : avgPrice > 15 ? 'Mixte' : 'B2C',
+        catalogStrength: totalProducts > 500 ? 'Large' : totalProducts > 100 ? 'Moyen' : 'Petit',
         fetchedAt: new Date().toISOString(),
       }
     } catch (err: any) {
       console.error(`[ps-connector] getClientContext error:`, err?.message)
-      return { clientId: this.clientId, clientName, totalProducts: 0, totalCategories: 0, avgPrice: 0, avgPriceFormatted: '0 \u20ac', priceRange: { min: 0, max: 0 }, topCategories: [], businessType: 'Inconnu', catalogStrength: 'Inconnu', fetchedAt: new Date().toISOString() }
+      return { clientId: this.clientId, clientName, totalProducts: 0, totalCategories: 0, avgPrice: 0, avgPriceFormatted: '0 €', priceRange: { min: 0, max: 0 }, topCategories: [], businessType: 'Inconnu', catalogStrength: 'Inconnu', fetchedAt: new Date().toISOString() }
     }
   }
 

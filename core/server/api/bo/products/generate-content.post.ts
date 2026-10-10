@@ -1,50 +1,28 @@
 
 
-import { resolveClientId } from '~/server/utils/db'
 import { requireRoleOrSaas } from '~/server/utils/session'
-import {
-  findExistingPendingProcessing,
-  enqueueRedactionJob,
-} from '~/enterprise/ai/product-queue/server/utils/product-queue'
+import { enqueueSeoBulkItem } from '~/server/utils/seo-bulk-queue'
 
 export default defineEventHandler(async (event) => {
   requireRoleOrSaas(event, ['root', 'founder', 'market'])
 
   const body = await readBody(event)
   const idProduct = Number(body.id_product)
-  const name = String(body.name || '').trim()
-  const slug = String(body.slug || '').trim()
-  const instructions = String(body.instructions || '').trim() || null
-
-  if (!idProduct || !name || !slug) {
-    throw createError({ statusCode: 422, message: 'id_product, name et slug requis' })
+  if (!idProduct) {
+    throw createError({ statusCode: 422, message: 'id_product requis' })
   }
 
-  const tenant = resolveClientId(event) || 'ac-hub'
-
   try {
-    const existing = await findExistingPendingProcessing(tenant, idProduct, { event })
-    if (existing) {
-      return {
-        queued: true,
-        id_redaction: existing.id_redaction,
-        status: existing.status,
-        message: 'Rédaction déjà en cours',
-      }
-    }
-
-    const idRedaction = await enqueueRedactionJob({
-      tenant, idProduct, name, slug, instructions,
-    }, { event })
-
+    const r = await enqueueSeoBulkItem(event, 'product', idProduct)
     return {
       queued: true,
-      id_redaction: idRedaction,
       status: 'pending',
-      message: 'Rédaction produit en file d\'attente — génération dans ~5 min',
+      message: r.already
+        ? 'Régénération SEO déjà en cours'
+        : 'Régénération SEO produit en file — génération dans quelques minutes',
     }
   } catch (err: any) {
-    console.error('[products/generate-content] DB error:', err?.message)
+    console.error('[products/generate-content] enqueue error:', err?.message)
     throw createError({ statusCode: 500, message: 'Erreur lors de la mise en queue' })
   }
 })

@@ -7,12 +7,14 @@ const route = useRoute()
 const productId = Number.parseInt(String(route.params.id ?? ''), 10)
 
 if (!productId || Number.isNaN(productId)) {
-  throw createError({ statusCode: 404, statusMessage: 'Produit introuvable', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: 'Produit introuvable' })
 }
 
 const _cfg = useRuntimeConfig()
 const clientId = String((_cfg.public as any).clientId ?? '')
 const { activeLang } = useRouteLang()
+
+const { isSportLayout } = useProductLayout()
 
 const { data: urlLookup } = await useFetch<{ found: boolean; path?: string }>('/api/product-url-by-id', {
   query: { id: productId, lang: activeLang },
@@ -20,8 +22,9 @@ const { data: urlLookup } = await useFetch<{ found: boolean; path?: string }>('/
   watch: [activeLang],
 })
 
-if (urlLookup.value?.found && urlLookup.value.path) {
-  await navigateTo(urlLookup.value.path, { redirectCode: 301, external: false })
+const canonical = urlLookup.value?.path
+if (urlLookup.value?.found && canonical && canonical.lastIndexOf('/') > 0) {
+  await navigateTo(canonical, { redirectCode: 301, external: false })
 }
 
 const { data: product, error } = await useFetch<any>(`/api/catalogue/product/${productId}`, {
@@ -30,13 +33,12 @@ const { data: product, error } = await useFetch<any>(`/api/catalogue/product/${p
   watch: [activeLang],
 })
 
-if (error.value || !product.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Produit introuvable', fatal: true })
-}
+assertPageResource(product, error, 'Produit introuvable', 'product')
 </script>
 
 <template>
   <NuxtLayout name="white-label">
-    <ProductDetail :product="product" :client-id="clientId" />
+    <ProductDetailSport v-if="isSportLayout" :product="product" :client-id="clientId" />
+    <ProductDetail v-else :product="product" :client-id="clientId" />
   </NuxtLayout>
 </template>

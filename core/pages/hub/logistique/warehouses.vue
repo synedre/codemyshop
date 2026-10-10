@@ -2,10 +2,10 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Entrepôts</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ warehouses.length }} entrepôt{{ warehouses.length > 1 ? 's' : '' }} · {{ totalProducts }} référence{{ totalProducts > 1 ? 's' : '' }} stockée{{ totalProducts > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.logistique_warehouses.title', 'Entrepôts') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.logistique_warehouses.summary_other', '{n} entrepôts · {refs} références stockées', { n: warehouses.length, refs: totalProducts }) }}</p>
       </div>
-      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Actualiser</button>
+      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">{{ t('hub.ui.logistique_warehouses.refresh', 'Actualiser') }}</button>
     </header>
 
     <div class="flex-1 overflow-auto p-6">
@@ -15,8 +15,8 @@
 
       <div v-else-if="!warehouses.length" class="flex flex-col items-center justify-center py-20 text-center">
         <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-3xl mb-4">🏬</div>
-        <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">Aucun entrepôt configuré</p>
-        <p class="text-xs text-gray-400 mt-2 max-w-md">Activez la gestion avancée des stocks dans PrestaShop puis créez vos entrepôts (Catalogue → Stocks → Entrepôts) pour commencer à tracer vos quantités par site physique.</p>
+        <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">{{ t('hub.ui.logistique_warehouses.none', 'Aucun entrepôt configuré') }}</p>
+        <p class="text-xs text-gray-400 mt-2 max-w-md">{{ t('hub.ui.logistique_warehouses.none_hint', 'Activez la gestion avancée des stocks dans PrestaShop puis créez vos entrepôts (Catalogue → Stocks → Entrepôts) pour commencer à tracer vos quantités par site physique.') }}</p>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -43,15 +43,15 @@
               <p>{{ w.postcode }} {{ w.city }}<span v-if="w.country"> · {{ w.country }}</span></p>
               <p v-if="w.phone || w.phoneMobile" class="mt-1 text-gray-400">📞 {{ w.phone || w.phoneMobile }}</p>
             </div>
-            <div v-else class="text-xs italic text-gray-400 mb-4">Pas d'adresse renseignée</div>
+            <div v-else class="text-xs italic text-gray-400 mb-4">{{ t('hub.ui.logistique_warehouses.no_address', 'Pas d\'adresse renseignée') }}</div>
 
             <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-800">
               <div>
-                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Références</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ t('hub.ui.logistique_warehouses.references', 'Références') }}</p>
                 <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ w.nbProducts }}</p>
               </div>
               <div class="text-right">
-                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Quantité totale</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ t('hub.ui.logistique_warehouses.total_qty', 'Quantité totale') }}</p>
                 <p class="text-lg font-bold text-primary-600">{{ formatNum(w.totalQty) }}</p>
               </div>
             </div>
@@ -64,6 +64,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+
+const { t } = useHubT()
 
 interface Warehouse {
   id: number

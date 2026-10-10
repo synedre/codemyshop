@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import { buildCanonicalCategoryPath } from '~/utils/category-canonical'
+import { blogHref } from '~/utils/blog-url'
+
+import { useDisplayTimeZone } from '../../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
 
 interface CmsArticle {
   id: number
@@ -6,6 +12,8 @@ interface CmsArticle {
   category: string
   subcategory: string
   slug: string
+  
+  path: string
   linkRewrite: string
   excerpt: string
   coverImage: string
@@ -19,13 +27,13 @@ interface CmsArticle {
 function formatDate(raw: string): string {
   if (!raw) return ''
   const d = new Date(raw.replace(' ', 'T'))
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  return d.toLocaleDateString(activeLang.value || 'fr', { timeZone: displayTz, day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 function formatDateShort(raw: string): string {
   if (!raw) return ''
   const d = new Date(raw.replace(' ', 'T'))
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString(activeLang.value || 'fr', { timeZone: displayTz, day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 const { blogTitle, blogDescription, pillars: pillarMap, pillarKeys, getPillar, getSubcatLabel, siteUrl, blogRootId } = useBlogConfig()
@@ -33,19 +41,45 @@ const { t } = useHubT()
 
 useListingBodyId('cms-category', () => blogRootId.value)
 
-const canonical = `${siteUrl.value}/blog/`
-
 const { activeLang } = useRouteLang()
+
+const blogDefaultLocale = String((useRuntimeConfig().public as any).i18nDefaultLocale || 'fr')
+
+const canonical = `${siteUrl.value}${buildCanonicalCategoryPath({
+  lang: activeLang.value,
+  defaultLocale: blogDefaultLocale,
+  pilierSlug: 'blog',
+  innerPath: '',
+})}`
+
+const langPrefix = activeLang.value && activeLang.value !== blogDefaultLocale ? `/${activeLang.value}` : ''
+
+function urlBlog(cheminArbre: string, estArticle = false): string {
+  return blogHref({
+    lang: activeLang.value,
+    defaultLocale: blogDefaultLocale,
+    path: cheminArbre,
+    isArticle: estArticle,
+  })
+}
 const { data: articles, status } = await useFetch<CmsArticle[]>('/api/cms', {
   query: { limit: 100, lang: activeLang },
   watch: [activeLang],
 })
 
+const { data: blogMeta } = await useFetch<{ title: string | null; description: string | null }>('/api/page-meta', {
+  query: { page: 'blog', lang: activeLang },
+  watch: [activeLang],
+  default: () => ({ title: null, description: null }),
+})
+const seoTitle = computed(() => String(blogMeta.value?.title || blogTitle.value))
+const seoDescription = computed(() => String(blogMeta.value?.description || blogDescription.value))
+
 const breadcrumbJsonLd = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl.value}/` },
+    { '@type': 'ListItem', position: 1, name: t('common.home', 'Accueil'), item: `${siteUrl.value}${langPrefix}/` },
     { '@type': 'ListItem', position: 2, name: 'Blog', item: canonical },
   ],
 }))
@@ -64,24 +98,27 @@ const collectionJsonLd = computed(() => ({
     itemListElement: (articles.value ?? []).map((a, i) => ({
       '@type': 'ListItem',
       position: i + 1,
-      url: a.nuxtUrl.startsWith('http') ? a.nuxtUrl : `${siteUrl.value}${a.nuxtUrl}`,
+      
+      
+      
+      url: `${siteUrl.value}${urlBlog(a.path, true)}`,
       name: a.title,
     })),
   },
 }))
 
 useHead({
-  title: blogTitle.value,
+  title: seoTitle.value,
   link: [{ rel: 'canonical', href: canonical }],
   meta: [
-    { name: 'description', content: blogDescription.value },
-    { property: 'og:title', content: blogTitle.value },
-    { property: 'og:description', content: blogDescription.value },
+    { name: 'description', content: seoDescription.value },
+    { property: 'og:title', content: seoTitle.value },
+    { property: 'og:description', content: seoDescription.value },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: canonical },
     { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: blogTitle.value },
-    { name: 'twitter:description', content: blogDescription.value },
+    { name: 'twitter:title', content: seoTitle.value },
+    { name: 'twitter:description', content: seoDescription.value },
   ],
   script: [
     { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbJsonLd.value) },
@@ -114,7 +151,7 @@ const piliers = computed(() => {
         subcats: Object.entries(grouped[k]).map(([subKey, arts]) => ({
           key: subKey,
           label: getSubcatLabel(subKey),
-          url: `/blog/${k}/${subKey}/`,
+          url: urlBlog(`${k}/${subKey}`),
           articles: arts,
         })),
         allArticles: Object.values(grouped[k]).flat(),
@@ -171,7 +208,7 @@ const featured = computed(() => articles.value?.[0] ?? null)
           >
             <span>{{ pilier.meta.icon }}</span>
             {{ pilier.meta.label }}
-            <span class="opacity-80 ml-0.5">{{ pilier.total }}</span>
+            <span class="ml-0.5">{{ pilier.total }}</span>
           </a>
         </template>
       </div>
@@ -179,22 +216,25 @@ const featured = computed(() => articles.value?.[0] ?? null)
       
       <NuxtLink
         v-if="featured"
-        :to="featured.nuxtUrl"
+        :to="urlBlog(featured.path, true)"
         class="group relative block rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800 hover:border-primary-300 dark:hover:border-primary-500/30 transition-all duration-300 hover:shadow-2xl"
       >
-        <div class="aspect-[2.4/1] bg-gray-100 dark:bg-slate-800 overflow-hidden">
+        <div class="aspect-video sm:aspect-[2.4/1] bg-gray-100 dark:bg-slate-800 overflow-hidden">
           <img v-if="featured.coverImage" :src="featured.coverImage" :alt="featured.title" class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700" loading="eager" width="1200" height="500" />
+          
+          <div v-else class="w-full h-full bg-gradient-to-br from-primary-900 via-primary-800 to-primary-600" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         </div>
-        <div class="absolute bottom-0 inset-x-0 p-6 md:p-10">
+        
+        <div class="relative bg-gray-900 sm:bg-transparent sm:absolute sm:bottom-0 sm:inset-x-0 p-5 sm:p-6 md:p-10">
           <div class="flex items-center gap-2 mb-3 flex-wrap">
-            <span class="text-xs font-bold text-white/90 uppercase tracking-widest bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">Dernier article</span>
+            <span class="text-xs font-bold text-white/90 uppercase tracking-widest bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">{{ t('blog.latest_article', 'Dernier article') }}</span>
             <span v-if="featured.subcategory" class="text-xs font-semibold text-primary-300 bg-primary-600/20 backdrop-blur-sm px-3 py-1 rounded-full capitalize">{{ getSubcatLabel(featured.subcategory) }}</span>
           </div>
           <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-snug mb-3 group-hover:text-primary-200 transition-colors max-w-3xl">{{ featured.title }}</h2>
           <p class="text-sm text-white/60 line-clamp-2 max-w-2xl mb-4">{{ featured.excerpt }}</p>
           <div class="flex items-center gap-4 text-xs text-white/50">
-            <time v-if="featured.datePublished">{{ formatDate(featured.datePublished) }}</time>
+            <time v-if="featured.datePublished" :datetime="featured.datePublished">{{ formatDate(featured.datePublished) }}</time>
             <span v-if="featured.readingTime" class="flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
               {{ featured.readingTime }} min
@@ -224,7 +264,7 @@ const featured = computed(() => articles.value?.[0] ?? null)
           <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0" :class="pilier.meta.tagBg">{{ pilier.meta.icon }}</div>
           <div class="flex-1">
             <div class="flex items-center gap-3 flex-wrap">
-              <NuxtLink :to="`/blog/${pilier.key}/`" class="text-2xl font-extrabold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ pilier.meta.label }}</NuxtLink>
+              <NuxtLink :to="urlBlog(pilier.key)" class="text-2xl font-extrabold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ pilier.meta.label }}</NuxtLink>
               <span class="text-xs font-bold px-2.5 py-1 rounded-full" :class="pilier.meta.tagBg">{{ pilier.total }} article{{ pilier.total > 1 ? 's' : '' }}</span>
             </div>
             <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{{ pilier.meta.desc }}</p>
@@ -246,13 +286,17 @@ const featured = computed(() => articles.value?.[0] ?? null)
         
         <NuxtLink
           v-if="pilier.allArticles[0]"
-          :to="pilier.allArticles[0].nuxtUrl"
+          :to="urlBlog(pilier.allArticles[0].path, true)"
           class="group block rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800 hover:shadow-xl transition-all duration-300 mb-6"
           :class="'hover:' + pilier.meta.accent"
         >
           <div class="flex flex-col md:flex-row">
-            <div v-if="pilier.allArticles[0].coverImage" class="md:w-1/2 aspect-[600/315] md:aspect-auto overflow-hidden bg-gray-100 dark:bg-slate-800">
-              <img :src="pilier.allArticles[0].coverImage" :alt="pilier.allArticles[0].title" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" loading="lazy" width="600" height="315" />
+            <div class="md:w-1/2 aspect-[600/315] md:aspect-auto overflow-hidden bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+              <img v-if="pilier.allArticles[0].coverImage" :src="pilier.allArticles[0].coverImage" :alt="pilier.allArticles[0].title" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" loading="lazy" width="600" height="315" />
+              
+              <div v-else class="w-full h-full bg-gradient-to-br from-primary-50 to-primary-100 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center px-6">
+                <span class="text-sm font-semibold text-primary-700 dark:text-primary-300 text-center leading-snug line-clamp-4">{{ pilier.allArticles[0].title }}</span>
+              </div>
             </div>
             <div class="md:w-1/2 p-6 md:p-8 flex flex-col justify-center bg-white dark:bg-slate-900">
               <div class="flex items-center gap-2 mb-3">
@@ -262,7 +306,7 @@ const featured = computed(() => articles.value?.[0] ?? null)
               <h3 class="text-lg md:text-xl font-bold text-gray-900 dark:text-white leading-snug mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{{ pilier.allArticles[0].title }}</h3>
               <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-3 mb-4">{{ pilier.allArticles[0].excerpt }}</p>
               <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-slate-400">
-                <time v-if="pilier.allArticles[0].datePublished">{{ formatDateShort(pilier.allArticles[0].datePublished) }}</time>
+                <time v-if="pilier.allArticles[0].datePublished" :datetime="pilier.allArticles[0].datePublished">{{ formatDateShort(pilier.allArticles[0].datePublished) }}</time>
                 <span v-if="pilier.allArticles[0].readingTime" class="flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                   {{ pilier.allArticles[0].readingTime }} min
@@ -270,7 +314,7 @@ const featured = computed(() => articles.value?.[0] ?? null)
                 <span v-if="pilier.allArticles[0].faqCount">{{ pilier.allArticles[0].faqCount }} FAQ</span>
               </div>
               <div class="mt-4 flex items-center gap-1.5 text-xs font-semibold" :class="pilier.meta.color">
-                <span class="group-hover:underline">Lire l'article</span>
+                <span class="group-hover:underline">{{ t('blog.read_article', 'Lire l\'article') }}</span>
                 <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
               </div>
             </div>
@@ -282,11 +326,14 @@ const featured = computed(() => articles.value?.[0] ?? null)
           <NuxtLink
             v-for="article in pilier.allArticles.slice(1)"
             :key="article.id"
-            :to="article.nuxtUrl"
+            :to="urlBlog(article.path, true)"
             class="group bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-500/20 transition-all duration-300"
           >
-            <div v-if="article.thumbnailImage || article.coverImage" class="aspect-[600/315] overflow-hidden bg-gray-100 dark:bg-slate-800">
-              <img :src="article.thumbnailImage || article.coverImage" :alt="article.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" width="600" height="315" />
+            <div class="aspect-[600/315] overflow-hidden bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+              <img v-if="article.thumbnailImage || article.coverImage" :src="article.thumbnailImage || article.coverImage" :alt="article.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" width="600" height="315" />
+              <div v-else class="w-full h-full bg-gradient-to-br from-primary-50 to-primary-100 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center px-4">
+                <span class="text-xs font-semibold text-primary-700 dark:text-primary-300 text-center leading-snug line-clamp-3">{{ article.title }}</span>
+              </div>
             </div>
             <div class="p-5">
               <div class="flex items-center gap-2 mb-3">
@@ -296,7 +343,7 @@ const featured = computed(() => articles.value?.[0] ?? null)
               <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{{ article.title }}</h3>
               <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">{{ article.excerpt }}</p>
               <div class="mt-3 flex items-center gap-4 text-xs text-gray-500 dark:text-slate-400">
-                <time v-if="article.datePublished">{{ formatDateShort(article.datePublished) }}</time>
+                <time v-if="article.datePublished" :datetime="article.datePublished">{{ formatDateShort(article.datePublished) }}</time>
                 <span v-if="article.readingTime" class="flex items-center gap-1">
                   <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                   {{ article.readingTime }} min
@@ -304,7 +351,7 @@ const featured = computed(() => articles.value?.[0] ?? null)
                 <span v-if="article.faqCount">{{ article.faqCount }} FAQ</span>
               </div>
               <div class="mt-3 flex items-center gap-1.5 text-xs font-semibold" :class="pilier.meta.color">
-                <span class="group-hover:underline">Lire</span>
+                <span class="group-hover:underline">{{ t('blog.read', 'Lire') }}</span>
                 <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
               </div>
             </div>
@@ -314,10 +361,10 @@ const featured = computed(() => articles.value?.[0] ?? null)
         
         <div v-if="pilier.total > 4" class="mt-6 text-center">
           <NuxtLink
-            :to="`/blog/${pilier.key}/`"
+            :to="urlBlog(pilier.key)"
             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-600 dark:text-slate-300 hover:border-primary-300 dark:hover:border-primary-500/30 hover:text-primary-600 dark:hover:text-primary-400 transition-all"
           >
-            Tous les articles {{ pilier.meta.label }}
+            {{ t('blog.all_articles_of', 'Tous les articles {label}', { label: pilier.meta.label }) }}
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
           </NuxtLink>
         </div>
@@ -327,7 +374,7 @@ const featured = computed(() => articles.value?.[0] ?? null)
     
     <div v-else class="text-center py-20 text-gray-500 dark:text-slate-400">
       <p class="text-5xl mb-4">✍️</p>
-      <p class="text-lg font-medium">Aucun article pour le moment.</p>
+      <p class="text-lg font-medium">{{ t('blog.empty', 'Aucun article pour le moment.') }}</p>
     </div>
   </div>
 </template>

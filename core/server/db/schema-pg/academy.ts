@@ -46,6 +46,7 @@ export const academyLesson = vaisseauMereAcSchema.table(
     mentorSource: varchar('mentor_source', { length: 255 }),
     dictionaryTerms: text('dictionary_terms'),
     active: smallint('active').notNull().default(1),
+    indexation: smallint('indexation').notNull().default(1),
     position: integer('position').notNull().default(0),
     dateAdd: timestamp('date_add', { mode: 'date', precision: 0 }).notNull().defaultNow(),
     dateUpd: timestamp('date_upd', { mode: 'date', precision: 0 }).notNull().defaultNow(),

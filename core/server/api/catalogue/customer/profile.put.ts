@@ -1,11 +1,14 @@
 
 
 import { useClientDb } from '~/server/utils/db'
-import { resolveCustomerIdForRequest } from '~/server/utils/customer-session'
+import { requireCustomer, resolveCustomerIdForRequest } from '~/server/utils/customer-session'
+import { toIsoDate } from '~/server/utils/pg-date'
 
 export default defineEventHandler(async (event) => {
+  
+  requireCustomer(event)
   const body = await readBody<Record<string, any>>(event)
-  const { customerId, firstname, lastname, company, siret, email, newsletter } = body || {}
+  const { customerId, firstname, lastname, company, siret, email, newsletter, birthday } = body || {}
   const resolvedId = resolveCustomerIdForRequest(event, customerId)
   if (!resolvedId) throw createError({ statusCode: 400, message: 'customerId requis' })
 
@@ -22,6 +25,25 @@ export default defineEventHandler(async (event) => {
   add('siret', siret)
   add('email', email)
   add('newsletter', newsletter != null ? (newsletter ? 1 : 0) : undefined)
+  
+  
+  
+  if (birthday !== undefined) {
+    const value = String(birthday || '').trim()
+    if (value === '') {
+      add('birthday', null)
+    } else {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        throw createError({ statusCode: 400, message: 'birthday attendu au format AAAA-MM-JJ' })
+      }
+      const parsed = new Date(`${value}T00:00:00Z`)
+      const year = Number(value.slice(0, 4))
+      if (Number.isNaN(parsed.getTime()) || parsed.getTime() > Date.now() || year < 1900) {
+        throw createError({ statusCode: 400, message: 'birthday invalide' })
+      }
+      add('birthday', value)
+    }
+  }
   if (!sets.length) throw createError({ statusCode: 400, message: 'aucun champ modifiable' })
 
   sets.push('date_upd = NOW()')
@@ -34,7 +56,7 @@ export default defineEventHandler(async (event) => {
   )
 
   const updated = await db.get<any>(
-    `SELECT id_customer, firstname, lastname, email, company, siret, newsletter
+    `SELECT id_customer, firstname, lastname, email, company, siret, newsletter, birthday
        FROM ps_customer WHERE id_customer = ? LIMIT 1`,
     [resolvedId],
   )
@@ -48,5 +70,6 @@ export default defineEventHandler(async (event) => {
     company: String(updated.company || ''),
     siret: String(updated.siret || ''),
     newsletter: Number(updated.newsletter) === 1,
+    birthday: toIsoDate(updated.birthday),
   }
 })

@@ -3,7 +3,7 @@
     
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between gap-4">
-        <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100 shrink-0">Pipeline</h1>
+        <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100 shrink-0">{{ tHub('hub.ui.projects.title', 'Pipeline') }}</h1>
 
         
         <div class="flex items-center gap-2 flex-wrap">
@@ -17,7 +17,7 @@
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 10V7m0 10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2" />
               </svg>
-              Kanban
+              {{ tHub('hub.ui.projects.view_kanban', 'Kanban') }}
             </button>
             <button
               @click="viewMode = 'grid'"
@@ -27,7 +27,7 @@
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
               </svg>
-              Liste
+              {{ tHub('hub.ui.projects.view_list', 'Liste') }}
             </button>
           </div>
 
@@ -39,7 +39,7 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
             </svg>
-            Tâches modèles
+            {{ tHub('hub.ui.projects.task_templates', 'Tâches modèles') }}
           </button>
 
           
@@ -50,7 +50,7 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
             </svg>
-            Équipe
+            {{ tHub('hub.ui.projects.team', 'Équipe') }}
           </button>
 
           
@@ -72,7 +72,7 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
             </svg>
-            Automatisations
+            {{ tHub('hub.ui.projects.automations', 'Automatisations') }}
           </button>
 
           
@@ -83,14 +83,14 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Nouveau projet
+            {{ tHub('hub.ui.projects.new_project', 'Nouveau projet') }}
           </button>
         </div>
       </div>
     </header>
 
     <div class="p-6">
-      <div v-if="loading" class="text-center py-20 text-gray-400">Chargement…</div>
+      <div v-if="loading" class="text-center py-20 text-gray-400">{{ tHub('hub.ui.projects.loading', 'Chargement…') }}</div>
 
       
       <div v-else-if="viewMode === 'kanban'" class="flex gap-4 overflow-x-auto pb-4">
@@ -123,12 +123,12 @@
               <div class="flex items-start justify-between gap-2 mb-2">
                 <span class="text-xs text-gray-400">#{{ p.id_ac_smartproject }}</span>
                 <div class="flex items-center gap-1">
-                  <button @click.stop="openEdit(p)" class="text-gray-300 hover:text-primary-500 transition-colors" title="Modifier">
+                  <button @click.stop="openEdit(p)" class="text-gray-300 hover:text-primary-500 transition-colors" :title="tHub('hub.ui.projects.edit', 'Modifier')">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
                     </svg>
                   </button>
-                  <button @click.stop="deleteProject(p)" class="text-gray-300 hover:text-rose-500 transition-colors" title="Supprimer">
+                  <button @click.stop="deleteProject(p)" class="text-gray-300 hover:text-rose-500 transition-colors" :title="tHub('hub.ui.projects.delete', 'Supprimer')">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
@@ -151,7 +151,7 @@
                   v-if="p.lead_source"
                   class="ml-auto text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
                   :class="sourceBadge(p.lead_source).cls"
-                  :title="`Source : ${p.lead_source}`"
+                  :title="tHub('hub.ui.projects.source_title', 'Source : {src}', { src: p.lead_source })"
                 >
                   {{ sourceBadge(p.lead_source).label }}
                 </span>
@@ -163,21 +163,21 @@
                   v-if="p.lead_level !== null && p.lead_level !== undefined"
                   class="text-[10px] font-mono px-1.5 py-0.5 rounded"
                   :class="leadLevelBadgeClass(p.lead_level)"
-                  :title="`Score lead : ${p.lead_level}/10 — ${leadLevelLabel(p.lead_level)}`"
+                  :title="tHub('hub.ui.projects.score_title', 'Score lead : {lvl}/10 — {label}', { lvl: p.lead_level, label: leadLevelLabel(p.lead_level) })"
                 >
                   {{ p.lead_level }}/10
                 </span>
                 <span v-if="p.budget" class="text-[10px] text-gray-500 bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                  💰 {{ BUDGETS[p.budget] || p.budget }}
+                  💰 {{ libelleBudget(p.budget) }}
                 </span>
               </div>
 
               
               <div class="flex items-center gap-3 text-xs text-gray-400 mt-2">
-                <span v-if="p.documents_count" :title="`${p.documents_count} document(s)`">📎 {{ p.documents_count }}</span>
-                <span v-if="p.tasks_open_count" :title="`${p.tasks_open_count} tâche(s) ouverte(s) sur ${p.tasks_count}`">✓ {{ p.tasks_open_count }}</span>
-                <span v-if="p.contact_phone_whatsapp" title="WhatsApp disponible" class="text-emerald-500">💬</span>
-                <span v-if="p.emails_count" :title="`${p.emails_count} email(s) échangé(s)`">✉ {{ p.emails_count }}</span>
+                <span v-if="p.documents_count" :title="tHub('hub.ui.projects.docs_title', '{n} document(s)', { n: p.documents_count })">📎 {{ p.documents_count }}</span>
+                <span v-if="p.tasks_open_count" :title="tHub('hub.ui.projects.tasks_open_title', '{open} tâche(s) ouverte(s) sur {total}', { open: p.tasks_open_count, total: p.tasks_count })">✓ {{ p.tasks_open_count }}</span>
+                <span v-if="p.contact_phone_whatsapp" :title="tHub('hub.ui.projects.wa_available', 'WhatsApp disponible')" class="text-emerald-500">💬</span>
+                <span v-if="p.emails_count" :title="tHub('hub.ui.projects.emails_title', '{n} email(s) échangé(s)', { n: p.emails_count })">✉ {{ p.emails_count }}</span>
                 <span v-if="p.final_price" class="ml-auto font-medium text-gray-600">{{ formatPrice(p.final_price) }}</span>
               </div>
             </div>
@@ -191,12 +191,12 @@
           <thead class="bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800">
             <tr>
               <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Projet</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Budget</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tâches</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ tHub('hub.ui.projects.th_project', 'Projet') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ tHub('hub.ui.projects.th_contact', 'Contact') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ tHub('hub.ui.projects.th_status', 'Statut') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ tHub('hub.ui.projects.th_budget', 'Budget') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ tHub('hub.ui.projects.th_tasks', 'Tâches') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ tHub('hub.ui.projects.th_date', 'Date') }}</th>
               <th class="px-4 py-3"></th>
             </tr>
           </thead>
@@ -236,9 +236,9 @@
               <td class="px-4 py-3 text-xs text-gray-500">{{ p.final_price ? formatPrice(p.final_price) : '—' }}</td>
               <td class="px-4 py-3 text-xs text-gray-400">
                 <span class="inline-flex items-center gap-2">
-                  <span v-if="p.tasks_open_count" :title="`${p.tasks_open_count}/${p.tasks_count} tâches`">✓ {{ p.tasks_open_count }}</span>
-                  <span v-if="p.documents_count" :title="`${p.documents_count} doc(s)`">📎 {{ p.documents_count }}</span>
-                  <span v-if="p.emails_count" :title="`${p.emails_count} email(s)`">✉ {{ p.emails_count }}</span>
+                  <span v-if="p.tasks_open_count" :title="tHub('hub.ui.projects.tasks_ratio_title', '{open}/{total} tâches', { open: p.tasks_open_count, total: p.tasks_count })">✓ {{ p.tasks_open_count }}</span>
+                  <span v-if="p.documents_count" :title="tHub('hub.ui.projects.docs_short_title', '{n} doc(s)', { n: p.documents_count })">📎 {{ p.documents_count }}</span>
+                  <span v-if="p.emails_count" :title="tHub('hub.ui.projects.emails_short_title', '{n} email(s)', { n: p.emails_count })">✉ {{ p.emails_count }}</span>
                   <span v-if="!p.tasks_count && !p.documents_count && !p.emails_count">—</span>
                 </span>
               </td>
@@ -248,7 +248,7 @@
                   <button
                     @click.stop="openEdit(p)"
                     class="text-gray-300 hover:text-primary-500 transition-colors p-1"
-                    title="Modifier"
+                    :title="tHub('hub.ui.projects.edit', 'Modifier')"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
@@ -257,7 +257,7 @@
                   <button
                     @click.stop="deleteProject(p)"
                     class="text-gray-300 hover:text-rose-500 transition-colors p-1"
-                    title="Supprimer"
+                    :title="tHub('hub.ui.projects.delete', 'Supprimer')"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -277,17 +277,17 @@
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="closeModal">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between px-6 py-4 border-b">
-              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ editingId ? 'Modifier le projet' : 'Nouveau projet' }}</h2>
+              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ editingId ? tHub('hub.ui.projects.edit_project', 'Modifier le projet') : tHub('hub.ui.projects.new_project', 'Nouveau projet') }}</h2>
               <button @click="closeModal" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
             <form @submit.prevent="saveProject" class="px-6 py-5 space-y-4">
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Titre *</label>
-                <input v-model="form.project_title" required class="input-field" placeholder="Nom du projet" />
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_title', 'Titre *') }}</label>
+                <input v-model="form.project_title" required class="input-field" :placeholder="tHub('hub.ui.projects.project_name_ph', 'Nom du projet')" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Contact</label>
-                <input v-model="contactSearch" @input="searchContacts" class="input-field" placeholder="Rechercher un contact…" />
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.th_contact', 'Contact') }}</label>
+                <input v-model="contactSearch" @input="searchContacts" class="input-field" :placeholder="tHub('hub.ui.projects.search_contact_ph', 'Rechercher un contact…')" />
                 <div v-if="contactResults.length" class="border border-gray-200 dark:border-slate-700 rounded-lg mt-1 overflow-hidden">
                   <button
                     v-for="c in contactResults"
@@ -300,42 +300,37 @@
                     <span v-if="c.email" class="text-gray-400 text-xs ml-1">— {{ c.email }}</span>
                   </button>
                 </div>
-                <p v-if="form.id_ac_smartlead" class="text-xs text-primary-600 mt-1">Contact : {{ selectedContactName }}</p>
+                <p v-if="form.id_ac_smartlead" class="text-xs text-primary-600 mt-1">{{ tHub('hub.ui.projects.contact_selected', 'Contact : {name}', { name: selectedContactName }) }}</p>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Statut</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_status', 'Statut') }}</label>
                 <select v-model="form.project_status" class="input-field">
                   <option v-for="(label, key) in STATUSES" :key="key" :value="key">{{ label }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Type</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_type', 'Type') }}</label>
                 <select v-model="form.project_type" class="input-field">
-                  <option value="">— Choisir —</option>
+                  <option value="">{{ tHub('hub.ui.projects.choose', '— Choisir —') }}</option>
                   <option v-for="(label, key) in PROJECT_TYPES" :key="key" :value="key">{{ label }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Budget estimé</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.budget_est', 'Budget estimé') }}</label>
                 <select v-model="form.budget" class="input-field">
-                  <option value="">— Choisir —</option>
-                  <option value="moins_1k">&lt; 1 000 €</option>
-                  <option value="1k_3k">1 000 – 3 000 €</option>
-                  <option value="3k_8k">3 000 – 8 000 €</option>
-                  <option value="8k_20k">8 000 – 20 000 €</option>
-                  <option value="20k_60k">20 000 – 60 000 €</option>
-                  <option value="60k_plus">&gt; 60 000 €</option>
+                  <option value="">{{ tHub('hub.ui.projects.choose', '— Choisir —') }}</option>
+                  <option v-for="(libelle, valeur) in PROJECT_BUDGETS" :key="valeur" :value="valeur">{{ libelle }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Besoins / Description</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.needs', 'Besoins / Description') }}</label>
                 <textarea v-model="form.needs" rows="4" class="input-field resize-none" />
               </div>
               <p v-if="formError" class="text-sm text-danger-500">{{ formError }}</p>
               <div class="flex gap-3 pt-2">
-                <button type="button" @click="closeModal" class="flex-1 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-600 hover:bg-gray-50 dark:bg-slate-950">Annuler</button>
+                <button type="button" @click="closeModal" class="flex-1 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-600 hover:bg-gray-50 dark:bg-slate-950">{{ tHub('hub.ui.projects.cancel', 'Annuler') }}</button>
                 <button type="submit" :disabled="saving" class="flex-1 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
-                  {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+                  {{ saving ? tHub('hub.ui.projects.saving', 'Enregistrement…') : tHub('hub.ui.projects.save', 'Enregistrer') }}
                 </button>
               </div>
             </form>
@@ -350,15 +345,15 @@
         <div v-if="showTaskTemplates" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="showTaskTemplates = false">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between px-6 py-4 border-b shrink-0">
-              <h2 class="font-bold text-gray-800 dark:text-slate-100">Modèles de tâches</h2>
+              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.projects.task_templates_title', 'Modèles de tâches') }}</h2>
               <button @click="showTaskTemplates = false" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
             <div class="flex gap-6 p-6 overflow-y-auto flex-1">
               
               <div class="flex-1 min-w-0">
-                <div v-if="taskTemplatesLoading" class="text-center py-10 text-gray-400 text-sm">Chargement…</div>
-                <div v-else-if="!taskTemplates.length" class="text-center py-10 text-gray-400 text-sm">Aucun modèle.</div>
+                <div v-if="taskTemplatesLoading" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.loading', 'Chargement…') }}</div>
+                <div v-else-if="!taskTemplates.length" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.no_template', 'Aucun modèle.') }}</div>
                 <div v-else class="space-y-2">
                   <div
                     v-for="t in taskTemplates"
@@ -367,10 +362,10 @@
                   >
                     <div class="min-w-0">
                       <p class="text-sm font-medium text-gray-800 dark:text-slate-100 truncate">{{ t.title }}</p>
-                      <p class="text-xs text-gray-400">J+{{ t.days_to_deadline }} — avancement {{ t.next_step }}%</p>
+                      <p class="text-xs text-gray-400">{{ tHub('hub.ui.projects.tt_line', 'J+{days} — avancement {step}%', { days: t.days_to_deadline, step: t.next_step }) }}</p>
                     </div>
                     <div class="flex gap-1.5 shrink-0 ml-3">
-                      <button @click="editTaskTemplate(t)" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded text-gray-500 hover:bg-gray-50 dark:bg-slate-950">Modifier</button>
+                      <button @click="editTaskTemplate(t)" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded text-gray-500 hover:bg-gray-50 dark:bg-slate-950">{{ tHub('hub.ui.projects.edit', 'Modifier') }}</button>
                       <button @click="deleteTaskTemplate(t.id_ac_smarttask_template)" class="text-xs px-2 py-1 border border-danger-100 rounded text-danger-400 hover:bg-danger-50">✕</button>
                     </div>
                   </div>
@@ -379,36 +374,36 @@
 
               
               <div class="w-64 shrink-0 border-l border-gray-100 dark:border-slate-800 pl-6">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ ttForm.id ? 'Modifier' : 'Nouveau modèle' }}</h3>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ ttForm.id ? tHub('hub.ui.projects.edit', 'Modifier') : tHub('hub.ui.projects.new_template', 'Nouveau modèle') }}</h3>
                 <form @submit.prevent="saveTaskTemplate" class="space-y-3">
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Titre *</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_title', 'Titre *') }}</label>
                     <input v-model="ttForm.title" required class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Statut par défaut</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.default_status', 'Statut par défaut') }}</label>
                     <select v-model="ttForm.default_status" class="input-field">
-                      <option value="todo">À faire</option>
-                      <option value="in_progress">En cours</option>
-                      <option value="done">Terminé</option>
+                      <option value="todo">{{ tHub('hub.ui.projects.st_todo', 'À faire') }}</option>
+                      <option value="in_progress">{{ tHub('hub.ui.projects.st_in_progress', 'En cours') }}</option>
+                      <option value="done">{{ tHub('hub.ui.projects.st_done', 'Terminé') }}</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Délai (jours)</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.deadline_days', 'Délai (jours)') }}</label>
                     <input v-model.number="ttForm.days_to_deadline" type="number" min="0" class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Avancement (%)</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.progress_pct', 'Avancement (%)') }}</label>
                     <input v-model.number="ttForm.next_step" type="number" min="0" max="100" class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Description</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.description', 'Description') }}</label>
                     <textarea v-model="ttForm.default_description" rows="3" class="input-field resize-none" />
                   </div>
                   <div class="flex gap-2 pt-1">
-                    <button v-if="ttForm.id" type="button" @click="resetTtForm" class="flex-1 py-1.5 text-xs border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:bg-slate-950">Annuler</button>
+                    <button v-if="ttForm.id" type="button" @click="resetTtForm" class="flex-1 py-1.5 text-xs border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:bg-slate-950">{{ tHub('hub.ui.projects.cancel', 'Annuler') }}</button>
                     <button type="submit" :disabled="ttSaving" class="flex-1 py-1.5 text-xs bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50">
-                      {{ ttSaving ? '…' : 'Enregistrer' }}
+                      {{ ttSaving ? '…' : tHub('hub.ui.projects.save', 'Enregistrer') }}
                     </button>
                   </div>
                 </form>
@@ -425,15 +420,15 @@
         <div v-if="showTeam" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="showTeam = false">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between px-6 py-4 border-b shrink-0">
-              <h2 class="font-bold text-gray-800 dark:text-slate-100">Équipe</h2>
+              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.projects.team', 'Équipe') }}</h2>
               <button @click="showTeam = false" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
             <div class="flex gap-6 p-6 overflow-y-auto flex-1">
               
               <div class="flex-1 min-w-0">
-                <div v-if="teamLoading" class="text-center py-10 text-gray-400 text-sm">Chargement…</div>
-                <div v-else-if="!teamMembers.length" class="text-center py-10 text-gray-400 text-sm">Aucun membre.</div>
+                <div v-if="teamLoading" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.loading', 'Chargement…') }}</div>
+                <div v-else-if="!teamMembers.length" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.no_member', 'Aucun membre.') }}</div>
                 <div v-else class="space-y-2">
                   <div
                     v-for="m in teamMembers"
@@ -454,28 +449,28 @@
 
               
               <div class="w-64 shrink-0 border-l border-gray-100 dark:border-slate-800 pl-6">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Ajouter un membre</h3>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ tHub('hub.ui.projects.add_member', 'Ajouter un membre') }}</h3>
                 <form @submit.prevent="saveTeamMember" class="space-y-3">
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Prénom *</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.firstname', 'Prénom *') }}</label>
                     <input v-model="teamForm.firstname" required class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Nom *</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_name', 'Nom *') }}</label>
                     <input v-model="teamForm.lastname" required class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Email</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.email', 'Email') }}</label>
                     <input v-model="teamForm.email" type="email" class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Rôle</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.role', 'Rôle') }}</label>
                     <select v-model="teamForm.role" class="input-field">
                       <option v-for="(label, key) in TEAM_ROLES" :key="key" :value="key">{{ label }}</option>
                     </select>
                   </div>
                   <button type="submit" :disabled="teamSaving" class="w-full py-1.5 text-xs bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 mt-1">
-                    {{ teamSaving ? 'Création...' : 'Ajouter' }}
+                    {{ teamSaving ? tHub('hub.ui.projects.creating', 'Création...') : tHub('hub.ui.projects.add', 'Ajouter') }}
                   </button>
                   
                   <div v-if="teamToast" class="mt-2 p-2 rounded-lg text-[10px] leading-relaxed"
@@ -496,15 +491,15 @@
         <div v-if="showWhatsApp" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="showWhatsApp = false">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between px-6 py-4 border-b shrink-0">
-              <h2 class="font-bold text-gray-800 dark:text-slate-100">Modèles WhatsApp</h2>
+              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.projects.wa_templates_title', 'Modèles WhatsApp') }}</h2>
               <button @click="showWhatsApp = false" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
             <div class="flex gap-6 p-6 overflow-y-auto flex-1">
               
               <div class="flex-1 min-w-0">
-                <div v-if="waLoading" class="text-center py-10 text-gray-400 text-sm">Chargement…</div>
-                <div v-else-if="!waTemplates.length" class="text-center py-10 text-gray-400 text-sm">Aucun modèle.</div>
+                <div v-if="waLoading" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.loading', 'Chargement…') }}</div>
+                <div v-else-if="!waTemplates.length" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.no_template', 'Aucun modèle.') }}</div>
                 <div v-else class="space-y-2">
                   <div
                     v-for="t in waTemplates"
@@ -517,7 +512,7 @@
                       <p class="text-xs text-gray-400 mt-1 line-clamp-2">{{ t.message_body }}</p>
                     </div>
                     <div class="flex gap-1.5 shrink-0">
-                      <button @click="editWaTemplate(t)" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded text-gray-500 hover:bg-gray-50 dark:bg-slate-950">Modifier</button>
+                      <button @click="editWaTemplate(t)" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded text-gray-500 hover:bg-gray-50 dark:bg-slate-950">{{ tHub('hub.ui.projects.edit', 'Modifier') }}</button>
                       <button @click="deleteWaTemplate(t.id_ac_whatsapp_template)" class="text-xs px-2 py-1 border border-danger-100 rounded text-danger-400 hover:bg-danger-50">✕</button>
                     </div>
                   </div>
@@ -526,27 +521,27 @@
 
               
               <div class="w-64 shrink-0 border-l border-gray-100 dark:border-slate-800 pl-6">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ waForm.id ? 'Modifier' : 'Nouveau modèle' }}</h3>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ waForm.id ? tHub('hub.ui.projects.edit', 'Modifier') : tHub('hub.ui.projects.new_template', 'Nouveau modèle') }}</h3>
                 <form @submit.prevent="saveWaTemplate" class="space-y-3">
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Titre *</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_title', 'Titre *') }}</label>
                     <input v-model="waForm.title" required class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Type</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_type', 'Type') }}</label>
                     <select v-model="waForm.type" class="input-field">
                       <option v-for="(label, key) in WA_TYPES" :key="key" :value="key">{{ label }}</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Message *</label>
-                    <textarea v-model="waForm.message_body" required rows="6" class="input-field resize-none" placeholder="Bonjour {prenom}, …" />
-                    <p class="text-xs text-gray-400 mt-1">Variables : {prenom} {nom} {projet}</p>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.message_req', 'Message *') }}</label>
+                    <textarea v-model="waForm.message_body" required rows="6" class="input-field resize-none" :placeholder="tHub('hub.ui.projects.wa_msg_ph', 'Bonjour {prenom}, …')" />
+                    <p class="text-xs text-gray-400 mt-1">{{ tHub('hub.ui.projects.wa_vars', 'Variables : {prenom} {nom} {projet}') }}</p>
                   </div>
                   <div class="flex gap-2 pt-1">
-                    <button v-if="waForm.id" type="button" @click="resetWaForm" class="flex-1 py-1.5 text-xs border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:bg-slate-950">Annuler</button>
+                    <button v-if="waForm.id" type="button" @click="resetWaForm" class="flex-1 py-1.5 text-xs border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:bg-slate-950">{{ tHub('hub.ui.projects.cancel', 'Annuler') }}</button>
                     <button type="submit" :disabled="waSaving" class="flex-1 py-1.5 text-xs bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50">
-                      {{ waSaving ? '…' : 'Enregistrer' }}
+                      {{ waSaving ? '…' : tHub('hub.ui.projects.save', 'Enregistrer') }}
                     </button>
                   </div>
                 </form>
@@ -563,15 +558,15 @@
         <div v-if="showAutomations" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="showAutomations = false">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between px-6 py-4 border-b shrink-0">
-              <h2 class="font-bold text-gray-800 dark:text-slate-100">Automatisations</h2>
+              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.projects.automations', 'Automatisations') }}</h2>
               <button @click="showAutomations = false" class="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
             <div class="flex gap-6 p-6 overflow-y-auto flex-1">
               
               <div class="flex-1 min-w-0">
-                <div v-if="autoLoading" class="text-center py-10 text-gray-400 text-sm">Chargement…</div>
-                <div v-else-if="!automations.length" class="text-center py-10 text-gray-400 text-sm">Aucune automatisation.</div>
+                <div v-if="autoLoading" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.loading', 'Chargement…') }}</div>
+                <div v-else-if="!automations.length" class="text-center py-10 text-gray-400 text-sm">{{ tHub('hub.ui.projects.no_automation', 'Aucune automatisation.') }}</div>
                 <div v-else class="space-y-2">
                   <div
                     v-for="a in automations"
@@ -587,15 +582,15 @@
                         <p class="text-sm font-medium text-gray-800 dark:text-slate-100 truncate">{{ a.title }}</p>
                       </div>
                       <p class="text-xs text-gray-400">
-                        Si <strong>{{ AUTO_TRIGGERS[a.trigger_type] || a.trigger_type }}</strong>
+                        {{ tHub('hub.ui.projects.auto_if', 'Si') }} <strong>{{ AUTO_TRIGGERS[a.trigger_type] || a.trigger_type }}</strong>
                         → <strong>{{ AUTO_ACTIONS[a.action_type] || a.action_type }}</strong>
                       </p>
                     </div>
                     <div class="flex gap-1.5 shrink-0">
                       <button @click="toggleAutomation(a)" class="text-xs px-2 py-1 border rounded" :class="a.active == 1 ? 'border-success-200 text-success-600 hover:bg-success-50' : 'border-gray-200 dark:border-slate-700 text-gray-500 hover:bg-gray-50 dark:bg-slate-950'">
-                        {{ a.active == 1 ? 'Actif' : 'Inactif' }}
+                        {{ a.active == 1 ? tHub('hub.ui.projects.active', 'Actif') : tHub('hub.ui.projects.inactive', 'Inactif') }}
                       </button>
-                      <button @click="editAutomation(a)" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded text-gray-500 hover:bg-gray-50 dark:bg-slate-950">Modifier</button>
+                      <button @click="editAutomation(a)" class="text-xs px-2 py-1 border border-gray-200 dark:border-slate-700 rounded text-gray-500 hover:bg-gray-50 dark:bg-slate-950">{{ tHub('hub.ui.projects.edit', 'Modifier') }}</button>
                       <button @click="deleteAutomation(a.id_ac_smartautomation_rule)" class="text-xs px-2 py-1 border border-danger-100 rounded text-danger-400 hover:bg-danger-50">✕</button>
                     </div>
                   </div>
@@ -604,36 +599,36 @@
 
               
               <div class="w-72 shrink-0 border-l border-gray-100 dark:border-slate-800 pl-6">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ autoForm.id_ac_smartautomation_rule ? 'Modifier' : 'Nouvelle règle' }}</h3>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ autoForm.id_ac_smartautomation_rule ? tHub('hub.ui.projects.edit', 'Modifier') : tHub('hub.ui.projects.new_rule', 'Nouvelle règle') }}</h3>
                 <form @submit.prevent="saveAutomation" class="space-y-3">
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Nom *</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.field_name', 'Nom *') }}</label>
                     <input v-model="autoForm.title" required class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Déclencheur</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.trigger', 'Déclencheur') }}</label>
                     <select v-model="autoForm.trigger_type" class="input-field">
                       <option v-for="(label, key) in AUTO_TRIGGERS" :key="key" :value="key">{{ label }}</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Action</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.action', 'Action') }}</label>
                     <select v-model="autoForm.action_type" class="input-field">
                       <option v-for="(label, key) in AUTO_ACTIONS" :key="key" :value="key">{{ label }}</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Payload (JSON)</label>
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">{{ tHub('hub.ui.projects.payload', 'Payload (JSON)') }}</label>
                     <textarea v-model="autoForm.action_payload" rows="4" class="input-field resize-none font-mono text-xs" placeholder='{"message": "…"}' />
                   </div>
                   <div class="flex items-center gap-2">
                     <input type="checkbox" v-model="autoForm.active" id="auto-active" class="rounded" />
-                    <label for="auto-active" class="text-xs text-gray-600">Activer la règle</label>
+                    <label for="auto-active" class="text-xs text-gray-600">{{ tHub('hub.ui.projects.enable_rule', 'Activer la règle') }}</label>
                   </div>
                   <div class="flex gap-2 pt-1">
-                    <button v-if="autoForm.id_ac_smartautomation_rule" type="button" @click="resetAutoForm" class="flex-1 py-1.5 text-xs border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:bg-slate-950">Annuler</button>
+                    <button v-if="autoForm.id_ac_smartautomation_rule" type="button" @click="resetAutoForm" class="flex-1 py-1.5 text-xs border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:bg-gray-50 dark:bg-slate-950">{{ tHub('hub.ui.projects.cancel', 'Annuler') }}</button>
                     <button type="submit" :disabled="autoSaving" class="flex-1 py-1.5 text-xs bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50">
-                      {{ autoSaving ? '…' : 'Enregistrer' }}
+                      {{ autoSaving ? '…' : tHub('hub.ui.projects.save', 'Enregistrer') }}
                     </button>
                   </div>
                 </form>
@@ -649,34 +644,41 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
+import { PROJECT_BUDGETS, libelleBudget } from '~/utils/project-budgets'
+
+const { t: tHub } = useHubT()
 const { resolvedClientId } = useClientDetection()
 const router   = useRouter()
 
-const STATUSES: Record<string, string> = {
-  perdu_standby: 'Perdu / Standby',
-  lead_entrant:  'Lead entrant',
-  qualification: 'Qualification',
-  devis_envoye:  'Devis envoyé',
-  devis_accepte: 'Devis accepté',
-  en_cours:      'En cours',
-  livraison:     'Livraison',
-  facture:       'Facturé',
-  gagne:         'Gagné',
+if (router.getRoutes().some(r => r.path === '/hub/crm/comptes')) {
+  await navigateTo('/hub/crm/comptes', { replace: true })
 }
 
-const PROJECT_TYPES: Record<string, string> = {
-  site_web:    'Site PrestaShop complet',
-  module_ps:   'Module PrestaShop sur-mesure',
-  integration: 'Intégration ERP / PIM / WMS',
-  migration:   'Migration',
-  headless:    'Architecture headless',
-  seo:         'Mission SEO / contenu',
-  audit:       'Audit technique',
-  formation:   'Formation / coaching',
-  maintenance: 'TMA mensuelle',
-  conseil:     'Conseil',
-  autre:       'Autre',
-}
+const STATUSES = computed<Record<string, string>>(() => ({
+  perdu_standby: tHub('hub.ui.projects.status_lost', 'Perdu / Standby'),
+  lead_entrant: tHub('hub.ui.projects.status_lead', 'Lead entrant'),
+  qualification: tHub('hub.ui.projects.status_qualification', 'Qualification'),
+  devis_envoye: tHub('hub.ui.projects.status_quote_sent', 'Devis envoyé'),
+  devis_accepte: tHub('hub.ui.projects.status_quote_accepted', 'Devis accepté'),
+  en_cours: tHub('hub.ui.projects.status_in_progress', 'En cours'),
+  livraison: tHub('hub.ui.projects.status_delivery', 'Livraison'),
+  facture: tHub('hub.ui.projects.status_invoiced', 'Facturé'),
+  gagne: tHub('hub.ui.projects.status_won', 'Gagné'),
+}))
+
+const PROJECT_TYPES = computed<Record<string, string>>(() => ({
+  site_web: tHub('hub.ui.projects.type_site', 'Site PrestaShop complet'),
+  module_ps: tHub('hub.ui.projects.type_module', 'Module PrestaShop sur-mesure'),
+  integration: tHub('hub.ui.projects.type_integration', 'Intégration ERP / PIM / WMS'),
+  migration: tHub('hub.ui.projects.type_migration', 'Migration'),
+  headless: tHub('hub.ui.projects.type_headless', 'Architecture headless'),
+  seo: tHub('hub.ui.projects.type_seo', 'Mission SEO / contenu'),
+  audit: tHub('hub.ui.projects.type_audit', 'Audit technique'),
+  formation: tHub('hub.ui.projects.type_training', 'Formation / coaching'),
+  maintenance: tHub('hub.ui.projects.type_maintenance', 'TMA mensuelle'),
+  conseil: tHub('hub.ui.projects.type_consulting', 'Conseil'),
+  autre: tHub('hub.ui.projects.other', 'Autre'),
+}))
 
 const STATUS_COLORS: Record<string, string> = {
   perdu_standby: 'bg-gray-300',
@@ -690,42 +692,42 @@ const STATUS_COLORS: Record<string, string> = {
   gagne:         'bg-stage-won-500',
 }
 
-const TEAM_ROLES: Record<string, string> = {
-  owner:     'Propriétaire',
-  developer: 'Développeur',
-  designer:  'Designer',
-  pm:        'Chef de projet',
-  account:   'Account manager',
-  other:     'Autre',
-}
+const TEAM_ROLES = computed<Record<string, string>>(() => ({
+  owner: tHub('hub.ui.projects.role_owner', 'Propriétaire'),
+  developer: tHub('hub.ui.projects.role_developer', 'Développeur'),
+  designer: tHub('hub.ui.projects.role_designer', 'Designer'),
+  pm: tHub('hub.ui.projects.role_pm', 'Chef de projet'),
+  account: tHub('hub.ui.projects.role_account', 'Account manager'),
+  other: tHub('hub.ui.projects.other', 'Autre'),
+}))
 
-const WA_TYPES: Record<string, string> = {
-  prospection: 'Prospection',
-  relance:     'Relance',
-  devis:       'Devis',
-  onboarding:  'Onboarding',
-  suivi:       'Suivi projet',
-  livraison:   'Livraison',
-  autre:       'Autre',
-}
+const WA_TYPES = computed<Record<string, string>>(() => ({
+  prospection: tHub('hub.ui.projects.wa_prospecting', 'Prospection'),
+  relance: tHub('hub.ui.projects.wa_followup', 'Relance'),
+  devis: tHub('hub.ui.projects.wa_quote', 'Devis'),
+  onboarding: tHub('hub.ui.projects.wa_onboarding', 'Onboarding'),
+  suivi: tHub('hub.ui.projects.wa_project_follow', 'Suivi projet'),
+  livraison: tHub('hub.ui.projects.wa_delivery', 'Livraison'),
+  autre: tHub('hub.ui.projects.other', 'Autre'),
+}))
 
-const AUTO_TRIGGERS: Record<string, string> = {
-  status_change:  'Changement de statut',
-  project_create: 'Création de projet',
-  task_done:      'Tâche terminée',
-  document_added: 'Document ajouté',
-  email_sent:     'Email envoyé',
-  manual:         'Manuel',
-}
+const AUTO_TRIGGERS = computed<Record<string, string>>(() => ({
+  status_change: tHub('hub.ui.projects.trig_status_change', 'Changement de statut'),
+  project_create: tHub('hub.ui.projects.trig_project_create', 'Création de projet'),
+  task_done: tHub('hub.ui.projects.trig_task_done', 'Tâche terminée'),
+  document_added: tHub('hub.ui.projects.trig_doc_added', 'Document ajouté'),
+  email_sent: tHub('hub.ui.projects.trig_email_sent', 'Email envoyé'),
+  manual: tHub('hub.ui.projects.trig_manual', 'Manuel'),
+}))
 
-const AUTO_ACTIONS: Record<string, string> = {
-  send_whatsapp:       'Envoyer WhatsApp',
-  send_email:          'Envoyer email',
-  create_task:         'Créer une tâche',
-  change_status:       'Changer le statut',
-  notify_team:         'Notifier l\'équipe',
-  apply_task_template: 'Appliquer modèle de tâches',
-}
+const AUTO_ACTIONS = computed<Record<string, string>>(() => ({
+  send_whatsapp: tHub('hub.ui.projects.act_send_wa', 'Envoyer WhatsApp'),
+  send_email: tHub('hub.ui.projects.act_send_email', 'Envoyer email'),
+  create_task: tHub('hub.ui.projects.act_create_task', 'Créer une tâche'),
+  change_status: tHub('hub.ui.projects.act_change_status', 'Changer le statut'),
+  notify_team: tHub('hub.ui.projects.act_notify_team', 'Notifier l\'équipe'),
+  apply_task_template: tHub('hub.ui.projects.act_apply_template', 'Appliquer modèle de tâches'),
+}))
 
 const viewMode = ref<'kanban' | 'grid'>('kanban')
 
@@ -752,7 +754,7 @@ const form = ref(emptyForm())
 
 const projectsByStatus = computed(() => {
   const map: Record<string, any[]> = {}
-  for (const key of Object.keys(STATUSES)) map[key] = []
+  for (const key of Object.keys(STATUSES.value)) map[key] = []
   for (const p of projects.value) {
     const key = p.project_status || 'lead_entrant'
     if (map[key]) map[key].push(p)
@@ -765,10 +767,10 @@ const statusColor = (key: string) => STATUS_COLORS[key] || 'bg-gray-200'
 
 const leadLevelLabel = (lvl: number | null | undefined): string => {
   const v = Number(lvl)
-  if (lvl === null || lvl === undefined || Number.isNaN(v)) return 'Non qualifié'
-  if (v >= 7) return 'Chaud'
-  if (v >= 4) return 'Tiède'
-  return 'Froid'
+  if (lvl === null || lvl === undefined || Number.isNaN(v)) return tHub('hub.ui.projects.lead_unqualified', 'Non qualifié')
+  if (v >= 7) return tHub('hub.ui.projects.lead_hot', 'Chaud')
+  if (v >= 4) return tHub('hub.ui.projects.lead_warm', 'Tiède')
+  return tHub('hub.ui.projects.lead_cold', 'Froid')
 }
 const leadLevelAvatarClass = (lvl: number | null | undefined): string => {
   const v = Number(lvl)
@@ -785,22 +787,22 @@ const leadLevelBadgeClass = (lvl: number | null | undefined): string => {
   return 'bg-sky-100 text-sky-700'
 }
 
-const SOURCE_BADGES: Record<string, { label: string; cls: string }> = {
-  product_form:        { label: 'Form produit',  cls: 'bg-rose-100 text-rose-700' },
-  contact_form:        { label: 'Contact',       cls: 'bg-rose-100 text-rose-700' },
-  demande_devis:       { label: 'Devis',         cls: 'bg-rose-100 text-rose-700' },
+const SOURCE_BADGES = computed<Record<string, { label: string; cls: string }>>(() => ({
+  product_form:        { label: tHub('hub.ui.projects.src_product_form', 'Form produit'),  cls: 'bg-rose-100 text-rose-700' },
+  contact_form:        { label: tHub('hub.ui.projects.src_contact', 'Contact'),       cls: 'bg-rose-100 text-rose-700' },
+  demande_devis:       { label: tHub('hub.ui.projects.src_quote', 'Devis'),         cls: 'bg-rose-100 text-rose-700' },
   calendly:            { label: 'Calendly',      cls: 'bg-blue-100 text-blue-700' },
-  rdv:                 { label: 'RDV',           cls: 'bg-blue-100 text-blue-700' },
+  rdv:                 { label: tHub('hub.ui.projects.src_appointment', 'RDV'),           cls: 'bg-blue-100 text-blue-700' },
   whatsapp:            { label: 'WhatsApp',      cls: 'bg-emerald-100 text-emerald-700' },
   chatbot_product:     { label: 'Chatbot',       cls: 'bg-violet-100 text-violet-700' },
-  manual:              { label: 'Manuel',        cls: 'bg-gray-200 text-gray-700' },
+  manual:              { label: tHub('hub.ui.projects.src_manual', 'Manuel'),        cls: 'bg-gray-200 text-gray-700' },
   blog_article:        { label: 'Blog',          cls: 'bg-indigo-100 text-indigo-700' },
-  'rungis-carnet-2025':{ label: 'Atlas Rungis',  cls: 'bg-amber-100 text-amber-700' },
+  'rungis-carnet-2025':{ label: 'Carnet Rungis',  cls: 'bg-amber-100 text-amber-700' },
   import:              { label: 'Import',        cls: 'bg-slate-100 text-slate-700' },
-}
+}))
 const sourceBadge = (src: string): { label: string; cls: string } => {
   if (!src) return { label: '—', cls: 'bg-gray-100 text-gray-500' }
-  const hit = SOURCE_BADGES[src]
+  const hit = SOURCE_BADGES.value[src]
   if (hit) return hit
   
   const label = src.replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).slice(0, 14)
@@ -830,12 +832,12 @@ const deleteProject = async (p: any) => {
   const id = Number(p?.id_ac_smartproject)
   if (!id) return
   const title = String(p?.project_title || `#${id}`)
-  if (!confirm(`Supprimer définitivement « ${title} » ?\n\nTâches, emails, documents et messages WhatsApp liés seront aussi supprimés.`)) return
+  if (!confirm(tHub('hub.ui.projects.confirm_delete', 'Supprimer définitivement « {title} » ?\n\nTâches, emails, documents et messages WhatsApp liés seront aussi supprimés.', { title }))) return
   try {
     await $fetch(`/api/bo/projects/${id}`, { method: 'DELETE' })
     projects.value = projects.value.filter((x) => x.id_ac_smartproject !== id)
   } catch (err: any) {
-    alert(err?.data?.message || err?.message || 'Erreur suppression')
+    alert(err?.data?.message || err?.message || tHub('hub.ui.projects.delete_error', 'Erreur suppression'))
   }
 }
 
@@ -906,7 +908,7 @@ const saveProject = async () => {
     closeModal()
     await loadProjects()
   } catch (err: any) {
-    formError.value = err?.data?.message || err?.message || 'Erreur lors de la sauvegarde'
+    formError.value = err?.data?.message || err?.message || tHub('hub.ui.projects.save_error', 'Erreur lors de la sauvegarde')
   } finally {
     saving.value = false
   }
@@ -1023,7 +1025,7 @@ const saveTeamMember = async () => {
       { method: 'POST', body: { ...teamForm.value } },
     )
     if (!data.success) {
-      teamToast.value = { type: 'error', message: data.error || data.message || 'Erreur CRM' }
+      teamToast.value = { type: 'error', message: data.error || data.message || tHub('hub.ui.projects.crm_error', 'Erreur CRM') }
       return
     }
 
@@ -1045,10 +1047,10 @@ const saveTeamMember = async () => {
       )
       psMsg = psRes.message
       if (psRes.generatedPassword) {
-        psMsg += ` | Mot de passe : ${psRes.generatedPassword}`
+        psMsg += tHub('hub.ui.projects.generated_access', ' | Mot de passe généré — {valeur}', { valeur: psRes.generatedPassword })
       }
     } catch {
-      psMsg = 'Membre ajout\u00e9 au CRM (cr\u00e9ation PS non disponible)'
+      psMsg = tHub('hub.ui.projects.member_added_crm', 'Membre ajouté au CRM (création PS non disponible)')
     }
 
     teamToast.value = { type: 'success', message: psMsg }

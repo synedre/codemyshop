@@ -2,7 +2,10 @@
 
 import { cloneOrderItems } from '~/modules/quickorder/server/utils/quickorder'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idOrder = Number(getRouterParam(event, 'idOrder'))
   if (!idOrder) throw createError({ statusCode: 400, statusMessage: 'idOrder invalide' })
 

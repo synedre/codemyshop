@@ -1,7 +1,11 @@
 
 
-import { useClientDb, resolveClientId } from '~/server/utils/db'
+import { useClientDb } from '~/server/utils/db'
+import { resolveShopIdentity } from '~/server/utils/shop-identity'
 import { sendCartRecoveryEmail } from '~/server/utils/order-emails'
+import { getThemePrimaryColor } from '~/modules/theme/server/utils/theme'
+
+import { requireEmployeeSession } from '~/server/utils/session'
 
 interface CartRow {
   id_cart: number
@@ -14,30 +18,12 @@ interface CartRow {
   total_estimated: number
 }
 
-const SHOP_URLS: Record<string, string> = {
-  'example-shop': 'https://example-shop-nuxt.codemyshop.com',
-  'ac-hub': 'https://codemyshop.com',
-  'codemyshop': 'https://codemyshop.com',
-  'example-vape': 'https://example-vape.com',
-}
-const SHOP_NAMES: Record<string, string> = {
-  'example-shop': 'Example Shop',
-  'ac-hub': 'CodeMyShop',
-  'codemyshop': 'CodeMyShop',
-  'example-vape': 'Example Vape',
-}
-const SHOP_COLORS: Record<string, string> = {
-  'example-shop': '#81a20e',
-  'ac-hub': '#4F46E5',
-  'codemyshop': '#4F46E5',
-  'example-vape': '#4F46E5',
-}
-
 function formatPrice(n: number): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n) + ' HT'
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ id_carts?: number[]; test_email?: string }>(event)
   const ids = (body?.id_carts || []).map(Number).filter(Number.isFinite)
   if (!ids.length) {
@@ -48,11 +34,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'test_email invalide' })
   }
 
-  const tenant = resolveClientId(event)
   const db = useClientDb(event)
-  const shopUrl   = SHOP_URLS[tenant]   || 'https://example-shop-nuxt.codemyshop.com'
-  const shopName  = SHOP_NAMES[tenant]  || 'Boutique'
-  const shopColor = SHOP_COLORS[tenant] || '#4F46E5'
+  
+  
+  
+  let shopUrl: string
+  let shopName: string
+  try {
+    ({ shopUrl, shopName } = resolveShopIdentity(useRuntimeConfig().public as any))
+  } catch (err: any) {
+    throw createError({ statusCode: 500, message: String(err?.message || err) })
+  }
+  const shopColor = (await getThemePrimaryColor({ event }).catch(() => null)) || '#4F46E5'
 
   
   

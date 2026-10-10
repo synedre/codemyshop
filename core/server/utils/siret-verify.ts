@@ -33,7 +33,12 @@ export async function verifySiret(rawSiret: string): Promise<SiretInfo> {
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'example-shop-chatbot/1.0', Accept: 'application/json' },
+      
+      
+      
+      
+      
+      headers: { 'User-Agent': 'codemyshop-siret-verify/1.0', Accept: 'application/json' },
       signal: ctrl.signal,
     })
     clearTimeout(timer)

@@ -1,33 +1,6 @@
 
 
-const BOT_SIGNATURES: Record<string, string> = {
-  googlebot: 'Google',
-  'google-inspectiontool': 'Google Inspect',
-  'adsbot-google': 'Google Ads',
-  'mediapartners-google': 'Google AdSense',
-  bingbot: 'Bing',
-  slurp: 'Yahoo',
-  duckduckbot: 'DuckDuckGo',
-  baiduspider: 'Baidu',
-  yandexbot: 'Yandex',
-  facebookexternalhit: 'Facebook',
-  twitterbot: 'Twitter',
-  linkedinbot: 'LinkedIn',
-  applebot: 'Apple',
-  gptbot: 'GPTBot',
-  chatgpt: 'ChatGPT',
-  claudebot: 'ClaudeBot',
-  anthropic: 'Anthropic',
-  amazonbot: 'Amazon',
-  semrushbot: 'Semrush',
-  ahrefsbot: 'Ahrefs',
-  mj12bot: 'Majestic',
-  dotbot: 'Moz',
-  rogerbot: 'Moz',
-  petalbot: 'Huawei',
-  bytespider: 'ByteDance',
-  'screaming frog': 'Screaming Frog',
-}
+import { detectBot } from '~/server/utils/bot-detect'
 
 interface BotHit {
   bot: string
@@ -41,15 +14,6 @@ let buffer: BotHit[] = []
 let flushTimer: ReturnType<typeof setInterval> | null = null
 
 let disabled = false
-
-function detectBot(ua: string): string | null {
-  if (!ua) return null
-  const lower = ua.toLowerCase()
-  for (const [sig, name] of Object.entries(BOT_SIGNATURES)) {
-    if (lower.includes(sig)) return name
-  }
-  return null
-}
 
 function stopTracking(reason: string) {
   disabled = true

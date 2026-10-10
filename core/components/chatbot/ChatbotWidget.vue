@@ -1,6 +1,6 @@
 <template>
   
-  <div class="fixed bottom-6 right-4 z-50 flex items-end gap-2 pointer-events-none">
+  <div class="fixed bottom-[calc(1.5rem+var(--cc-banner-h,0px))] right-4 z-50 flex items-end gap-2 pointer-events-none">
     <div
       v-if="open"
       class="pointer-events-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-80 sm:w-96 flex flex-col overflow-hidden"
@@ -43,6 +43,18 @@
             <span class="w-1.5 h-1.5 bg-slate-400 rounded-full inline-block typing-dot" style="animation-delay: 0.15s" />
             <span class="w-1.5 h-1.5 bg-slate-400 rounded-full inline-block typing-dot" style="animation-delay: 0.3s" />
           </div>
+        </div>
+
+        
+        <div v-if="!botTyping && !humanTakeover && dynamicLinkOptions?.length && !terminal" class="flex flex-col gap-1.5 mt-2">
+          <a
+            v-for="opt in dynamicLinkOptions"
+            :key="opt.url"
+            :href="opt.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-left text-xs px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors no-underline"
+          >{{ opt.label }}</a>
         </div>
 
         <div v-if="!botTyping && !humanTakeover && pendingOptions?.length && !terminal" class="flex flex-col gap-1.5 mt-2">
@@ -122,6 +134,12 @@ function renderMarkdown(raw: string): string {
     /\[([^\]]+)\]\((\/[^\s)]+)\)/g,
     '<a href="$2" class="underline font-semibold">$1</a>',
   )
+  
+  
+  out = out.replace(
+    /(?<!href=")(https?:\/\/[^\s<>"`]+[^\s<>"`.,;:!?])/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" class="underline font-semibold">$1</a>',
+  )
   return out
 }
 
@@ -131,6 +149,8 @@ interface ChatbotSession { conversationId: number; conversationToken: string; sc
 const open = ref(false)
 const messages = ref<ChatMsg[]>([])
 const pendingOptions = ref<string[]>([])
+
+const dynamicLinkOptions = ref<Array<{ label: string; url: string }>>([])
 const conversationId = ref<number | null>(null)
 const conversationToken = ref<string>('')
 const productIdContext = ref<number | null>(null)
@@ -259,14 +279,15 @@ async function resumeFromSession(session: ChatbotSession, scenario: string, prod
       if (qty && qty > 1) {
         messages.value.push({ role: 'user', content: t('chatbot.chatbot_user_qty_msg').replace('{qty}', String(qty)) })
       }
-      messages.value.push({ role: 'bot', content: r.content })
-      pendingOptions.value = r.options || []
-      expectsText.value = r.type === 'text'
+      handleBotMessage(r)
     }
   } catch (err: any) {
-    error.value = getApiErrorMessage(err, t)
+    
+    
+    const msg = getApiErrorMessage(err, t)
     clearSession()
-    await startConv(scenario, productId)
+    await startConv(scenario, productId, qty)
+    if (!conversationId.value) error.value = msg
     return
   } finally {
     botTyping.value = false
@@ -303,7 +324,7 @@ async function startConv(scenario: string, productId: number | null, qty: number
     })
     
     if (qty && qty > 1) {
-      messages.value.push({ role: 'user', content: `Qté visée : ${qty}` })
+      messages.value.push({ role: 'user', content: t('chatbot.chatbot_user_qty_msg').replace('{qty}', String(qty)) })
     }
     conversationId.value = res.conversationId
     conversationToken.value = res.conversationToken
@@ -376,8 +397,34 @@ function handleBotMessage(msg: { type: 'buttons' | 'text'; content: string; opti
   }
   messages.value.push({ role: 'bot', content: msg.content })
   pendingOptions.value = msg.type === 'buttons' && msg.options ? msg.options : []
+  dynamicLinkOptions.value = []
   expectsText.value = msg.type === 'text' && !msg.terminal
   terminal.value = Boolean(msg.terminal)
+
+  
+  
+  
+  
+  
+  if (msg.nodeKey === 'product_results') {
+    const lastUserMsg = [...messages.value].reverse().find((m) => m.role === 'user')?.content?.trim() || ''
+    if (lastUserMsg) {
+      $fetch<{ ok: boolean; results: Array<{ id_product: number; name: string; url: string }> }>(
+        '/api/chatbot/search-product',
+        { query: { q: lastUserMsg, lang: 'fr', limit: 3 } },
+      )
+        .then((res) => {
+          if (res?.ok && res.results?.length) {
+            dynamicLinkOptions.value = res.results.map((r) => ({
+              label: `📦 Voir ${r.name}`,
+              url: r.url,
+            }))
+          }
+        })
+        .catch(() => {  })
+    }
+  }
+
   if (terminal.value) {
     
     setTimeout(() => clearSession(), 500)

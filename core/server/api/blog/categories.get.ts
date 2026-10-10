@@ -1,10 +1,14 @@
 
 
 import { useClientDb } from '~/server/utils/db'
+import { resolveIdLang } from '~/server/utils/lang'
 
 export interface BlogPillarNode {
   id: number
   key: string
+  
+
+  keyFr: string
   name: string
   description: string
   metaTitle: string
@@ -16,6 +20,7 @@ export interface BlogPillarNode {
 export interface BlogSubcategoryNode {
   id: number
   key: string
+  keyFr: string
   name: string
   description: string
   metaTitle: string
@@ -32,6 +37,9 @@ export interface BlogCategoriesResponse {
 export default defineEventHandler(async (event): Promise<BlogCategoriesResponse> => {
   try {
     const db = useClientDb(event)
+    
+    
+    const idLang = await resolveIdLang(event)
 
     const blogRoot = await db.query(
       `SELECT c.id_cms_category
@@ -47,12 +55,18 @@ export default defineEventHandler(async (event): Promise<BlogCategoriesResponse>
 
     const pillars = await db.query(
       `SELECT c.id_cms_category, c.position,
-              cl.name, cl.description, cl.link_rewrite, cl.meta_title, cl.meta_description
+              COALESCE(cl.name, cfr.name) AS name,
+              COALESCE(cl.description, cfr.description) AS description,
+              COALESCE(cl.link_rewrite, cfr.link_rewrite) AS link_rewrite,
+              cfr.link_rewrite AS link_rewrite_fr,
+              COALESCE(cl.meta_title, cfr.meta_title) AS meta_title,
+              COALESCE(cl.meta_description, cfr.meta_description) AS meta_description
        FROM ps_cms_category c
-       JOIN ps_cms_category_lang cl ON c.id_cms_category = cl.id_cms_category AND cl.id_lang = 1
+       JOIN ps_cms_category_lang cfr ON c.id_cms_category = cfr.id_cms_category AND cfr.id_lang = 1
+       LEFT JOIN ps_cms_category_lang cl ON c.id_cms_category = cl.id_cms_category AND cl.id_lang = ?
        WHERE c.id_parent = ? AND c.active = 1
        ORDER BY c.position, c.id_cms_category`,
-      [rootId],
+      [idLang, rootId],
     )
 
     if (!pillars.length) return { rootId, pillars: [] }
@@ -62,12 +76,18 @@ export default defineEventHandler(async (event): Promise<BlogCategoriesResponse>
 
     const subcats = await db.query(
       `SELECT c.id_cms_category, c.id_parent, c.position,
-              cl.name, cl.description, cl.link_rewrite, cl.meta_title, cl.meta_description
+              COALESCE(cl.name, cfr.name) AS name,
+              COALESCE(cl.description, cfr.description) AS description,
+              COALESCE(cl.link_rewrite, cfr.link_rewrite) AS link_rewrite,
+              cfr.link_rewrite AS link_rewrite_fr,
+              COALESCE(cl.meta_title, cfr.meta_title) AS meta_title,
+              COALESCE(cl.meta_description, cfr.meta_description) AS meta_description
        FROM ps_cms_category c
-       JOIN ps_cms_category_lang cl ON c.id_cms_category = cl.id_cms_category AND cl.id_lang = 1
+       JOIN ps_cms_category_lang cfr ON c.id_cms_category = cfr.id_cms_category AND cfr.id_lang = 1
+       LEFT JOIN ps_cms_category_lang cl ON c.id_cms_category = cl.id_cms_category AND cl.id_lang = ?
        WHERE c.id_parent IN (${placeholders}) AND c.active = 1
        ORDER BY c.position, c.id_cms_category`,
-      pillarIds,
+      [idLang, ...pillarIds],
     )
 
     const subsByParent = new Map<number, BlogSubcategoryNode[]>()
@@ -75,6 +95,7 @@ export default defineEventHandler(async (event): Promise<BlogCategoriesResponse>
       const node: BlogSubcategoryNode = {
         id: s.id_cms_category,
         key: s.link_rewrite,
+        keyFr: s.link_rewrite_fr,
         name: s.name,
         description: s.description || '',
         metaTitle: s.meta_title || '',
@@ -91,6 +112,7 @@ export default defineEventHandler(async (event): Promise<BlogCategoriesResponse>
       pillars: pillars.map((p: any) => ({
         id: p.id_cms_category,
         key: p.link_rewrite,
+        keyFr: p.link_rewrite_fr,
         name: p.name,
         description: p.description || '',
         metaTitle: p.meta_title || '',

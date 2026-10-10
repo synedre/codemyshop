@@ -35,9 +35,26 @@
       </component>
 
       
+      
+      <button
+        v-if="hasHidden"
+        ref="burgerBtn"
+        type="button"
+        class="hidden lg:inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors shrink-0"
+        :aria-expanded="drawerOpen"
+        aria-controls="universes-drawer"
+        :aria-label="t('common.all_universes', 'Tous les univers')"
+        @click="openDrawer"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+
+      
       <ul class="hidden lg:flex items-center gap-1 flex-1">
         <li
-          v-for="item in config?.items"
+          v-for="item in barItems"
           :key="item.label"
           class="relative group"
         >
@@ -326,6 +343,72 @@
       </div>
     </Transition>
 
+    
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-200 ease-out"
+        enter-from-class="opacity-0" enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-150 ease-in"
+        leave-from-class="opacity-100" leave-to-class="opacity-0"
+      >
+        <div
+          v-if="drawerOpen"
+          id="universes-drawer"
+          ref="drawerEl"
+          class="hidden lg:block fixed inset-0 z-[60]"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('common.all_universes', 'Tous les univers')"
+          @keydown.tab.exact.prevent="trapFocus(false)"
+          @keydown.shift.tab.prevent="trapFocus(true)"
+        >
+          
+          <div class="absolute inset-0 bg-black/40" @click="closeDrawer" />
+          
+          <Transition
+            enter-active-class="transition-transform duration-200 ease-out"
+            enter-from-class="-translate-x-full" enter-to-class="translate-x-0"
+            leave-active-class="transition-transform duration-150 ease-in"
+            leave-from-class="translate-x-0" leave-to-class="-translate-x-full"
+            appear
+          >
+            <div class="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl flex flex-col">
+              <div class="flex items-center justify-between px-5 h-16 border-b border-gray-100 shrink-0">
+                <span class="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                  {{ t('common.all_universes', 'Tous les univers') }}
+                </span>
+                <button
+                  ref="closeBtn"
+                  type="button"
+                  class="p-2 -mr-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                  :aria-label="t('common.close', 'Fermer')"
+                  @click="closeDrawer"
+                >
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <nav class="flex-1 overflow-y-auto py-2" :aria-label="t('common.all_universes', 'Tous les univers')">
+                <component
+                  :is="item.external ? 'a' : NuxtLink"
+                  v-for="item in allItems"
+                  :key="item.label"
+                  :to="!item.external ? item.href : undefined"
+                  :href="item.external ? item.href : undefined"
+                  :target="item.external ? '_blank' : undefined"
+                  class="flex items-center px-5 py-3 text-sm font-medium text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                  @click="closeDrawer"
+                >
+                  {{ item.label }}
+                </component>
+              </nav>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
+
   </header>
 </template>
 
@@ -345,8 +428,59 @@ const toggleMobileAccordion = (label: string) => {
   mobileAccordion.value = mobileAccordion.value === label ? null : label
 }
 
+const allItems  = computed<any[]>(() => (config.value?.items as any[]) ?? [])
+const barItems  = computed<any[]>(() => allItems.value.filter(i => i.barVisible !== false))
+
+const hasHidden = computed<boolean>(() => allItems.value.some(i => i.barVisible === false))
+
+const drawerOpen = ref(false)
+const burgerBtn  = ref<HTMLElement | null>(null)
+const closeBtn   = ref<HTMLElement | null>(null)
+const drawerEl   = ref<HTMLElement | null>(null)
+
+const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+function trapFocus(reverse: boolean) {
+  const el = drawerEl.value
+  if (!el) return
+  const nodes = Array.from(el.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(n => !n.closest('[aria-hidden="true"]'))
+  if (!nodes.length) return
+  const first = nodes[0]
+  const last  = nodes[nodes.length - 1]
+  const active = document.activeElement as HTMLElement
+  if (reverse) {
+    if (active === first || !el.contains(active)) last.focus()
+    else {
+      const idx = nodes.indexOf(active)
+      nodes[idx - 1]?.focus()
+    }
+  } else {
+    if (active === last || !el.contains(active)) first.focus()
+    else {
+      const idx = nodes.indexOf(active)
+      nodes[idx + 1]?.focus()
+    }
+  }
+}
+
+async function openDrawer() {
+  drawerOpen.value = true
+  await nextTick()
+  closeBtn.value?.focus()
+}
+function closeDrawer() {
+  drawerOpen.value = false
+  nextTick(() => burgerBtn.value?.focus())  
+}
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && drawerOpen.value) closeDrawer()
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+
 watch(() => route.path, () => {
   mobileOpen.value = false
   mobileAccordion.value = null
+  drawerOpen.value = false
 })
 </script>

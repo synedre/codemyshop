@@ -14,6 +14,8 @@ const cfg = useRuntimeConfig()
 const igHandle = String((cfg.public as any).instagramHandle ?? '')
 const igHref = computed(() => igHandle ? `https://www.instagram.com/${igHandle}/` : '')
 
+const hasArchivePage = computed(() => (cfg.public as any).instagramArchivePage === true)
+
 const { data } = await useFetch<{ items: IgMedia[] }>('/api/instagram/feed', {
   query: { limit: 6 },
   default: () => ({ items: [] }),
@@ -57,9 +59,10 @@ const hasFeed = computed(() => items.value.length > 0)
           <span
             v-if="m.mediaType === 'VIDEO'"
             class="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full p-1.5"
+            role="img"
             :aria-label="t('instagram.media_video')"
           >
-            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3 h-3 text-white" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           </span>
@@ -67,9 +70,10 @@ const hasFeed = computed(() => items.value.length > 0)
           <span
             v-else-if="m.mediaType === 'CAROUSEL_ALBUM'"
             class="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full p-1.5"
+            role="img"
             :aria-label="t('instagram.media_album')"
           >
-            <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="w-3 h-3 text-white" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <rect x="7" y="7" width="13" height="13" rx="2" />
               <path stroke-linecap="round" d="M4 16V6a2 2 0 0 1 2-2h10" />
             </svg>
@@ -99,6 +103,7 @@ const hasFeed = computed(() => items.value.length > 0)
           @{{ igHandle }}
         </a>
         <NuxtLink
+          v-if="hasArchivePage"
           to="/instagram"
           class="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 font-semibold rounded-xl text-sm transition-colors"
         >

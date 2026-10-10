@@ -6,27 +6,27 @@
       </NuxtLink>
       <div class="flex-1 min-w-0">
         <h1 class="text-base font-bold text-gray-800 dark:text-slate-100 truncate">
-          {{ isNew ? 'Nouveau code promo' : (form.name || 'Code sans nom') }}
+          {{ isNew ? t('hub.ui.promo_detail.new_title', 'Nouveau code promo') : (form.name || t('hub.ui.promo_detail.no_name', 'Code sans nom')) }}
         </h1>
         <p class="text-xs text-gray-400 mt-0.5">
           <span v-if="!isNew">#{{ form.id }} —</span>
           <span class="font-mono">{{ form.code || 'PROMO' }}</span>
           <span v-if="!isMaster" class="ml-2 inline-flex items-center gap-1 text-amber-600">
             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" /></svg>
-            Traduction — seul le nom est éditable
+            {{ t('hub.ui.promo_detail.tr_note', 'Traduction — seul le nom est éditable') }}
           </span>
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <HubLangSelector aria-label="Langue d'édition du code promo" />
-        <span v-if="saved" class="text-xs text-green-600 font-medium">Sauvegardé</span>
-        <span v-if="saveError" class="text-xs text-red-600 font-medium truncate max-w-xs" :title="saveError">Erreur : {{ saveError }}</span>
+        <HubLangSelector :aria-label="t('hub.ui.promo_detail.aria_lang', 'Langue d\'édition du code promo')" />
+        <span v-if="saved" class="text-xs text-green-600 font-medium">{{ t('hub.ui.promo_detail.saved', 'Sauvegardé') }}</span>
+        <span v-if="saveError" class="text-xs text-red-600 font-medium truncate max-w-xs" :title="saveError">{{ t('hub.ui.promo_detail.error_prefix', 'Erreur : {error}', { error: saveError }) }}</span>
         <button
           @click="save"
           :disabled="saving || loading"
           class="text-xs px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
         >
-          {{ saving ? 'Enregistrement…' : (isNew ? 'Créer' : 'Enregistrer') }}
+          {{ saving ? t('hub.ui.promo_detail.saving', 'Enregistrement…') : (isNew ? t('hub.ui.promo_detail.create', 'Créer') : t('hub.ui.promo_detail.save', 'Enregistrer')) }}
         </button>
       </div>
     </header>
@@ -45,36 +45,36 @@
         
         <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
           <header class="mb-5">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Informations</h2>
-            <p class="text-xs text-gray-400 mt-0.5">Le nom est traduit par langue. Le code et le statut sont partagés.</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.promo_detail.info', 'Informations') }}</h2>
+            <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.promo_detail.info_hint', 'Le nom est traduit par langue. Le code et le statut sont partagés.') }}</p>
           </header>
           <div class="space-y-4">
             <div>
               <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
-                Nom
+                {{ t('hub.ui.promo_detail.name', 'Nom') }}
                 <span class="text-[10px] text-gray-400 font-normal">({{ currentLang?.iso_code?.toUpperCase() || 'FR' }})</span>
               </label>
               <input
                 v-model="form.name"
                 type="text"
-                placeholder="Ex. Remise de bienvenue PME"
+                :placeholder="t('hub.ui.promo_detail.ph_name', 'Ex. Remise de bienvenue PME')"
                 class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600 outline-none"
               />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Code</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.code', 'Code') }}</label>
                 <input
                   v-model="form.code"
                   type="text"
                   :disabled="!isMaster"
-                  placeholder="EXAMPLE10"
+                  :placeholder="t('hub.ui.promo_detail.ph_code', 'PROMO10')"
                   class="w-full text-sm font-mono uppercase border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg px-3 py-2 disabled:bg-gray-50 dark:disabled:bg-slate-800 disabled:text-gray-400 focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600 outline-none"
                 />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Statut</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.status', 'Statut') }}</label>
                 <div class="flex items-center gap-2 h-[38px]">
                   <button
                     type="button"
@@ -89,7 +89,7 @@
                     />
                   </button>
                   <span class="text-xs text-gray-600 dark:text-slate-300">
-                    {{ form.active ? 'Actif' : 'Inactif' }}
+                    {{ form.active ? t('hub.ui.promo_detail.active', 'Actif') : t('hub.ui.promo_detail.inactive', 'Inactif') }}
                   </span>
                 </div>
               </div>
@@ -100,13 +100,13 @@
         
         <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
           <header class="mb-5">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Conditions</h2>
-            <p class="text-xs text-gray-400 mt-0.5">Validité, montant minimum et quantités disponibles.</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.promo_detail.conditions', 'Conditions') }}</h2>
+            <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.promo_detail.cond_hint', 'Validité, montant minimum et quantités disponibles.') }}</p>
           </header>
           <div class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Date de début</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.date_from', 'Date de début') }}</label>
                 <input
                   v-model="form.dateFrom"
                   type="datetime-local"
@@ -115,7 +115,7 @@
                 />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Date de fin</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.date_to', 'Date de fin') }}</label>
                 <input
                   v-model="form.dateTo"
                   type="datetime-local"
@@ -126,7 +126,7 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Montant minimum HT (€)</label>
+              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.min_amount', 'Montant minimum HT (€)') }}</label>
               <input
                 v-model.number="form.minimumAmount"
                 type="number"
@@ -135,12 +135,12 @@
                 :disabled="!isMaster"
                 class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg px-3 py-2 disabled:bg-gray-50 disabled:text-gray-400 focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600 outline-none"
               />
-              <p class="text-[10px] text-gray-400 mt-1">0 = pas de minimum</p>
+              <p class="text-[10px] text-gray-400 mt-1">{{ t('hub.ui.promo_detail.min_hint', '0 = pas de minimum') }}</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Quantité totale disponible</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.qty_total', 'Quantité totale disponible') }}</label>
                 <input
                   v-model.number="form.quantity"
                   type="number"
@@ -151,7 +151,7 @@
                 />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Quantité par utilisateur</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.qty_user', 'Quantité par utilisateur') }}</label>
                 <input
                   v-model.number="form.quantityPerUser"
                   type="number"
@@ -168,12 +168,12 @@
         
         <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
           <header class="mb-5">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Action</h2>
-            <p class="text-xs text-gray-400 mt-0.5">Type de réduction appliquée au panier client.</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.promo_detail.action', 'Action') }}</h2>
+            <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.promo_detail.action_hint', 'Type de réduction appliquée au panier client.') }}</p>
           </header>
           <div class="space-y-4">
             <div>
-              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-2">Type de réduction</label>
+              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-2">{{ t('hub.ui.promo_detail.red_type', 'Type de réduction') }}</label>
               <div class="flex gap-2">
                 <button
                   type="button"
@@ -184,7 +184,7 @@
                     ? 'bg-primary-600 text-white border-primary-600'
                     : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50'"
                 >
-                  Pourcentage (%)
+                  {{ t('hub.ui.promo_detail.percent', 'Pourcentage (%)') }}
                 </button>
                 <button
                   type="button"
@@ -195,7 +195,7 @@
                     ? 'bg-primary-600 text-white border-primary-600'
                     : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50'"
                 >
-                  Montant fixe (€)
+                  {{ t('hub.ui.promo_detail.fixed', 'Montant fixe (€)') }}
                 </button>
                 <button
                   type="button"
@@ -206,13 +206,13 @@
                     ? 'bg-primary-600 text-white border-primary-600'
                     : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50'"
                 >
-                  Aucune
+                  {{ t('hub.ui.promo_detail.none', 'Aucune') }}
                 </button>
               </div>
             </div>
 
             <div v-if="reductionType === 'percent'">
-              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Valeur (%)</label>
+              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.val_pct', 'Valeur (%)') }}</label>
               <input
                 v-model.number="form.reductionPercent"
                 type="number"
@@ -225,7 +225,7 @@
             </div>
 
             <div v-else-if="reductionType === 'amount'">
-              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">Valeur (€)</label>
+              <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">{{ t('hub.ui.promo_detail.val_amt', 'Valeur (€)') }}</label>
               <input
                 v-model.number="form.reductionAmount"
                 type="number"
@@ -238,8 +238,8 @@
 
             <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-800">
               <div>
-                <label class="text-xs font-medium text-gray-600 dark:text-slate-300">Livraison gratuite</label>
-                <p class="text-[10px] text-gray-400">Peut s'ajouter à la réduction ci-dessus</p>
+                <label class="text-xs font-medium text-gray-600 dark:text-slate-300">{{ t('hub.ui.promo_detail.free_ship', 'Livraison gratuite') }}</label>
+                <p class="text-[10px] text-gray-400">{{ t('hub.ui.promo_detail.free_ship_hint', 'Peut s\'ajouter à la réduction ci-dessus') }}</p>
               </div>
               <button
                 type="button"
@@ -260,7 +260,7 @@
     </div>
 
     <div v-else class="px-6 py-16 text-center">
-      <p class="text-sm text-gray-500">Code promo introuvable.</p>
+      <p class="text-sm text-gray-500">{{ t('hub.ui.promo_detail.not_found', 'Code promo introuvable.') }}</p>
     </div>
   </div>
 </template>
@@ -269,6 +269,7 @@
 
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 
+const { t } = useHubT()
 const route = useRoute()
 const router = useRouter()
 
@@ -383,7 +384,7 @@ async function save() {
     }
   } catch (err: any) {
     console.error('Save promo error:', err)
-    saveError.value = err?.data?.message || err?.message || 'Échec de la sauvegarde'
+    saveError.value = err?.data?.message || err?.message || t('hub.ui.promo_detail.save_fail', 'Échec de la sauvegarde')
     setTimeout(() => { saveError.value = null }, 6000)
   } finally {
     saving.value = false

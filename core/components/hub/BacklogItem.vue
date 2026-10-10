@@ -36,12 +36,12 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        <button @click="cycleStatus" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-400" title="Cycle statut">
+        <button @click="cycleStatus" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-400" :title="t('hub.ui.backlog_item.cycle_status', 'Cycle statut')">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z M12 8v8" />
           </svg>
         </button>
-        <button @click="$emit('delete', item.idItem)" class="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500" title="Supprimer">
+        <button @click="$emit('delete', item.idItem)" class="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500" :title="t('hub.ui.backlog_item.delete', 'Supprimer')">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" />
           </svg>
@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 interface BacklogItemT {
   idItem: number
   title: string
@@ -74,15 +75,15 @@ const expanded = ref(false)
 
 const STATUS_CYCLE: BacklogItemT['status'][] = ['backlog', 'planned', 'in_progress', 'done']
 
-const STATUS_LABELS: Record<string, string> = {
-  backlog:     'Backlog',
-  planned:     'Planifié',
-  in_progress: 'En cours',
-  done:        'Done',
-  cancelled:   'Annulé',
-}
+const STATUS_LABELS = computed<Record<string, string>>(() => ({
+  backlog:     t('hub.ui.backlog_item.st_backlog', 'Backlog'),
+  planned:     t('hub.ui.backlog_item.st_planned', 'Planifié'),
+  in_progress: t('hub.ui.backlog_item.st_in_progress', 'En cours'),
+  done:        t('hub.ui.backlog_item.st_done', 'Done'),
+  cancelled:   t('hub.ui.backlog_item.st_cancelled', 'Annulé'),
+}))
 
-const statusLabel = computed(() => STATUS_LABELS[props.item.status] || props.item.status)
+const statusLabel = computed(() => STATUS_LABELS.value[props.item.status] || props.item.status)
 
 const priorityClass = computed(() => {
   switch (props.item.priority) {

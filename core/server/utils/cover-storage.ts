@@ -2,7 +2,9 @@ import sharp from 'sharp'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-export const BLOG_COVERS_DIR = resolve(process.cwd(), '.output/public/blog-covers')
+export const BLOG_COVERS_DIR = process.env.BLOG_COVERS_DIR
+  ? resolve(process.env.BLOG_COVERS_DIR)
+  : resolve(process.cwd(), '.output/public/blog-covers')
 export const COVER_QUALITY = 90
 export const THUMB_QUALITY = 85
 export const THUMB_WIDTH = 600

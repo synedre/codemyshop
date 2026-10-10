@@ -2,17 +2,17 @@
   <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Combinaisons</h2>
-        <p class="text-[11px] text-gray-400 mt-0.5">Croise les attributs pour générer les variantes de produit.</p>
+        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.product_combinations.title', 'Combinaisons') }}</h2>
+        <p class="text-[11px] text-gray-400 mt-0.5">{{ t('hub.ui.product_combinations.subtitle', 'Croise les attributs pour générer les variantes de produit.') }}</p>
       </div>
       <span class="text-[10px] uppercase tracking-wide text-gray-400">
-        {{ loading ? 'Chargement…' : groups.length ? `${groups.length} groupe(s)` : 'Aucun groupe' }}
+        {{ loading ? t('hub.ui.product_combinations.loading_short', 'Chargement…') : groups.length ? t('hub.ui.product_combinations.groups_count', '{count} groupe(s)', { count: groups.length }) : t('hub.ui.product_combinations.no_group', 'Aucun groupe') }}
       </span>
     </div>
 
     
     <div v-if="loading" class="py-8 text-center text-xs text-gray-400">
-      Chargement des attributs…
+      {{ t('hub.ui.product_combinations.loading_attrs', 'Chargement des attributs…') }}
     </div>
 
     
@@ -20,9 +20,9 @@
       v-else-if="!groups.length"
       class="py-8 text-center border border-dashed border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50/50 dark:bg-slate-950/40"
     >
-      <p class="text-sm text-gray-500">Aucun groupe d'attribut dans le catalogue.</p>
+      <p class="text-sm text-gray-500">{{ t('hub.ui.product_combinations.no_attr_group', 'Aucun groupe d\'attribut dans le catalogue.') }}</p>
       <p class="text-[11px] text-gray-400 mt-1">
-        Créez des attributs dans PrestaShop (Catalogue → Attributs &amp; caractéristiques) pour activer le générateur.
+        {{ t('hub.ui.product_combinations.no_attr_help', 'Créez des attributs dans PrestaShop (Catalogue → Attributs &amp; caractéristiques) pour activer le générateur.') }}
       </p>
     </div>
 
@@ -61,7 +61,7 @@
             <span class="text-gray-700 dark:text-slate-200">{{ value.name }}</span>
           </label>
         </div>
-        <p v-else class="text-xs text-gray-400">Aucune valeur</p>
+        <p v-else class="text-xs text-gray-400">{{ t('hub.ui.product_combinations.no_value', 'Aucune valeur') }}</p>
       </div>
     </div>
 
@@ -73,11 +73,11 @@
           :class="combinations.length ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'"
         >
           <span class="w-1.5 h-1.5 rounded-full" :class="combinations.length ? 'bg-primary-500' : 'bg-gray-400'" />
-          {{ combinations.length }} combinaison{{ combinations.length > 1 ? 's' : '' }} générée{{ combinations.length > 1 ? 's' : '' }}
+          {{ combinations.length > 1 ? t('hub.ui.product_combinations.generated_other', '{count} combinaisons générées', { count: combinations.length }) : t('hub.ui.product_combinations.generated_one', '{count} combinaison générée', { count: combinations.length }) }}
         </span>
         <div class="flex items-center gap-3 text-[11px]">
           <span v-if="hydratedCount" class="text-gray-400">
-            {{ hydratedCount }} pré-remplie{{ hydratedCount > 1 ? 's' : '' }} depuis la DB
+            {{ hydratedCount > 1 ? t('hub.ui.product_combinations.prefilled_other', '{count} pré-remplies depuis la base', { count: hydratedCount }) : t('hub.ui.product_combinations.prefilled_one', '{count} pré-remplie depuis la base', { count: hydratedCount }) }}
           </span>
           <button
             v-if="combinations.length"
@@ -85,7 +85,7 @@
             @click="clearAll"
             class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
           >
-            Tout désélectionner
+            {{ t('hub.ui.product_combinations.deselect_all', 'Tout désélectionner') }}
           </button>
         </div>
       </div>
@@ -94,10 +94,10 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="text-[10px] uppercase tracking-wide text-gray-400 border-b border-gray-100 dark:border-slate-800">
-              <th class="text-left font-semibold py-2 pr-3">Combinaison</th>
-              <th class="text-left font-semibold py-2 pr-3 w-32">Référence</th>
-              <th class="text-right font-semibold py-2 pr-3 w-32">Impact Prix HT</th>
-              <th class="text-right font-semibold py-2 w-24">Quantité</th>
+              <th class="text-left font-semibold py-2 pr-3">{{ t('hub.ui.product_combinations.th_combination', 'Combinaison') }}</th>
+              <th class="text-left font-semibold py-2 pr-3 w-32">{{ t('hub.ui.product_combinations.th_reference', 'Référence') }}</th>
+              <th class="text-right font-semibold py-2 pr-3 w-32">{{ t('hub.ui.product_combinations.th_price_impact', 'Impact Prix HT') }}</th>
+              <th class="text-right font-semibold py-2 w-24">{{ t('hub.ui.product_combinations.th_quantity', 'Quantité') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -119,9 +119,9 @@
                   <span
                     v-if="combo.hydrated"
                     class="text-[9px] uppercase tracking-wide text-primary-600 dark:text-primary-400 ml-1"
-                    title="Déclinaison existante en base"
+                    :title="t('hub.ui.product_combinations.existing_title', 'Déclinaison existante en base')"
                   >
-                    ● en base
+                    {{ t('hub.ui.product_combinations.in_db', '● en base') }}
                   </span>
                 </div>
               </td>
@@ -161,13 +161,14 @@
       </div>
 
       <div v-else class="text-center py-6 text-xs text-gray-400">
-        Sélectionne au moins une valeur pour générer les combinaisons.
+        {{ t('hub.ui.product_combinations.select_one', 'Sélectionne au moins une valeur pour générer les combinaisons.') }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 interface AttributeValue {
   id: number
   name: string
@@ -199,6 +200,10 @@ interface ComboState {
   priceImpact: number
   quantity: number
   hydrated: boolean
+  
+  
+  
+  key: string
 }
 
 interface Combination extends ComboState {
@@ -255,6 +260,7 @@ function hydrateFromExisting() {
       priceImpact: Number(ec.priceImpact) || 0,
       quantity: Number(ec.quantity) || 0,
       hydrated: true,
+      key,
     }
   }
 }
@@ -295,7 +301,7 @@ const combinations = computed<Combination[]>(() => {
   return result.map(combo => {
     const key = combo.map(v => v.id).join('|')
     if (!comboState[key]) {
-      comboState[key] = { id: null, reference: '', priceImpact: 0, quantity: 0, hydrated: false }
+      comboState[key] = { id: null, reference: '', priceImpact: 0, quantity: 0, hydrated: false, key }
     }
     return Object.assign(comboState[key], {
       key,
@@ -315,15 +321,18 @@ watch(() => props.existingCombinations, hydrateFromExisting, { deep: false })
 onMounted(loadAttributes)
 
 defineExpose({
-  getDirtyCombinations(): Array<{ id: number; priceImpact: number; quantity: number; reference: string }> {
-    return Object.values(comboState)
-      .filter((c): c is ComboState & { id: number } => c.id !== null && c.id !== undefined)
-      .map(c => ({
-        id: c.id,
-        priceImpact: Number(c.priceImpact) || 0,
-        quantity: Number(c.quantity) || 0,
-        reference: c.reference || '',
-      }))
+  
+  
+  
+  
+  getDirtyCombinations(): Array<{ id: number | null; attributeIds: number[]; priceImpact: number; quantity: number; reference: string }> {
+    return Object.values(comboState).map(c => ({
+      id: (c.id !== null && c.id !== undefined) ? c.id : null,
+      attributeIds: String(c.key || '').split('|').map(Number).filter((n: number) => Number.isFinite(n) && n > 0),
+      priceImpact: Number(c.priceImpact) || 0,
+      quantity: Number(c.quantity) || 0,
+      reference: c.reference || '',
+    }))
   },
 })
 </script>

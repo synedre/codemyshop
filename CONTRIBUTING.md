@@ -8,15 +8,15 @@ By participating, you agree to abide by the [Contributor Covenant 2.1](CODE_OF_C
 
 ## Quick links
 
-- 🐛 **Found a bug?** Open a [bug issue](https://github.com/codemyshop/codemyshop/issues/new?template=bug_report.md)
-- 💡 **Have a feature idea?** Open a [feature issue](https://github.com/codemyshop/codemyshop/issues/new?template=feature_request.md)
-- ❓ **Have a question?** Use [GitHub Discussions](https://github.com/codemyshop/codemyshop/discussions)
+- 🐛 **Found a bug?** Open a [bug issue](https://github.com/synedre/codemyshop/issues/new?template=bug_report.md)
+- 💡 **Have a feature idea?** Open a [feature issue](https://github.com/synedre/codemyshop/issues/new?template=feature_request.md)
+- ❓ **Have a question?** Use [GitHub Discussions](https://github.com/synedre/codemyshop/discussions)
 - 🔒 **Security issue?** See [SECURITY.md](SECURITY.md). **Do not open a public issue.**
 
 ## Development setup
 
 ```bash
-git clone https://github.com/codemyshop/codemyshop.git
+git clone https://github.com/synedre/codemyshop.git
 cd codemyshop
 cp .env.example .env  # edit credentials
 docker compose -f deploy/docker-compose.dev.yml up -d  # PG + Redis
@@ -106,6 +106,6 @@ By submitting a PR, you agree that your contribution is licensed under [AGPL-3.0
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/codemyshop/codemyshop/discussions) or reach out on Discord (link coming soon).
+Open a [GitHub Discussion](https://github.com/synedre/codemyshop/discussions) or reach out on Discord (link coming soon).
 
 Thank you for making CodeMyShop better. 🇫🇷

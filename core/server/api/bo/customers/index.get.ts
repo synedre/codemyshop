@@ -2,6 +2,8 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const SORT_COLUMNS: Record<string, string> = {
   id:         'c.id_customer',
   firstname:  'c.firstname',
@@ -14,6 +16,7 @@ const SORT_COLUMNS: Record<string, string> = {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const page = Math.max(1, Number(q.page || 1))
   const perPage = Math.min(10000, Math.max(1, Number(q.perPage || q.limit || 100)))
@@ -33,6 +36,11 @@ export default defineEventHandler(async (event) => {
   const fActivite      = (q.fActivite || '').trim()
   const fOrdersMin     = Number(q.fOrdersMin || 0)
   const fActive        = q.fActive === '1' ? '1' : (q.fActive === '0' ? '0' : '')
+  
+  
+  
+  const fDateFrom      = /^\d{4}-\d{2}-\d{2}$/.test(q.fDateFrom || '') ? q.fDateFrom : ''
+  const fDateTo        = /^\d{4}-\d{2}-\d{2}$/.test(q.fDateTo   || '') ? q.fDateTo   : ''
 
   const db = useClientDb(event)
 
@@ -41,24 +49,30 @@ export default defineEventHandler(async (event) => {
     const params: any[] = []
 
     if (search) {
-      conditions.push(`(c.firstname ILIKE ? OR c.lastname ILIKE ? OR c.email ILIKE ? OR c.company ILIKE ? OR CAST(c.id_customer AS TEXT) ILIKE ?)`)
-      const s = `%${search}%`
-      params.push(s, s, s, s, s)
+      
+      
+      
+      const tokens = search.split(/\s+/).filter(Boolean)
+      for (const tok of tokens) {
+        conditions.push(`(c.firstname ILIKE ? OR c.lastname ILIKE ? OR c.email ILIKE ? OR c.company ILIKE ? OR CAST(c.id_customer AS TEXT) ILIKE ?)`)
+        const s = `%${tok}%`
+        params.push(s, s, s, s, s)
+      }
     }
 
     if (segment === 'client') {
-      conditions.push(`EXISTS (SELECT 1 FROM ps_orders o WHERE o.id_customer = c.id_customer AND o.valid = 1)`)
+      conditions.push(`EXISTS (SELECT 1 FROM ps_orders o WHERE o.id_customer = c.id_customer)`)
     } else if (segment === 'lead') {
-      conditions.push(`NOT EXISTS (SELECT 1 FROM ps_orders o WHERE o.id_customer = c.id_customer AND o.valid = 1)`)
+      conditions.push(`NOT EXISTS (SELECT 1 FROM ps_orders o WHERE o.id_customer = c.id_customer)`)
     }
 
     if (fName) {
-      conditions.push(`(c.firstname LIKE ? OR c.lastname LIKE ?)`)
+      conditions.push(`(c.firstname ILIKE ? OR c.lastname ILIKE ?)`)
       const s = `%${fName}%`
       params.push(s, s)
     }
     if (fEmail) {
-      conditions.push(`c.email LIKE ?`)
+      conditions.push(`c.email ILIKE ?`)
       params.push(`%${fEmail}%`)
     }
     if (fEmailVerified) {
@@ -70,7 +84,7 @@ export default defineEventHandler(async (event) => {
       }
     }
     if (fCompany) {
-      conditions.push(`c.company LIKE ?`)
+      conditions.push(`c.company ILIKE ?`)
       params.push(`%${fCompany}%`)
     }
     if (fActivite) {
@@ -83,8 +97,18 @@ export default defineEventHandler(async (event) => {
       params.push(Number(fActive))
     }
     if (fOrdersMin > 0) {
-      conditions.push(`(SELECT COUNT(*) FROM ps_orders o2 WHERE o2.id_customer = c.id_customer AND o2.valid = 1) >= ?`)
+      conditions.push(`(SELECT COUNT(*) FROM ps_orders o2 WHERE o2.id_customer = c.id_customer) >= ?`)
       params.push(fOrdersMin)
+    }
+    if (fDateFrom) {
+      conditions.push(`c.date_add >= ?`)
+      params.push(fDateFrom)
+    }
+    if (fDateTo) {
+      
+      
+      conditions.push(`c.date_add < (? ::date + INTERVAL '1 day')`)
+      params.push(fDateTo)
     }
 
     const where = `WHERE ${conditions.join(' AND ')}`
@@ -112,9 +136,8 @@ export default defineEventHandler(async (event) => {
       LEFT JOIN (
         SELECT id_customer,
                COUNT(id_order) AS nb_orders,
-               SUM(total_paid_tax_incl) AS total_spent
+               SUM(CASE WHEN valid = 1 THEN total_paid_tax_incl ELSE 0 END) AS total_spent
           FROM ps_orders
-         WHERE valid = 1
          GROUP BY id_customer
       ) os ON os.id_customer = c.id_customer
       ${where}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { blogHrefFromApi } from '~/utils/blog-url'
 
 interface SearchResult {
   id: number
@@ -12,6 +13,11 @@ interface SearchResult {
 }
 
 const { t } = useT()
+
+const blogDefaultLocale = String((useRuntimeConfig().public as any).i18nDefaultLocale || 'fr')
+const { activeLang: blogLang } = useRouteLang()
+
+const urlArticle = (nuxtUrl: string) => blogHrefFromApi(nuxtUrl, blogLang.value, blogDefaultLocale)
 
 const SUBCAT_KEYS = [
   'architecture', 'performance', 'developpement', 'automatisation',
@@ -167,7 +173,7 @@ onUnmounted(() => {
         <ul v-else-if="results.length" class="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800">
           <li v-for="result in results" :key="result.id">
             <NuxtLink
-              :to="result.nuxtUrl"
+              :to="urlArticle(result.nuxtUrl)"
               class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
               @click="close"
             >

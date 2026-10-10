@@ -1,6 +1,6 @@
 
 
-import { defineTask } from 'nitropack/runtime'
+import { defineLeaderTask } from '~/server/utils/schedule-leader'
 import { skipIfNotAcInternal } from '~/server/utils/cron-context'
 import { withAutomateLock } from '~/server/utils/automate-lock'
 import { runAutomate, type AutomateLog } from '~/server/utils/automate-logger'
@@ -199,7 +199,7 @@ async function persistCrosslinks(
   return { inserted, total_links: totalLinks }
 }
 
-export default defineTask({
+export default defineLeaderTask({
   meta: {
     name: 'seo:crosslinks-rebuild',
     description: 'Rebuild cs_crosslinks (cocon sémantique blog) — Wave 4D port ac_linkmap',

@@ -43,6 +43,13 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   if (transport === 'stub') {
     console.log(`[EMAIL STUB] To: ${finalTo.join(', ')} | Subject: ${finalSubject}`)
     console.log(`[EMAIL STUB] Body: ${params.html.slice(0, 200)}...`)
+    
+    
+    
+    
+    if (process.env.NODE_ENV === 'production' && process.env.EMAIL_STUB !== '1') {
+      return { ok: false, error: STUB_PRODUCTION_ERROR }
+    }
     return { ok: true, id: 'stub-' + Date.now() }
   }
 
@@ -54,6 +61,9 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
 }
 
 type Transport = 'smtp' | 'resend' | 'stub'
+
+export const STUB_PRODUCTION_ERROR =
+  'Aucun transport email configuré (SMTP_HOST/SMTP_USER/SMTP_PASS ou RESEND_API_KEY) : rien n’est parti.'
 
 function pickTransport(): Transport {
   
@@ -82,12 +92,34 @@ function getSmtpTransporter(): Transporter {
     ? process.env.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === '1'
     : port === 465
 
-  smtpTransporter = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: { user, pass },
-  })
+  
+  
+  
+  
+  
+  const transportOptions: any = { host, port, secure, auth: { user, pass } }
+  const dkimKeyPath = process.env.DKIM_PRIVATE_KEY_PATH
+  const dkimDomain = process.env.DKIM_DOMAIN
+  const dkimSelector = process.env.DKIM_SELECTOR
+  if (dkimKeyPath && dkimDomain && dkimSelector) {
+    try {
+      const fs = require('node:fs') as typeof import('node:fs')
+      if (fs.existsSync(dkimKeyPath)) {
+        transportOptions.dkim = {
+          domainName: dkimDomain,
+          keySelector: dkimSelector,
+          privateKey: fs.readFileSync(dkimKeyPath, 'utf8'),
+        }
+        console.log(`[email] DKIM signing enabled (selector=${dkimSelector} domain=${dkimDomain})`)
+      } else {
+        console.error(`[email] DKIM_PRIVATE_KEY_PATH=${dkimKeyPath} introuvable — DKIM désactivé`)
+      }
+    } catch (err: any) {
+      console.error('[email] DKIM init failed:', err?.message || err)
+    }
+  }
+
+  smtpTransporter = nodemailer.createTransport(transportOptions)
   return smtpTransporter
 }
 

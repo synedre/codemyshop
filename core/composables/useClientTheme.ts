@@ -24,10 +24,10 @@ export function useClientTheme() {
 
   
   
-  const { data: themeFetch } = useFetch<{ theme: ThemeDbData | null }>('/api/theme', {
-    key: 'theme-db',
-    default: () => ({ theme: null }),
-  })
+  
+  
+  
+  const themeFetch = useNuxtData<{ theme: ThemeDbData | null }>('theme-db')
 
   
   const builderTheme = useState<ThemeDbData | null>('theme_builder_override', () => null)
@@ -103,8 +103,15 @@ export function useClientTheme() {
     }
 
     
-    const cw = theme.ui?.contentWidth ?? '6xl'
-    vars['--content-max-w'] = CONTENT_WIDTH_MAP[cw]
+    
+    
+    
+    
+    
+    const cwRaw = theme.ui?.contentWidth
+    if (cwRaw && cwRaw in CONTENT_WIDTH_MAP) {
+      vars['--content-max-w'] = CONTENT_WIDTH_MAP[cwRaw as ContentWidth]
+    }
 
     return vars
   })

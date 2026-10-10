@@ -5,6 +5,7 @@ import { sendEmail } from '~/server/utils/email'
 import { appendMessage } from '~/server/utils/imap'
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 const MAX_TOTAL_ATTACHMENT_BYTES = 25 * 1024 * 1024 
 
@@ -27,6 +28,7 @@ function deriveImapHost(smtpHost: string): string {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     to:           string | string[]
     subject:      string

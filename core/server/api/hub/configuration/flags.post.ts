@@ -9,6 +9,13 @@ const WHITELIST_KEYS = new Set([
   'PS_CATALOG_MODE',
   'PS_GUEST_CHECKOUT_ENABLED',
   'PS_ORDER_RETURN',
+  
+  'PS_PURCHASE_MINIMUM',
+  'PS_QUOTE_ALLOW_MAGICLINK_UNDER_MIN',
+  
+  'PS_PWA_INSTALL_BANNER',
+  
+  'PS_PRICE_ROUND_UP',
 ])
 
 export default defineEventHandler(async (event) => {

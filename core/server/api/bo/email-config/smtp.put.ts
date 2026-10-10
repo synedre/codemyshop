@@ -2,7 +2,10 @@
 
 import { saveEmailConfig } from '~/server/utils/email-config'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody(event) as {
     host?:       string
     port?:       number

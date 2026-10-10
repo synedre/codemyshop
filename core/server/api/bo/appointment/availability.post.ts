@@ -2,7 +2,10 @@
 
 import { createAvailability } from '~/enterprise/base/appointment/server/utils/appointment'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody(event)
   const dateStartRaw = String(body?.dateStart ?? '').trim()
   const durationMin = Math.max(5, Math.min(240, Number(body?.durationMin ?? 30)))

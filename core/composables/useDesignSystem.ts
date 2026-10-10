@@ -67,6 +67,13 @@ export const useDesignSystem = () => {
       loaded.value = true
     } catch {
       catalog.value = []
+      
+      
+      
+      
+      
+      
+      loaded.value = true
     }
   }
 

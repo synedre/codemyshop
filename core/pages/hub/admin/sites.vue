@@ -1,7 +1,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth' })
-useHead({ title: 'Gestion de Flotte — Admin Hub' })
+const { t: tHub } = useHubT()
+useHead({ title: () => tHub('hub.ui.admin_sites.page_title', 'Gestion de Flotte — Admin Hub') })
 
 interface SiteRecord {
   id: string
@@ -33,7 +34,7 @@ async function confirmDelete() {
     deleteResult.value = result
     await refresh()
   } catch (err: any) {
-    deleteResult.value = { success: false, steps: [err?.data?.message || 'Erreur réseau'] }
+    deleteResult.value = { success: false, steps: [err?.data?.message || tHub('hub.ui.admin_sites.err_network', 'Erreur réseau')] }
   } finally {
     isDeleting.value = false
   }
@@ -55,8 +56,8 @@ function offerLabel(site: SiteRecord) {
   if (site.offer === 'starter') return 'Starter'
   if (site.offer === 'premium') return 'Premium'
   
-  if (site.id === 'ac-hub') return 'Hub (master)'
-  return 'Custom'
+  if (site.id === 'ac-hub') return tHub('hub.ui.admin_sites.offer_master', 'Hub (master)')
+  return tHub('hub.ui.admin_sites.offer_custom', 'Custom')
 }
 </script>
 
@@ -66,15 +67,15 @@ function offerLabel(site: SiteRecord) {
     
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">Gestion de Flotte</h1>
-        <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{{ sites?.length || 0 }} site(s) déployé(s)</p>
+        <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ tHub('hub.ui.admin_sites.title', 'Gestion de Flotte') }}</h1>
+        <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{{ tHub('hub.ui.admin_sites.count', '{n} site(s) déployé(s)', { n: sites?.length || 0 }) }}</p>
       </div>
       <div class="flex gap-3">
         <button
           class="bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
           @click="refresh()"
         >
-          Rafraîchir
+          {{ tHub('hub.ui.admin_sites.refresh', 'Rafraîchir') }}
         </button>
         <NuxtLink
           to="/hub/admin/provisioning"
@@ -83,7 +84,7 @@ function offerLabel(site: SiteRecord) {
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Nouveau Site
+          {{ tHub('hub.ui.admin_sites.new_site', 'Nouveau Site') }}
         </NuxtLink>
       </div>
     </div>
@@ -101,19 +102,19 @@ function offerLabel(site: SiteRecord) {
       <table class="w-full">
         <thead>
           <tr class="border-b border-gray-200 dark:border-white/[0.06]">
-            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Client</th>
-            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Domaine</th>
-            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Offre</th>
-            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Statut</th>
-            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">IP</th>
-            <th class="text-right text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">Actions</th>
+            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">{{ tHub('hub.ui.admin_sites.col_client', 'Client') }}</th>
+            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">{{ tHub('hub.ui.admin_sites.col_domain', 'Domaine') }}</th>
+            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">{{ tHub('hub.ui.admin_sites.col_offer', 'Offre') }}</th>
+            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">{{ tHub('hub.ui.admin_sites.col_status', 'Statut') }}</th>
+            <th class="text-left text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">{{ tHub('hub.ui.admin_sites.col_ip', 'IP') }}</th>
+            <th class="text-right text-xs font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-wider px-6 py-4">{{ tHub('hub.ui.admin_sites.col_actions', 'Actions') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="site in sites"
             :key="site.id"
-            class="border-b border-gray-100 dark:border-white/[0.03] last:border-0 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
+            class="border-b border-gray-100 dark:border-white/[0.03] last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800/[0.02] transition-colors"
           >
             <td class="px-6 py-4">
               <div>
@@ -152,9 +153,9 @@ function offerLabel(site: SiteRecord) {
                 class="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400 font-medium transition-colors"
                 @click="deleteTarget = site"
               >
-                Supprimer
+                {{ tHub('hub.ui.admin_sites.delete', 'Supprimer') }}
               </button>
-              <span v-else class="text-xs text-gray-300 dark:text-slate-600">protégé</span>
+              <span v-else class="text-xs text-gray-300 dark:text-slate-600">{{ tHub('hub.ui.admin_sites.protected', 'protégé') }}</span>
             </td>
           </tr>
         </tbody>
@@ -169,41 +170,41 @@ function offerLabel(site: SiteRecord) {
           
           <div v-if="deleteResult">
             <h3 class="text-lg font-bold mb-4" :class="deleteResult.success ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
-              {{ deleteResult.success ? 'Suppression terminée' : 'Erreur' }}
+              {{ deleteResult.success ? tHub('hub.ui.admin_sites.deleted', 'Suppression terminée') : tHub('hub.ui.admin_sites.error', 'Erreur') }}
             </h3>
             <div class="bg-gray-900 dark:bg-black/30 rounded-lg p-3 font-mono text-xs text-emerald-400 max-h-40 overflow-y-auto mb-4">
               <div v-for="(step, i) in deleteResult.steps" :key="i" class="mb-1">{{ step }}</div>
             </div>
             <button class="w-full bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 text-sm font-semibold py-2.5 rounded-lg" @click="cancelDelete()">
-              Fermer
+              {{ tHub('hub.ui.admin_sites.close', 'Fermer') }}
             </button>
           </div>
 
           
           <div v-else>
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Supprimer {{ deleteTarget.name || deleteTarget.id }} ?</h3>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ tHub('hub.ui.admin_sites.delete_q', 'Supprimer {name} ?', { name: deleteTarget.name || deleteTarget.id }) }}</h3>
             <p class="text-sm text-gray-500 dark:text-slate-400 mb-2">
-              Cette action va :
+              {{ tHub('hub.ui.admin_sites.will_do', 'Cette action va :') }}
             </p>
             <ul class="text-xs text-gray-500 dark:text-slate-400 space-y-1 mb-6 ml-4">
-              <li>• Arrêter et supprimer le container Docker</li>
-              <li>• Supprimer la configuration Nginx</li>
-              <li>• Retirer le client du registre</li>
-              <li>• Recharger Nginx</li>
+              <li>{{ tHub('hub.ui.admin_sites.step_container', '• Arrêter et supprimer le container Docker') }}</li>
+              <li>{{ tHub('hub.ui.admin_sites.step_nginx', '• Supprimer la configuration Nginx') }}</li>
+              <li>{{ tHub('hub.ui.admin_sites.step_registry', '• Retirer le client du registre') }}</li>
+              <li>{{ tHub('hub.ui.admin_sites.step_reload', '• Recharger Nginx') }}</li>
             </ul>
             <p class="text-xs text-red-500 font-semibold mb-4">
-              Le domaine {{ deleteTarget.domain }} ne sera plus accessible.
+              {{ tHub('hub.ui.admin_sites.unreachable', 'Le domaine {domain} ne sera plus accessible.', { domain: deleteTarget.domain }) }}
             </p>
             <div class="flex gap-3">
               <button class="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 text-sm font-semibold py-2.5 rounded-lg" @click="cancelDelete()">
-                Annuler
+                {{ tHub('hub.ui.admin_sites.cancel', 'Annuler') }}
               </button>
               <button
                 class="flex-1 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50"
                 :disabled="isDeleting"
                 @click="confirmDelete()"
               >
-                {{ isDeleting ? 'Suppression...' : 'Confirmer la suppression' }}
+                {{ isDeleting ? tHub('hub.ui.admin_sites.deleting', 'Suppression...') : tHub('hub.ui.admin_sites.confirm_delete', 'Confirmer la suppression') }}
               </button>
             </div>
           </div>

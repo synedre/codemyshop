@@ -3,18 +3,21 @@
 import { resolveClientId } from '~/server/utils/db'
 import { listAllManifests, isModuleActive } from '~/server/utils/module-loader'
 import { resolveTenantInfo } from '~/server/utils/tier-resolver'
-import { listRegisteredHooks } from '~/server/utils/hooks-bus'
-import { verifyToken } from '~/server/utils/session-crypto'
+import { listRegisteredHooks, getCriticalHookFailureCount } from '~/server/utils/hooks-bus'
+import { HOOKS_ACTION, HOOKS_FILTER } from '~/server/utils/hooks-catalog'
+import { readHubSessionToken } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
-  const session = verifyToken<any>(getCookie(event, 'hub_session'))
+  const session = readHubSessionToken<any>(getCookie(event, 'hub_session'))
   if (!session) throw createError({ statusCode: 401, message: 'Non authentifié' })
   if (!session.isAdmin) throw createError({ statusCode: 403, message: 'Accès admin requis' })
 
   const clientId = resolveClientId(event)
   const tenantInfo = await resolveTenantInfo(clientId)
   const manifests = listAllManifests()
-  const hooks = listRegisteredHooks()
+  const registered = listRegisteredHooks()
+  const catalogActions = Object.values(HOOKS_ACTION) as string[]
+  const catalogFilters = Object.values(HOOKS_FILTER) as string[]
 
   return {
     tenant: {
@@ -38,6 +41,17 @@ export default defineEventHandler(async (event) => {
       hooksExposed: m.hooks?.exposes ?? [],
       hooksConsumed: m.hooks?.consumes ?? [],
     })),
-    hooks,
+    
+    hooks: registered,
+    hooksIntrospection: {
+      registered,
+      catalog: { actions: catalogActions, filters: catalogFilters },
+      
+      
+      actionsWithoutSubscriber: catalogActions.filter((a) => !registered.actions.includes(a)),
+      filtersWithoutSubscriber: catalogFilters.filter((f) => !registered.filters.includes(f)),
+      
+      criticalFailureCount: getCriticalHookFailureCount(),
+    },
   }
 })

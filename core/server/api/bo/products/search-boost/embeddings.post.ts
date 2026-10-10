@@ -2,10 +2,13 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const VALID_MODES = ['lex', 'sem', 'hybrid'] as const
 type SearchMode = (typeof VALID_MODES)[number]
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ mode?: string }>(event)
   const mode = String(body?.mode || '').toLowerCase()
 

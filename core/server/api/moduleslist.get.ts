@@ -1,26 +1,23 @@
 
 
 import { listActiveModuleslistPg } from '~/server/utils/step7-readonly-pg'
-
-function parseJson<T>(raw: any, fb: T): T {
-  if (raw == null || raw === '') return fb
-  try { return JSON.parse(String(raw)) as T } catch { return fb }
-}
+import { isMissingTable } from '~/server/utils/missing-table'
+import { toPublicModule } from '~/server/utils/moduleslist-public'
 
 export default defineEventHandler(async () => {
-  const rows = await listActiveModuleslistPg()
+  
+  
+  let rows: any[] = []
+  try {
+    rows = await listActiveModuleslistPg()
+  } catch (err: any) {
+    if (!isMissingTable(err)) throw err
+    console.warn('[moduleslist] cs_moduleslist absente sur ce tenant → modules=[]')
+  }
 
-  const modules = rows.map((r: any) => ({
-    name: String(r.name || ''),
-    codename: String(r.codename || ''),
-    icon: String(r.icon || ''),
-    category: String(r.category || 'general'),
-    flywheel: String(r.flywheel || ''),
-    description: String(r.description || ''),
-    features: parseJson<any[]>(r.features, []),
-    tags: parseJson<any[]>(r.tags, []),
-    status: String(r.status || 'Production'),
-    link: String(r.link || ''),
-  }))
+  
+  
+  
+  const modules = rows.map(toPublicModule)
   return { modules }
 })

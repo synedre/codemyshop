@@ -2,22 +2,22 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Commande Rapide B2B</h1>
-        <p class="text-xs text-gray-400 mt-0.5">Saisie matrice · Import email / CSV · Listes persistées · Re-commande</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.crm_quick_order.title', 'Commande Rapide B2B') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.crm_quick_order.subtitle', 'Saisie matrice · Import email / CSV · Listes persistées · Re-commande') }}</p>
       </div>
-      <button @click="loadLists" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Actualiser</button>
+      <button @click="loadLists" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">{{ tHub('hub.ui.crm_quick_order.refresh', 'Actualiser') }}</button>
     </header>
 
     <div class="flex-1 overflow-auto p-6 space-y-6">
 
       
       <section class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-5">
-        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">⚡ Saisie matrice / Import</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">{{ tHub('hub.ui.crm_quick_order.section_matrix', '⚡ Saisie matrice / Import') }}</h2>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           
           <div>
-            <label class="text-xs block mb-1 text-gray-500 dark:text-slate-400">Coller texte / email / CSV (SKU + qté par ligne)</label>
+            <label class="text-xs block mb-1 text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_quick_order.paste_label', 'Coller texte / email / CSV (SKU + qté par ligne)') }}</label>
             <textarea
               v-model="pasteText"
               rows="8"
@@ -26,37 +26,37 @@
             />
             <div class="flex gap-2 mt-2">
               <button @click="parseAndFill" :disabled="!pasteText.trim() || parsing" class="text-xs px-3 py-1.5 bg-gray-800 dark:bg-slate-700 text-white rounded hover:bg-gray-900 font-semibold disabled:opacity-50">
-                {{ parsing ? 'Parse…' : 'Parser → matrice' }}
+                {{ parsing ? tHub('hub.ui.crm_quick_order.parsing', 'Parse…') : tHub('hub.ui.crm_quick_order.parse_btn', 'Parser → matrice') }}
               </button>
               <button @click="clearAll" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800">
-                Vider
+                {{ tHub('hub.ui.crm_quick_order.clear', 'Vider') }}
               </button>
             </div>
             <p v-if="parseSkipped.length" class="text-[10px] text-amber-600 mt-2">
-              {{ parseSkipped.length }} ligne{{ parseSkipped.length > 1 ? 's' : '' }} non parsée{{ parseSkipped.length > 1 ? 's' : '' }} :
+              {{ parseSkipped.length > 1 ? tHub('hub.ui.crm_quick_order.skipped_other', '{n} lignes non parsées :', { n: parseSkipped.length }) : tHub('hub.ui.crm_quick_order.skipped_one', '{n} ligne non parsée :', { n: parseSkipped.length }) }}
               <span class="font-mono">{{ parseSkipped.slice(0, 3).join(' · ') }}{{ parseSkipped.length > 3 ? '…' : '' }}</span>
             </p>
           </div>
 
           
           <div>
-            <label class="text-xs block mb-1 text-gray-500 dark:text-slate-400">Client (pour résolution prix B2B)</label>
-            <input v-model.number="idCustomer" type="number" min="0" placeholder="0 = pas de résolution B2B" class="w-full border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs" />
+            <label class="text-xs block mb-1 text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_quick_order.customer_label', 'Client (pour résolution prix B2B)') }}</label>
+            <input v-model.number="idCustomer" type="number" min="0" :placeholder="tHub('hub.ui.crm_quick_order.customer_ph', '0 = pas de résolution B2B')" class="w-full border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs" />
 
-            <label class="text-xs block mt-3 mb-1 text-gray-500 dark:text-slate-400">Re-commande depuis ID commande</label>
+            <label class="text-xs block mt-3 mb-1 text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_quick_order.reorder_label', 'Re-commande depuis ID commande') }}</label>
             <div class="flex gap-2">
-              <input v-model.number="reorderId" type="number" min="1" placeholder="Ex: 142" class="flex-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs" />
+              <input v-model.number="reorderId" type="number" min="1" :placeholder="tHub('hub.ui.crm_quick_order.reorder_ph', 'Ex: 142')" class="flex-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs" />
               <button @click="reorderFromOrder" :disabled="!reorderId || reordering" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">
-                {{ reordering ? '…' : 'Charger' }}
+                {{ reordering ? '…' : tHub('hub.ui.crm_quick_order.load', 'Charger') }}
               </button>
             </div>
 
             <div class="mt-4 flex gap-2 flex-wrap">
               <button @click="resolveBulk" :disabled="!matrixItems.length || resolving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">
-                {{ resolving ? 'Résolution…' : `Résoudre ${matrixItems.length} ligne(s)` }}
+                {{ resolving ? tHub('hub.ui.crm_quick_order.resolving', 'Résolution…') : (matrixItems.length > 1 ? tHub('hub.ui.crm_quick_order.resolve_other', 'Résoudre {n} lignes', { n: matrixItems.length }) : tHub('hub.ui.crm_quick_order.resolve_one', 'Résoudre {n} ligne', { n: matrixItems.length })) }}
               </button>
               <button v-if="resolvedData" @click="openSaveModal" class="text-xs px-3 py-1.5 border border-primary-600 text-primary-600 rounded hover:bg-primary-50 dark:hover:bg-slate-800 font-semibold">
-                💾 Enregistrer en liste
+                {{ tHub('hub.ui.crm_quick_order.save_list', '💾 Enregistrer en liste') }}
               </button>
             </div>
           </div>
@@ -65,15 +65,15 @@
         
         <div v-if="matrixItems.length" class="mt-4">
           <div class="flex items-center justify-between mb-2">
-            <h3 class="text-xs font-semibold text-gray-600 dark:text-slate-400">Matrice ({{ matrixItems.length }} ligne{{ matrixItems.length > 1 ? 's' : '' }})</h3>
-            <button @click="addRow" class="text-[10px] px-2 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800">+ ligne</button>
+            <h3 class="text-xs font-semibold text-gray-600 dark:text-slate-400">{{ matrixItems.length > 1 ? tHub('hub.ui.crm_quick_order.matrix_other', 'Matrice ({n} lignes)', { n: matrixItems.length }) : tHub('hub.ui.crm_quick_order.matrix_one', 'Matrice ({n} ligne)', { n: matrixItems.length }) }}</h3>
+            <button @click="addRow" class="text-[10px] px-2 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.crm_quick_order.add_row', '+ ligne') }}</button>
           </div>
           <table class="w-full text-xs">
             <thead class="bg-gray-50 dark:bg-slate-800/50">
               <tr class="text-left text-[10px] text-gray-400 uppercase tracking-wider">
                 <th class="px-3 py-2 font-medium w-10">#</th>
                 <th class="px-3 py-2 font-medium">SKU</th>
-                <th class="px-3 py-2 font-medium text-right w-24">Qté</th>
+                <th class="px-3 py-2 font-medium text-right w-24">{{ tHub('hub.ui.crm_quick_order.col_qty', 'Qté') }}</th>
                 <th class="px-3 py-2 font-medium text-right w-10"></th>
               </tr>
             </thead>
@@ -97,22 +97,22 @@
 
       
       <section v-if="resolvedData">
-        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">📦 Résolution panier</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">{{ tHub('hub.ui.crm_quick_order.section_resolution', '📦 Résolution panier') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
           <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-800 p-3">
-            <p class="text-[10px] text-gray-400 uppercase">Résolues</p>
+            <p class="text-[10px] text-gray-400 uppercase">{{ tHub('hub.ui.crm_quick_order.stat_resolved', 'Résolues') }}</p>
             <p class="text-lg font-bold text-success-600">{{ resolvedData.totals.nbResolved }}</p>
           </div>
           <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-800 p-3">
-            <p class="text-[10px] text-gray-400 uppercase">Non trouvées</p>
+            <p class="text-[10px] text-gray-400 uppercase">{{ tHub('hub.ui.crm_quick_order.stat_not_found', 'Non trouvées') }}</p>
             <p class="text-lg font-bold" :class="resolvedData.totals.nbNotFound ? 'text-danger-500' : 'text-gray-400'">{{ resolvedData.totals.nbNotFound }}</p>
           </div>
           <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-800 p-3">
-            <p class="text-[10px] text-gray-400 uppercase">Qté totale</p>
+            <p class="text-[10px] text-gray-400 uppercase">{{ tHub('hub.ui.crm_quick_order.stat_total_qty', 'Qté totale') }}</p>
             <p class="text-lg font-bold text-gray-800 dark:text-slate-100 font-mono">{{ formatNum(resolvedData.totals.totalQuantity) }}</p>
           </div>
           <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-800 p-3">
-            <p class="text-[10px] text-gray-400 uppercase">Total HT</p>
+            <p class="text-[10px] text-gray-400 uppercase">{{ tHub('hub.ui.crm_quick_order.stat_total_ht', 'Total HT') }}</p>
             <p class="text-lg font-bold text-primary-700 dark:text-primary-300 font-mono">{{ formatEur(resolvedData.totals.totalHt) }}</p>
           </div>
         </div>
@@ -121,13 +121,13 @@
           <thead class="bg-gray-50 dark:bg-slate-800/50">
             <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
               <th class="px-4 py-2.5 font-medium">SKU</th>
-              <th class="px-4 py-2.5 font-medium">Produit</th>
-              <th class="px-4 py-2.5 font-medium text-right">Qté</th>
-              <th class="px-4 py-2.5 font-medium text-right">PU HT</th>
-              <th class="px-4 py-2.5 font-medium text-center">Source prix</th>
-              <th class="px-4 py-2.5 font-medium text-right">Stock</th>
-              <th class="px-4 py-2.5 font-medium text-center">Statut</th>
-              <th class="px-4 py-2.5 font-medium text-right">Total</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_quick_order.col_product', 'Produit') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_quick_order.col_qty', 'Qté') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_quick_order.col_unit_ht', 'PU HT') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ tHub('hub.ui.crm_quick_order.col_price_source', 'Source prix') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_quick_order.col_stock', 'Stock') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ tHub('hub.ui.crm_quick_order.col_status', 'Statut') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_quick_order.col_total', 'Total') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -148,7 +148,7 @@
             <tr v-for="(nf, i) in resolvedData.notFound" :key="`nf-${i}`" class="border-t border-gray-50 dark:border-slate-800/50 bg-danger-50/30 dark:bg-danger-900/10">
               <td class="px-4 py-2 font-mono text-xs font-semibold text-danger-600">{{ nf.sku }}</td>
               <td class="px-4 py-2 text-xs text-danger-500 italic" colspan="6">
-                Non trouvé ({{ nf.reason === 'not_in_catalog' ? 'absent du catalogue' : nf.reason }})
+                {{ tHub('hub.ui.crm_quick_order.not_found', 'Non trouvé ({reason})', { reason: nf.reason === 'not_in_catalog' ? tHub('hub.ui.crm_quick_order.reason_not_in_catalog', 'absent du catalogue') : nf.reason }) }}
               </td>
               <td class="px-4 py-2 text-right font-mono text-xs text-gray-400">—</td>
             </tr>
@@ -158,20 +158,20 @@
 
       
       <section>
-        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">💾 Listes persistées</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">{{ tHub('hub.ui.crm_quick_order.section_lists', '💾 Listes persistées') }}</h2>
         <div v-if="loadingLists" class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
         <div v-else-if="!persistedLists.length" class="py-10 text-center text-xs text-gray-400 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
-          Aucune liste persistée. Résolvez une matrice et enregistrez-la pour commencer.
+          {{ tHub('hub.ui.crm_quick_order.no_lists', 'Aucune liste persistée. Résolvez une matrice et enregistrez-la pour commencer.') }}
         </div>
         <table v-else class="w-full text-sm bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 overflow-hidden">
           <thead class="bg-gray-50 dark:bg-slate-800/50">
             <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-              <th class="px-4 py-2.5 font-medium">Nom</th>
-              <th class="px-4 py-2.5 font-medium">Client</th>
-              <th class="px-4 py-2.5 font-medium text-center">Lignes</th>
-              <th class="px-4 py-2.5 font-medium text-center">Défaut</th>
-              <th class="px-4 py-2.5 font-medium">Mise à jour</th>
-              <th class="px-4 py-2.5 font-medium text-right">Actions</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_quick_order.col_name', 'Nom') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_quick_order.col_customer', 'Client') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ tHub('hub.ui.crm_quick_order.col_lines', 'Lignes') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ tHub('hub.ui.crm_quick_order.col_default', 'Défaut') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_quick_order.col_updated', 'Mise à jour') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_quick_order.col_actions', 'Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -180,13 +180,13 @@
               <td class="px-4 py-2 text-xs text-gray-600 dark:text-slate-400">{{ l.customerName || `#${l.idCustomer}` }}</td>
               <td class="px-4 py-2 text-center font-mono text-xs">{{ l.nbLines }}</td>
               <td class="px-4 py-2 text-center">
-                <span v-if="l.isDefault" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary-100 text-primary-700">défaut</span>
+                <span v-if="l.isDefault" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary-100 text-primary-700">{{ tHub('hub.ui.crm_quick_order.badge_default', 'défaut') }}</span>
               </td>
               <td class="px-4 py-2 text-xs text-gray-500">{{ formatDate(l.dateUpd) }}</td>
               <td class="px-4 py-2 text-right">
                 <div class="flex justify-end gap-1">
-                  <button @click="loadList(l.id)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" title="Charger">↺</button>
-                  <button @click="deleteList(l)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" title="Supprimer">✕</button>
+                  <button @click="loadList(l.id)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" :title="tHub('hub.ui.crm_quick_order.load_title', 'Charger')">↺</button>
+                  <button @click="deleteList(l)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" :title="tHub('hub.ui.crm_quick_order.delete_title', 'Supprimer')">✕</button>
                 </div>
               </td>
             </tr>
@@ -199,27 +199,27 @@
     <div v-if="saveModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="saveModalOpen = false">
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-md mx-4">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Enregistrer la liste</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.crm_quick_order.save_title', 'Enregistrer la liste') }}</h2>
           <button @click="saveModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="submitSave" class="p-5 space-y-3">
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Client *</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_quick_order.customer_req', 'Client *') }}</span>
             <input v-model.number="saveForm.idCustomer" type="number" min="1" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
           </label>
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Nom de la liste *</span>
-            <input v-model="saveForm.name" required maxlength="128" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="Commande hebdo, Stock frais, etc." />
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_quick_order.name_req', 'Nom de la liste *') }}</span>
+            <input v-model="saveForm.name" required maxlength="128" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="tHub('hub.ui.crm_quick_order.name_ph', 'Commande hebdo, Stock frais, etc.')" />
           </label>
           <label class="text-xs flex items-center gap-2">
             <input v-model="saveForm.isDefault" type="checkbox" :true-value="1" :false-value="0" />
-            <span class="text-gray-500 dark:text-slate-400">Liste par défaut pour ce client</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_quick_order.default_for_customer', 'Liste par défaut pour ce client') }}</span>
           </label>
           <p v-if="saveError" class="text-xs text-danger-500">{{ saveError }}</p>
-          <p class="text-xs text-gray-500">{{ resolvedData?.resolved.length || 0 }} ligne(s) résolue(s) seront enregistrées.</p>
+          <p class="text-xs text-gray-500">{{ (resolvedData?.resolved.length || 0) > 1 ? tHub('hub.ui.crm_quick_order.saved_count_other', '{n} lignes résolues seront enregistrées.', { n: resolvedData?.resolved.length || 0 }) : tHub('hub.ui.crm_quick_order.saved_count_one', '{n} ligne résolue sera enregistrée.', { n: resolvedData?.resolved.length || 0 }) }}</p>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="saveModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">Annuler</button>
-            <button type="submit" :disabled="saving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ saving ? 'Enreg…' : 'Enregistrer' }}</button>
+            <button type="button" @click="saveModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.crm_quick_order.cancel', 'Annuler') }}</button>
+            <button type="submit" :disabled="saving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ saving ? tHub('hub.ui.crm_quick_order.saving', 'Enreg…') : tHub('hub.ui.crm_quick_order.save', 'Enregistrer') }}</button>
           </div>
         </form>
       </div>
@@ -243,6 +243,8 @@ interface PersistedList {
   id: number; idCustomer: number; customerName: string | null; customerEmail: string | null
   name: string; isDefault: number; active: number; dateAdd: string; dateUpd: string; nbLines: number
 }
+
+const { t: tHub } = useHubT()
 
 const pasteText = ref('')
 const parsing = ref(false)
@@ -282,9 +284,9 @@ function statusBadge(s: string): string {
   return 'bg-danger-100 text-danger-600'
 }
 function statusLabel(s: string): string {
-  if (s === 'ok') return 'dispo'
-  if (s === 'partial') return 'partiel'
-  return 'rupture'
+  if (s === 'ok') return tHub('hub.ui.crm_quick_order.status_ok', 'dispo')
+  if (s === 'partial') return tHub('hub.ui.crm_quick_order.status_partial', 'partiel')
+  return tHub('hub.ui.crm_quick_order.status_out', 'rupture')
 }
 
 async function parseAndFill() {
@@ -298,7 +300,7 @@ async function parseAndFill() {
     matrixItems.value = res.items.map(i => ({ sku: i.sku, qty: i.qty }))
     parseSkipped.value = res.skipped || []
   } catch (e: any) {
-    alert(`Erreur parse : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_quick_order.err_parse', 'Erreur parse : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   } finally {
     parsing.value = false
   }
@@ -323,7 +325,7 @@ async function reorderFromOrder() {
     matrixItems.value = res.items.map((i: any) => ({ sku: i.sku, qty: i.qty }))
     if (res.order?.idCustomer) idCustomer.value = res.order.idCustomer
   } catch (e: any) {
-    alert(`Erreur re-commande : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_quick_order.err_reorder', 'Erreur re-commande : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   } finally {
     reordering.value = false
   }
@@ -340,7 +342,7 @@ async function resolveBulk() {
     })
     resolvedData.value = { resolved: res.resolved, notFound: res.notFound, totals: res.totals }
   } catch (e: any) {
-    alert(`Erreur résolution : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_quick_order.err_resolve', 'Erreur résolution : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   } finally {
     resolving.value = false
   }
@@ -370,7 +372,7 @@ async function submitSave() {
     saveModalOpen.value = false
     await loadLists()
   } catch (e: any) {
-    saveError.value = e?.data?.statusMessage || e?.message || 'Erreur inconnue'
+    saveError.value = e?.data?.statusMessage || e?.message || tHub('hub.ui.crm_quick_order.unknown_error', 'Erreur inconnue')
   } finally {
     saving.value = false
   }
@@ -396,17 +398,17 @@ async function loadList(id: number) {
     idCustomer.value = res.list.idCustomer
     resolvedData.value = null
   } catch (e: any) {
-    alert(`Erreur charge : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_quick_order.err_load', 'Erreur charge : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 
 async function deleteList(l: PersistedList) {
-  if (!confirm(`Supprimer la liste "${l.name}" ?`)) return
+  if (!confirm(tHub('hub.ui.crm_quick_order.delete_confirm', 'Supprimer la liste "{name}" ?', { name: l.name }))) return
   try {
     await $fetch(`/api/bo/quick-order/lists/${l.id}`, { method: 'DELETE' })
     await loadLists()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_quick_order.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 

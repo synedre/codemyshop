@@ -1,6 +1,11 @@
 
 <template>
-  <div class="min-h-screen bg-gray-50">
+  
+  <AccountShell v-if="inAccount" :title="t('favoris.favoris_page_title', 'Mes favoris')">
+    <AccountWishlist :items="accountItems" :loading="accountLoading" @remove="onRemoveAccountItem" />
+  </AccountShell>
+
+  <div v-else class="min-h-screen bg-gray-50">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
       <NuxtLink to="/" class="text-sm text-primary-600 hover:underline mb-4 inline-flex items-center gap-1">
@@ -183,15 +188,55 @@
 </template>
 
 <script setup lang="ts">
+import { ensureCustomerSession } from '~/utils/ensure-customer-session'
+import { isAccountWishlist } from '~/utils/account-nav-entries'
+import { mergeWishlistItems, type AccountWishlistItem } from '~/utils/account-wishlist'
 const { t } = useHubT()
-const { loggedIn } = useCustomerAuth()
+const customerAuth = useCustomerAuth()
+const { loggedIn } = customerAuth
 const {
   lists, loaded, loading, itemTotal,
   loadLists, createList, renameList, setDefault, deleteList,
+  fetchItems, removeItem,
 } = useWishlist()
+const { localePath } = useLocalePath()
+
+const inAccount = isAccountWishlist(useRuntimeConfig().public as any)
+const accountItems = ref<AccountWishlistItem[]>([])
+const accountLoading = ref(true)
+
+async function loadAccountItems() {
+  accountLoading.value = true
+  try {
+    await loadLists()
+    const parListe = await Promise.all(
+      lists.value
+        .filter(l => Number(l.item_count) > 0)
+        .map(async l => ({ listId: l.id_wishlist, items: await fetchItems(l.id_wishlist).catch(() => []) })),
+    )
+    accountItems.value = mergeWishlistItems(parListe)
+  } finally {
+    accountLoading.value = false
+  }
+}
+
+async function onRemoveAccountItem(item: AccountWishlistItem) {
+  await removeItem(item.listId, item.productId, item.attributeId)
+  accountItems.value = accountItems.value.filter(i => i.key !== item.key)
+}
 
 useHead({ title: t('favoris.favoris_page_title', 'Mes favoris') })
-definePageMeta({ layout: 'default' })
+definePageMeta({
+  layout: 'default',
+  
+  
+  
+  middleware: [
+    () => {
+      if (isAccountWishlist(useRuntimeConfig().public as any)) setPageLayout('white-label')
+    },
+  ],
+})
 
 const showCreate = ref(false)
 const newName = ref('')
@@ -200,7 +245,16 @@ const renameValue = ref('')
 const menuOpenId = ref<number | null>(null)
 const busy = ref(false)
 
-onMounted(() => { loadLists() })
+onMounted(async () => {
+  const connecte = await ensureCustomerSession(customerAuth)
+  if (inAccount) {
+    
+    
+    if (!connecte) return navigateTo(`${localePath('/connexion')}?redirect=/favoris`)
+    return loadAccountItems()
+  }
+  await loadLists()
+})
 if (import.meta.client) {
   window.addEventListener('click', () => { menuOpenId.value = null })
 }

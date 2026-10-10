@@ -2,6 +2,8 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 interface ImportBody {
   rows: Record<string, any>[]
   mapping: {
@@ -27,6 +29,7 @@ function toBool(v: any): 0 | 1 | undefined {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<ImportBody>(event)
   if (!body || !Array.isArray(body.rows)) {
     throw createError({ statusCode: 400, message: 'Body invalide : rows manquant' })
@@ -73,8 +76,10 @@ export default defineEventHandler(async (event) => {
     const optin = toBool(pick(mapping.optin))
 
     try {
+      
+      
       const existing = await db.get<any>(
-        `SELECT id_customer FROM ps_customer WHERE email = ? AND deleted = 0 LIMIT 1`,
+        `SELECT id_customer FROM ps_customer WHERE LOWER(email) = ? AND deleted = 0 LIMIT 1`,
         [email],
       )
 

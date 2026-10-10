@@ -8,9 +8,21 @@ const WHITELIST_KEYS = [
   'PS_CATALOG_MODE',
   'PS_GUEST_CHECKOUT_ENABLED',
   'PS_ORDER_RETURN',
+  
+  'PS_PURCHASE_MINIMUM',
+  'PS_QUOTE_ALLOW_MAGICLINK_UNDER_MIN',
+  
+  'PS_PWA_INSTALL_BANNER',
+  
+  
+  'PS_PRICE_ROUND_UP',
 ] as const
 
 type FlagKey = typeof WHITELIST_KEYS[number]
+
+const FLAG_DEFAULTS: Partial<Record<FlagKey, string>> = {
+  PS_PWA_INSTALL_BANNER: '1',
+}
 
 export default defineEventHandler(async (event) => {
   try {
@@ -22,7 +34,7 @@ export default defineEventHandler(async (event) => {
     )
 
     const flags: Record<FlagKey, string> = {} as Record<FlagKey, string>
-    for (const key of WHITELIST_KEYS) flags[key] = '0'
+    for (const key of WHITELIST_KEYS) flags[key] = FLAG_DEFAULTS[key] ?? '0'
     for (const row of rows) {
       if ((WHITELIST_KEYS as readonly string[]).includes(row.name)) {
         flags[row.name as FlagKey] = row.value

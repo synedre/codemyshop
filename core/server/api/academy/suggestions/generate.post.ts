@@ -3,6 +3,7 @@
 import { getAllModules } from '~/server/utils/academy-content'
 import { getSuggestion } from '~/server/utils/academy-db'
 import { createAiTask } from '~/server/utils/ai-queue'
+import { resolveClientId } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const academy = getAllModules()
@@ -17,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
       await createAiTask({
         name: `academy-suggestion:${mod.slug}:${i}`,
-        clientId: 'ac-hub',
+        clientId: resolveClientId(event),
         model: 'mistral-large-latest',
         systemPrompt: `Tu génères UNE question pertinente qu'un étudiant e-commerce se poserait naturellement après avoir lu cette leçon. La question doit être concrète, orientée pratique, et inciter à l'action. Pas de question générique. Maximum 120 caractères. Réponds UNIQUEMENT avec la question, sans guillemets ni préfixe.`,
         userPrompt: `Module: ${mod.title}\nLeçon: ${lesson.title}\nContenu: ${lesson.content}\nÀ retenir: ${lesson.takeaway}`,

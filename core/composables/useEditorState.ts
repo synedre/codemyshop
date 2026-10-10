@@ -11,7 +11,7 @@ import { DEFAULT_VISIBILITY_RULE } from '~/utils/avatar'
 
 export type AcHubSectionType = 'hero' | 'probleme' | 'solution' | 'why' | 'features' | 'categories' | 'events' | 'testimonials' | 'about' | 'blog' | 'faq' | 'malt' | 'personas' | 'workflow' | 'gsc-showcase' | 'ambassador' | 'investissement' | 'hub-showcase' | 'nav-pages' | 'cta-final'
 
-export type ExampleSectionType = 'hero-slider' | 'features' | 'categories' | 'promotions' | 'new-products' | 'narrative-blocks' | 'banners' | 'bestsellers' | 'instagram' | 'blog'
+export type ExampleSectionType = 'hero-slider' | 'features' | 'categories' | 'promotions' | 'new-products' | 'narrative-blocks' | 'media-rows' | 'banners' | 'bestsellers' | 'instagram' | 'blog'
 
 export type SectionType = AcHubSectionType | ExampleSectionType
 
@@ -41,8 +41,18 @@ export type GlobalPanelId =
   | 'prefooter-edit'
   | 'silo:hero'
   | 'silo:sections'
+  | 'variant-edit'
 
 export const SECTION_META: Record<string, { label: string; icon: string }> = {
+  
+  
+  
+  'product-content':    { label: 'Description et retrait', icon: '📄' },
+  'product-highlights': { label: 'Technos et lifestyle',   icon: '🎽' },
+  'product-faq':        { label: 'Questions fréquentes',   icon: '❓' },
+  'product-related':    { label: 'Produits liés',          icon: '🛍️' },
+  'product-reviews':    { label: 'Avis clients',           icon: '⭐' },
+  'product-articles':   { label: 'Guides associés',        icon: '📚' },
   
   hero:         { label: 'Hero',          icon: '🦸' },
   why:            { label: 'Manifeste',      icon: '💡' },
@@ -69,9 +79,19 @@ export const SECTION_META: Record<string, { label: string; icon: string }> = {
   'promotions':       { label: 'Promotions',         icon: '🏷️' },
   'new-products':     { label: 'Nouveaux produits',  icon: '🆕' },
   'narrative-blocks': { label: 'Blocs narratifs',    icon: '📖' },
+  'media-rows':       { label: 'Bandes image/texte', icon: '↔️' },
   'banners':          { label: 'Bannières',          icon: '🖼️' },
   'bestsellers':      { label: 'Meilleures ventes',  icon: '🏆' },
   'instagram':        { label: 'Instagram',          icon: '📸' },
+  
+  'hero-cta':         { label: 'Hero + CTA',         icon: '🎯' },
+  'text-band':        { label: 'Bande texte',        icon: '📃' },
+  'spec-strip':       { label: 'Caractéristiques',   icon: '📊' },
+  'steps':            { label: 'Étapes',             icon: '🔢' },
+  'timeline':         { label: 'Frise chronologique', icon: '📅' },
+  'offers-grid':      { label: 'Grille d\'offres',   icon: '🎫' },
+  'info-panel':       { label: 'Panneau infos',      icon: '🗂️' },
+  'data-table':       { label: 'Tableau de données', icon: '📋' },
   
   'customer-reviews':  { label: 'Avis vérifiés',      icon: '⭐' },
   'newsletter':        { label: 'Newsletter',          icon: '📬' },
@@ -80,13 +100,19 @@ export const SECTION_META: Record<string, { label: string; icon: string }> = {
 
 export const FEATURE_ICONS: { value: HomepageFeatureIcon; label: string }[] = [
   { value: 'truck',  label: '🚚 Livraison' },
+  { value: 'house',  label: '🏠 Livraison à domicile' },
   { value: 'shield', label: '🛡️ Garantie' },
   { value: 'store',  label: '🏪 Drive & Collect' },
+  { value: 'map-pin', label: '📍 Magasin' },
   { value: 'credit', label: '💳 Paiement' },
   { value: 'star',   label: '⭐ Qualité' },
   { value: 'clock',  label: '⏱️ Délai' },
+  { value: 'zap',    label: '⚡ Expédition rapide' },
   { value: 'leaf',   label: '🌿 Eco' },
   { value: 'check',  label: '✅ Certifié' },
+  { value: 'return', label: '🔄 Retours' },
+  { value: 'refresh', label: '🔄 Échange' },
+  { value: 'headset', label: '🎧 Assistance' },
 ]
 
 export interface DbHomepageSection {
@@ -102,10 +128,14 @@ export interface DbHomepageSection {
   active: boolean
 }
 
-export const useDbHomepageSections = () => {
-  const sections = useState<DbHomepageSection[]>('ed_db_homepage_sections', () => [])
-  return sections
+export const useDbPageSections = (parentType: string, parentId: number) => {
+  const key = parentType === 'homepage' && parentId === 0
+    ? 'ed_db_homepage_sections'
+    : `ed_db_sections_${parentType}_${parentId}`
+  return useState<DbHomepageSection[]>(key, () => [])
 }
+
+export const useDbHomepageSections = () => useDbPageSections('homepage', 0)
 
 export const useDbPrefooterSections = () => {
   const sections = useState<DbHomepageSection[]>('ed_db_prefooter_sections', () => [])
@@ -278,7 +308,7 @@ export const useEditorState = () => {
 
   function addCategory() {
     homepage.value.categories ??= []
-    homepage.value.categories.push({ label: 'Nouvelle catégorie', image: '', href: '/catalogue/nouvelle-categorie' })
+    homepage.value.categories.push({ label: 'Nouvelle catégorie', image: '', href: '/nouvelle-categorie/' })
     markDirty()
   }
 

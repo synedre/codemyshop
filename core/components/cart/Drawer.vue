@@ -1,8 +1,13 @@
 
 <script setup lang="ts">
+import { recapTTCActif, recapPanier, ligneEnTTC, totalLigneTTC } from '~/utils/cart-totals'
+import { attributsLigne } from '~/utils/cart-line-layout'
+import { presentationConfirmation, pointsPourMontant, pointsAvantPalier, type FideliteTiroir } from '~/utils/cart-drawer-confirm'
+
+const { localePath } = useLocalePath()
 const { t } = useT()
 const { resolvedClientId } = useClientDetection()
-const { isOpen, close } = useCartDrawer()
+const { isOpen, origin, close } = useCartDrawer()
 const { loggedIn, customer, checkSession } = useCustomerAuth()
 
 const _runtimeCfg = useRuntimeConfig()
@@ -20,13 +25,41 @@ const {
   totalFormatted,
   totalTTCFormatted,
   cartLoading,
+  cartError,
   discountCode,
   discountHT,
   applyPromoCode,
+  promoEnAttente,
   removePromoCode,
   isServerMode,
   initServerCart,
+  subtotalTTC,
 } = useServerCart(resolvedClientId.value)
+
+const { isB2b } = useB2bVisibility()
+const recapTTC = computed(() => recapTTCActif(_runtimeCfg.public as Record<string, any>, isB2b.value))
+const recap = computed(() => recapPanier({
+  serveur: isServerMode.value
+    ? { subtotalTTC: subtotalTTC.value, totalTTC: totalTTC.value, totalHT: totalHT.value }
+    : null,
+  lignes: items.value,
+  lignesTTC: !isB2b.value,
+  remiseAttente: promoEnAttente.value,
+}))
+
+const confirmation = computed(() => presentationConfirmation(_runtimeCfg.public as Record<string, any>, origin?.value))
+const fidelite = useState<FideliteTiroir | null>('cart-drawer-loyalty', () => null)
+async function chargerFidelite() {
+  if (!confirmation.value || !loggedIn.value) { fidelite.value = null; return }
+  try {
+    fidelite.value = await $fetch<FideliteTiroir>('/api/loyalty/account')
+  } catch {
+    fidelite.value = null
+  }
+}
+const pointsParLigne = computed(() => items.value.map(i => pointsPourMontant(totalLigneTTC(i, !isB2b.value), fidelite.value)))
+const pointsAvantPalierSuivant = computed(() =>
+  pointsAvantPalier(fidelite.value, pointsParLigne.value.reduce<number>((s, p) => s + (p ?? 0), 0)))
 
 async function ensureServerCartInit() {
   if (loggedIn.value && customer.value?.customerId && !isServerMode.value) {
@@ -41,6 +74,7 @@ watch([isOpen, loggedIn], async ([open]) => {
   if (open) {
     await checkSession()
     await ensureServerCartInit()
+    await chargerFidelite()
   }
 })
 
@@ -54,7 +88,7 @@ async function submitPromo() {
   promoError.value = null
   promoApplying.value = true
   try {
-    await applyPromoCode(code)
+    await applyPromoCode(code, { totalHT: recap.value.totalHT })
     promoInput.value = ''
   } catch (err: any) {
     promoError.value = err?.data?.message || err?.message || t('cart.drawer.promo_invalid')
@@ -79,10 +113,18 @@ function boxLabel(quantity: number): string {
 }
 
 function taxLineHtml(item: { taxRate?: number; quantity: number; priceRaw: number }): string {
+  const amount = formatPrice(item.priceRaw * item.quantity)
+  if (!item.taxRate) {
+    return t(
+      'cart.drawer.line_amount_html',
+      '<span class="font-semibold text-gray-700 dark:text-gray-200">{amount} HT</span>',
+      { amount },
+    )
+  }
   return t('cart.drawer.tax_line_html', {
-    rate: (item.taxRate ?? 5.5).toString().replace('.', ','),
+    rate: item.taxRate.toString().replace('.', ','),
     qtyLabel: boxLabel(item.quantity),
-    amount: formatPrice(item.priceRaw * item.quantity),
+    amount,
   })
 }
 
@@ -116,6 +158,7 @@ watch(isOpen, (val) => {
     <Transition name="cart-slide">
       <aside
         v-if="isOpen"
+        data-cart-drawer
         class="fixed inset-y-0 right-0 z-[101] w-full sm:w-[440px] bg-white dark:bg-slate-900 shadow-2xl flex flex-col"
         role="dialog"
         aria-modal="true"
@@ -127,9 +170,15 @@ watch(isOpen, (val) => {
             id="cart-drawer-title"
             class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2"
           >
-            {{ t('cart.drawer.title') }}
+            <template v-if="confirmation">
+              <svg class="w-5 h-5 shrink-0 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" data-confirmation="coche" data-picto="badge">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+              </svg>
+              {{ t('cart.drawer.added_title') }}
+            </template>
+            <template v-else>{{ t('cart.drawer.title') }}</template>
             <span
-              v-if="totalItems"
+              v-if="totalItems && !confirmation"
               class="text-xs font-semibold text-gray-400 dark:text-gray-500"
             >{{ itemsCountLabel }}</span>
           </h2>
@@ -147,8 +196,56 @@ watch(isOpen, (val) => {
 
         
         <div class="flex-1 overflow-y-auto px-5 py-4">
+          <p v-if="cartError" class="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="alert" data-tiroir="refus">
+            {{ cartError }}
+          </p>
           <div v-if="cartLoading" class="text-center py-12 text-gray-400 text-sm">
             {{ t('common.loading') }}
+          </div>
+
+          <div v-else-if="items.length && confirmation" class="space-y-3" data-tiroir="confirmation">
+            <div
+              v-for="(item, idx) in items"
+              :key="item.id"
+              class="flex items-start gap-3 py-3"
+              data-ligne="confirmation"
+            >
+              <div class="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden shrink-0">
+                <img
+                  v-if="item.image"
+                  :src="item.image"
+                  :alt="item.name"
+                  class="w-full h-full object-contain p-1.5"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug">{{ item.name }}</h3>
+                <p v-if="item.customization" class="mt-1 text-[10px] text-gray-500 leading-tight" data-confirmation="perso">
+                  {{ item.customization.label || t('product.personalize_cart_line', 'Flocage') }} : «&nbsp;{{ item.customization.text }}&nbsp;»
+                </p>
+                <p v-if="pointsParLigne[idx]" class="mt-1 text-[10px] text-gray-900" data-confirmation="points">
+                  {{ t('cart.drawer.loyalty_points_line', { points: pointsParLigne[idx]!.toLocaleString('fr-FR') }) }}
+                </p>
+                <p class="mt-1 flex flex-wrap gap-x-6 gap-y-0.5 text-[10px] text-gray-900" data-confirmation="details">
+                  <span v-for="(a, j) in attributsLigne(item)" :key="j">{{ a.groupe ? `${a.groupe} ${a.valeur}` : a.valeur }}</span>
+                  <span data-confirmation="quantite">{{ t('cart.drawer.quantity_line', { count: item.quantity }) }}</span>
+                </p>
+                <p class="mt-1 flex items-baseline gap-1.5" data-confirmation="prix">
+                  <span class="text-xs font-bold text-primary-600">{{ recapTTC ? ligneEnTTC(item, formatPrice).price : `${item.price} ${t('common.price_ht_suffix')}` }}</span>
+                  <s
+                    v-if="(recapTTC ? ligneEnTTC(item, formatPrice) : item).priceFormattedBeforeDiscount"
+                    class="text-xs font-bold text-gray-900"
+                  >{{ (recapTTC ? ligneEnTTC(item, formatPrice) : item).priceFormattedBeforeDiscount }}</s>
+                </p>
+              </div>
+            </div>
+            <p v-if="pointsAvantPalierSuivant !== null" class="flex items-stretch" data-palier="suivant">
+              <span data-palier="libelle">
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 7.756a4.5 4.5 0 1 0 0 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                {{ t('cart.drawer.next_tier_label') }}
+              </span>
+              <span data-palier="reste">{{ t('cart.drawer.next_tier_remaining', { points: pointsAvantPalierSuivant.toLocaleString('fr-FR') }) }}</span>
+            </p>
           </div>
 
           <div v-else-if="items.length" class="space-y-3">
@@ -169,6 +266,7 @@ watch(isOpen, (val) => {
                 <h3 class="text-xs font-semibold text-gray-900 dark:text-white line-clamp-2 leading-snug">
                   {{ item.name }}
                 </h3>
+                <p v-if="item.variantLabel" class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{{ item.variantLabel }}</p>
 
                 
                 <div
@@ -214,24 +312,35 @@ watch(isOpen, (val) => {
                 </template>
                 <template v-else>
                   <div class="mt-1 flex items-baseline gap-1.5">
-                    <span class="text-xs font-bold text-primary-600 dark:text-primary-400">{{ item.price }} {{ t('common.price_ht_suffix') }}</span>
+                    <span v-if="recapTTC" class="text-xs font-bold text-primary-600 dark:text-primary-400">{{ ligneEnTTC(item, formatPrice).price }}</span>
+                    <span v-else class="text-xs font-bold text-primary-600 dark:text-primary-400">{{ item.price }} {{ t('common.price_ht_suffix') }}</span>
                     <span
-                      v-if="item.priceFormattedBeforeDiscount"
+                      v-if="(recapTTC ? ligneEnTTC(item, formatPrice) : item).priceFormattedBeforeDiscount"
                       class="text-[10px] text-red-600 line-through"
-                    >{{ item.priceFormattedBeforeDiscount }}</span>
+                    >{{ (recapTTC ? ligneEnTTC(item, formatPrice) : item).priceFormattedBeforeDiscount }}</span>
                     <span
                       v-if="item.reductionLabel"
                       class="text-[9px] font-bold text-white bg-red-600 rounded-full px-1.5 py-0.5"
                     >{{ item.reductionLabel }}</span>
                   </div>
                 </template>
+                
+                <p v-if="item.customization" class="mt-1 flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                  <span
+                    v-if="item.customization.colorHex"
+                    class="inline-block w-2.5 h-2.5 rounded-full border border-gray-300 shrink-0"
+                    :style="{ backgroundColor: item.customization.colorHex }"
+                    aria-hidden="true"
+                  />
+                  <span>{{ item.customization.label || t('product.personalize_cart_line', 'Flocage') }} : «&nbsp;{{ item.customization.text }}&nbsp;»</span>
+                </p>
                 <div class="flex items-center justify-between mt-2">
                   <div class="flex items-center border border-gray-200 dark:border-slate-700 rounded-md">
                     <button
                       type="button"
                       class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white text-sm"
                       :aria-label="t('cart.drawer.item_quantity_decrease_aria', { name: item.name })"
-                      @click="updateQuantity(item.id, item.quantity - 1)"
+                      @click="updateQuantity(item.lineKey, item.quantity - 1)"
                     >−</button>
                     <span class="w-7 h-7 flex items-center justify-center text-xs font-semibold text-gray-900 dark:text-white">
                       {{ item.quantity }}
@@ -240,14 +349,14 @@ watch(isOpen, (val) => {
                       type="button"
                       class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white text-sm"
                       :aria-label="t('cart.drawer.item_quantity_increase_aria', { name: item.name })"
-                      @click="updateQuantity(item.id, item.quantity + 1)"
+                      @click="updateQuantity(item.lineKey, item.quantity + 1)"
                     >+</button>
                   </div>
                   <button
                     type="button"
                     class="text-gray-300 hover:text-red-500 transition-colors"
                     :aria-label="t('cart.drawer.item_remove_aria', { name: item.name })"
-                    @click="removeFromCart(item.id)"
+                    @click="removeFromCart(item.lineKey)"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                       <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -287,7 +396,7 @@ watch(isOpen, (val) => {
                 <span class="truncate">{{ t('cart.drawer.promo_code_label', { code: discountCode }) }}</span>
               </span>
               <span class="flex items-center gap-2 shrink-0">
-                <span class="font-bold text-primary-700 dark:text-primary-300">−{{ formatPrice(discountHT) }}</span>
+                <span class="font-bold text-primary-700 dark:text-primary-300">−{{ formatPrice(recapTTC ? recap.remiseTTC : discountHT) }}</span>
                 <button
                   type="button"
                   class="p-0.5 rounded text-primary-600/70 hover:text-red-500 hover:bg-white/50 dark:hover:bg-slate-900/50 transition-colors"
@@ -320,7 +429,22 @@ watch(isOpen, (val) => {
             <p v-if="promoError" class="mt-1 text-[11px] text-red-500">{{ promoError }}</p>
           </div>
 
-          <div class="space-y-1.5 mb-4 text-sm">
+          
+          <div v-if="recapTTC" class="space-y-1.5 mb-4 text-sm" data-recap="ttc">
+            <div class="flex justify-between text-gray-500 dark:text-gray-400">
+              <span>{{ t('cart.cart_subtotal', 'Sous-total') }}</span>
+              <span class="font-semibold text-gray-900 dark:text-white" data-montant="sous-total">{{ formatPrice(recap.sousTotalTTC) }}</span>
+            </div>
+            <div v-if="recap.remiseTTC > 0" class="flex justify-between text-emerald-700 dark:text-emerald-400">
+              <span>{{ t('cart.drawer.discount_label', { code: discountCode }) }}</span>
+              <span class="font-semibold" data-montant="remise">−{{ formatPrice(recap.remiseTTC) }}</span>
+            </div>
+            <div class="flex justify-between font-bold text-base pt-1.5 border-t border-gray-100 dark:border-slate-800">
+              <span class="text-gray-900 dark:text-white">{{ t('cart.drawer.total_ttc') }}</span>
+              <span class="text-primary-600 dark:text-primary-400" data-montant="total-ttc">{{ formatPrice(recap.totalTTC) }}</span>
+            </div>
+          </div>
+          <div v-else class="space-y-1.5 mb-4 text-sm">
             <div class="flex justify-between text-gray-500 dark:text-gray-400">
               <span>{{ t('cart.drawer.subtotal_ht') }}</span>
               <span class="font-semibold text-gray-900 dark:text-white">{{ subtotalFormatted }}</span>
@@ -344,18 +468,18 @@ watch(isOpen, (val) => {
           </div>
 
           <NuxtLink
-            to="/commander"
+            :to="localePath('/commander')"
             class="block w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm text-center transition-colors"
             @click="close"
           >
             {{ t('cart.drawer.cta_checkout') }}
           </NuxtLink>
           <NuxtLink
-            to="/panier"
+            :to="localePath('/panier')"
             class="block w-full mt-2 py-2 text-center text-xs text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
             @click="close"
           >
-            {{ t('cart.drawer.cta_full_cart') }}
+            {{ confirmation ? t('cart.drawer.cta_full_cart_count', { count: totalItems }) : t('cart.drawer.cta_full_cart') }}
           </NuxtLink>
         </footer>
       </aside>

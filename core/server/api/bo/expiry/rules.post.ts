@@ -2,7 +2,10 @@
 
 import { createExpiryRule } from '~/enterprise/vertical-food/expiry/server/utils/expiry'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     label: string
     minDays: number

@@ -4,7 +4,7 @@
     
     <aside class="w-56 shrink-0 flex flex-col border-r border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
       <header class="px-4 py-3 border-b border-gray-100 dark:border-slate-800">
-        <h2 class="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Scénarios</h2>
+        <h2 class="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">{{ t('hub.ui.chatbot_scenario.scenarios', 'Scénarios') }}</h2>
       </header>
       <div class="flex-1 overflow-y-auto py-2">
         <button
@@ -25,7 +25,7 @@
           @click="reload"
           class="w-full text-[11px] py-1.5 px-3 rounded-md border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
         >
-          ↻ Rafraîchir
+          ↻ {{ t('hub.ui.chatbot_scenario.refresh', 'Rafraîchir') }}
         </button>
       </footer>
     </aside>
@@ -33,17 +33,17 @@
     
     <section class="w-80 shrink-0 flex flex-col border-r border-gray-100 dark:border-slate-800">
       <header class="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Nodes</h3>
+        <h3 class="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">{{ t('hub.ui.chatbot_scenario.nodes', 'Nodes') }}</h3>
         <button
           @click="newNode"
           class="text-[11px] py-1 px-2 rounded-md bg-primary-600 text-white hover:bg-primary-700"
         >
-          + Nouveau
+          + {{ t('hub.ui.chatbot_scenario.new', 'Nouveau') }}
         </button>
       </header>
       <div class="flex-1 overflow-y-auto">
-        <p v-if="loading" class="text-xs text-gray-400 px-4 py-8 text-center">Chargement…</p>
-        <p v-else-if="visibleNodes.length === 0" class="text-xs text-gray-400 px-4 py-8 text-center">Aucun node.</p>
+        <p v-if="loading" class="text-xs text-gray-400 px-4 py-8 text-center">{{ t('hub.ui.chatbot_scenario.loading', 'Chargement…') }}</p>
+        <p v-else-if="visibleNodes.length === 0" class="text-xs text-gray-400 px-4 py-8 text-center">{{ t('hub.ui.chatbot_scenario.no_node', 'Aucun node.') }}</p>
         <ul v-else class="divide-y divide-gray-100 dark:divide-slate-800">
           <li v-for="n in visibleNodes" :key="n.idNode">
             <button
@@ -60,14 +60,14 @@
                   {{ n.type }}
                 </span>
                 <span v-if="n.terminal" class="shrink-0 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 font-semibold">
-                  ⏹ Fin
+                  ⏹ {{ t('hub.ui.chatbot_scenario.end', 'Fin') }}
                 </span>
               </div>
               <p class="text-[11px] text-gray-500 dark:text-slate-400 line-clamp-2">
                 {{ truncateText(getQuestion(n, 1), 80) }}
               </p>
               <p v-if="optionsForNode(n.idNode).length" class="text-[10px] text-gray-400 dark:text-slate-500 mt-1">
-                {{ optionsForNode(n.idNode).length }} option{{ optionsForNode(n.idNode).length > 1 ? 's' : '' }}
+                {{ optionsForNode(n.idNode).length > 1 ? t('hub.ui.chatbot_scenario.options_count_other', '{n} options', { n: optionsForNode(n.idNode).length }) : t('hub.ui.chatbot_scenario.options_count_one', '{n} option', { n: optionsForNode(n.idNode).length }) }}
               </p>
             </button>
           </li>
@@ -78,12 +78,12 @@
     
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
       <div v-if="!selectedNode && !creatingNode" class="flex-1 flex items-center justify-center text-xs text-gray-400">
-        Sélectionnez un node pour l'éditer ou cliquez sur « Nouveau ».
+        {{ t('hub.ui.chatbot_scenario.select_hint', 'Sélectionnez un node pour l\'éditer ou cliquez sur « Nouveau ».') }}
       </div>
       <template v-else>
         <header class="px-6 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between shrink-0">
           <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100">
-            {{ creatingNode ? '➕ Nouveau node' : `✏️ ${form.nodeKey}` }}
+            {{ creatingNode ? '➕ ' + t('hub.ui.chatbot_scenario.new_node', 'Nouveau node') : `✏️ ${form.nodeKey}` }}
           </h3>
           <div class="flex gap-2">
             <button
@@ -92,42 +92,42 @@
               :disabled="saving"
               class="text-[11px] py-1.5 px-3 rounded-md border border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/20"
             >
-              🗑 Supprimer
+              🗑 {{ t('hub.ui.chatbot_scenario.delete', 'Supprimer') }}
             </button>
             <button
               @click="saveNode"
               :disabled="saving"
               class="text-[11px] py-1.5 px-3 rounded-md bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50"
             >
-              {{ saving ? '…' : '💾 Enregistrer' }}
+              {{ saving ? '…' : '💾 ' + t('hub.ui.chatbot_scenario.save', 'Enregistrer') }}
             </button>
           </div>
         </header>
         <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           <div class="grid grid-cols-2 gap-3">
             <label class="text-xs">
-              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">node_key (unique)</span>
-              <input v-model="form.nodeKey" type="text" placeholder="ex: product_q1_name" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5 font-mono" />
+              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">{{ t('hub.ui.chatbot_scenario.lbl_node_key', 'node_key (unique)') }}</span>
+              <input v-model="form.nodeKey" type="text" :placeholder="t('hub.ui.chatbot_scenario.ph_node_key', 'ex: product_q1_name')" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5 font-mono" />
             </label>
             <label class="text-xs">
               <span class="block text-gray-600 dark:text-slate-400 mb-0.5">scenario_root</span>
-              <input v-model="form.scenarioRoot" type="text" placeholder="ex: product, pricing, order" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5" />
+              <input v-model="form.scenarioRoot" type="text" :placeholder="t('hub.ui.chatbot_scenario.ph_scenario_root', 'ex: product, pricing, order')" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">type</span>
+              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">{{ t('hub.ui.chatbot_scenario.lbl_type', 'type') }}</span>
               <select v-model="form.type" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5">
                 <option value="buttons">buttons</option>
                 <option value="text">text</option>
               </select>
             </label>
             <label class="text-xs">
-              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">position</span>
+              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">{{ t('hub.ui.chatbot_scenario.lbl_position_lc', 'position') }}</span>
               <input v-model.number="form.position" type="number" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">capture <span class="text-gray-400">(optionnel)</span></span>
+              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">{{ t('hub.ui.chatbot_scenario.lbl_capture', 'capture') }} <span class="text-gray-400">{{ t('hub.ui.chatbot_scenario.optional', '(optionnel)') }}</span></span>
               <select v-model="form.capture" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5">
-                <option value="">— aucune —</option>
+                <option value="">{{ t('hub.ui.chatbot_scenario.none', '— aucune —') }}</option>
                 <option value="firstname">firstname</option>
                 <option value="lastname">lastname</option>
                 <option value="fullname">fullname</option>
@@ -138,18 +138,18 @@
               </select>
             </label>
             <label class="text-xs">
-              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">next_question (next node_key si type=text)</span>
-              <input v-model="form.nextQuestion" type="text" placeholder="ex: product_q2_route" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5 font-mono" />
+              <span class="block text-gray-600 dark:text-slate-400 mb-0.5">{{ t('hub.ui.chatbot_scenario.lbl_next_question', 'next_question (next node_key si type=text)') }}</span>
+              <input v-model="form.nextQuestion" type="text" :placeholder="t('hub.ui.chatbot_scenario.ph_next_question', 'ex: product_q2_route')" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5 font-mono" />
             </label>
             <label class="text-xs col-span-2 flex items-center gap-2">
               <input v-model="form.terminal" type="checkbox" class="rounded" />
-              <span class="text-gray-700 dark:text-slate-300">Terminal (ferme la conversation)</span>
+              <span class="text-gray-700 dark:text-slate-300">{{ t('hub.ui.chatbot_scenario.terminal', 'Terminal (ferme la conversation)') }}</span>
             </label>
           </div>
 
           
           <div class="border-t border-gray-100 dark:border-slate-800 pt-4">
-            <h4 class="text-[11px] uppercase tracking-wider font-bold text-gray-500 dark:text-slate-400 mb-2">Messages traduits</h4>
+            <h4 class="text-[11px] uppercase tracking-wider font-bold text-gray-500 dark:text-slate-400 mb-2">{{ t('hub.ui.chatbot_scenario.translated_messages', 'Messages traduits') }}</h4>
             <div class="space-y-3">
               <div v-for="lang in [1, 2, 3]" :key="lang" class="space-y-1">
                 <span class="text-[10px] uppercase tracking-wider text-gray-400">{{ langLabel(lang) }}</span>
@@ -157,12 +157,12 @@
                   v-model="form.langs[lang].question"
                   rows="3"
                   class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5 font-mono"
-                  placeholder="Message bot affiché à l'utilisateur (markdown supporté)"
+                  :placeholder="t('hub.ui.chatbot_scenario.ph_question', 'Message bot affiché à l\'utilisateur (markdown supporté)')"
                 />
                 <input
                   v-model="form.langs[lang].recapLabel"
                   type="text"
-                  placeholder="Recap label (court, ex: « Téléphone »)"
+                  :placeholder="t('hub.ui.chatbot_scenario.ph_recap_label', 'Recap label (court, ex: « Téléphone »)')"
                   class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1.5"
                 />
               </div>
@@ -172,33 +172,33 @@
           
           <div v-if="form.type === 'buttons' && !creatingNode" class="border-t border-gray-100 dark:border-slate-800 pt-4">
             <div class="flex items-center justify-between mb-2">
-              <h4 class="text-[11px] uppercase tracking-wider font-bold text-gray-500 dark:text-slate-400">Options (boutons)</h4>
+              <h4 class="text-[11px] uppercase tracking-wider font-bold text-gray-500 dark:text-slate-400">{{ t('hub.ui.chatbot_scenario.options_title', 'Options (boutons)') }}</h4>
               <button
                 @click="newOption"
                 class="text-[11px] py-1 px-2 rounded-md bg-primary-600 text-white hover:bg-primary-700"
               >
-                + Option
+                + {{ t('hub.ui.chatbot_scenario.option', 'Option') }}
               </button>
             </div>
             <div class="space-y-2">
               <div v-for="opt in nodeOptions" :key="opt.idOption" class="border border-gray-200 dark:border-slate-700 rounded-md p-3 bg-gray-50 dark:bg-slate-950 space-y-2">
                 <div class="grid grid-cols-2 gap-2">
                   <label class="text-xs">
-                    <span class="block text-gray-500 dark:text-slate-500 mb-0.5">Position</span>
+                    <span class="block text-gray-500 dark:text-slate-500 mb-0.5">{{ t('hub.ui.chatbot_scenario.lbl_position', 'Position') }}</span>
                     <input v-model.number="opt.position" type="number" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1" />
                   </label>
                   <label class="text-xs">
                     <span class="block text-gray-500 dark:text-slate-500 mb-0.5">→ next_node_key</span>
-                    <input v-model="opt.nextNodeKey" type="text" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1 font-mono" placeholder="ex: product_q1_name" />
+                    <input v-model="opt.nextNodeKey" type="text" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1 font-mono" :placeholder="t('hub.ui.chatbot_scenario.ph_node_key', 'ex: product_q1_name')" />
                   </label>
                 </div>
                 <label v-for="lang in [1, 2, 3]" :key="lang" class="block text-xs">
                   <span class="text-[10px] uppercase tracking-wider text-gray-400">{{ langLabel(lang) }}</span>
-                  <input v-model="optionLangText(opt, lang).labelText" type="text" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1" placeholder="Label du bouton" />
+                  <input v-model="optionLangText(opt, lang).labelText" type="text" class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-900 rounded px-2 py-1" :placeholder="t('hub.ui.chatbot_scenario.ph_button_label', 'Label du bouton')" />
                 </label>
                 <div class="flex gap-2 justify-end">
                   <button @click="saveOption(opt)" :disabled="saving" class="text-[10px] py-1 px-2 rounded bg-primary-600 text-white hover:bg-primary-700">
-                    💾 Sauver
+                    💾 {{ t('hub.ui.chatbot_scenario.save_short', 'Sauver') }}
                   </button>
                   <button @click="deleteOption(opt)" :disabled="saving" class="text-[10px] py-1 px-2 rounded border border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-400">
                     🗑
@@ -206,7 +206,7 @@
                 </div>
               </div>
               <p v-if="nodeOptions.length === 0" class="text-xs text-gray-400 italic px-3 py-2">
-                Pas encore d'options. Cliquez sur « + Option » pour en ajouter.
+                {{ t('hub.ui.chatbot_scenario.no_options', 'Pas encore d\'options. Cliquez sur « + Option » pour en ajouter.') }}
               </p>
             </div>
           </div>
@@ -225,6 +225,7 @@ interface FlowNode {
 }
 interface FlowOption { idOption: number; idNode: number; position: number; nextNodeKey: string; langs: OptionLang[] }
 
+const { t } = useHubT()
 const nodes = ref<FlowNode[]>([])
 const options = ref<FlowOption[]>([])
 const loading = ref(false)
@@ -245,8 +246,8 @@ const scenarios = computed(() => {
   for (const n of nodes.value) counts[n.scenarioRoot || '_root'] = (counts[n.scenarioRoot || '_root'] || 0) + 1
   const order = ['global', 'product', 'pricing', 'order', 'human', '_root']
   const labels: Record<string, string> = {
-    global: '🏠 Accueil', product: '📦 Produit', pricing: '💰 Prix / devis',
-    order: '🚚 Commande', human: '🧑 Humain', _root: '🌐 Hors scénario',
+    global: '🏠 ' + t('hub.ui.chatbot_scenario.sc_global', 'Accueil'), product: '📦 ' + t('hub.ui.chatbot_scenario.sc_product', 'Produit'), pricing: '💰 ' + t('hub.ui.chatbot_scenario.sc_pricing', 'Prix / devis'),
+    order: '🚚 ' + t('hub.ui.chatbot_scenario.sc_order', 'Commande'), human: '🧑 ' + t('hub.ui.chatbot_scenario.sc_human', 'Humain'), _root: '🌐 ' + t('hub.ui.chatbot_scenario.sc_root', 'Hors scénario'),
   }
   const all = Array.from(new Set([...order, ...Object.keys(counts)]))
   return all.filter((k) => counts[k] !== undefined).map((k) => ({
@@ -345,20 +346,20 @@ async function saveNode() {
       await reload()
     }
   } catch (err: any) {
-    alert('Erreur : ' + (err?.data?.message || err?.message || 'inconnue'))
+    alert(t('hub.ui.chatbot_scenario.err_generic', 'Erreur : {msg}', { msg: err?.data?.message || err?.message || t('hub.ui.chatbot_scenario.err_unknown', 'inconnue') }))
   } finally { saving.value = false }
 }
 
 async function deleteNode() {
   if (!selectedNode.value) return
-  if (!confirm(`Supprimer le node "${selectedNode.value.nodeKey}" ?`)) return
+  if (!confirm(t('hub.ui.chatbot_scenario.confirm_delete_node', 'Supprimer le node "{key}" ?', { key: selectedNode.value.nodeKey }))) return
   saving.value = true
   try {
     await $fetch(`/api/bo/chatbot/node/${selectedNode.value.idNode}`, { method: 'DELETE' })
     selectedNode.value = null
     await reload()
   } catch (err: any) {
-    alert('Erreur : ' + (err?.data?.message || err?.message || 'inconnue'))
+    alert(t('hub.ui.chatbot_scenario.err_generic', 'Erreur : {msg}', { msg: err?.data?.message || err?.message || t('hub.ui.chatbot_scenario.err_unknown', 'inconnue') }))
   } finally { saving.value = false }
 }
 
@@ -378,7 +379,7 @@ async function newOption() {
     })
     await reload()
   } catch (err: any) {
-    alert('Erreur : ' + (err?.data?.message || err?.message || 'inconnue'))
+    alert(t('hub.ui.chatbot_scenario.err_generic', 'Erreur : {msg}', { msg: err?.data?.message || err?.message || t('hub.ui.chatbot_scenario.err_unknown', 'inconnue') }))
   } finally { saving.value = false }
 }
 
@@ -404,18 +405,18 @@ async function saveOption(opt: FlowOption) {
     })
     await reload()
   } catch (err: any) {
-    alert('Erreur : ' + (err?.data?.message || err?.message || 'inconnue'))
+    alert(t('hub.ui.chatbot_scenario.err_generic', 'Erreur : {msg}', { msg: err?.data?.message || err?.message || t('hub.ui.chatbot_scenario.err_unknown', 'inconnue') }))
   } finally { saving.value = false }
 }
 
 async function deleteOption(opt: FlowOption) {
-  if (!confirm('Supprimer cette option ?')) return
+  if (!confirm(t('hub.ui.chatbot_scenario.confirm_delete_option', 'Supprimer cette option ?'))) return
   saving.value = true
   try {
     await $fetch(`/api/bo/chatbot/option/${opt.idOption}`, { method: 'DELETE' })
     await reload()
   } catch (err: any) {
-    alert('Erreur : ' + (err?.data?.message || err?.message || 'inconnue'))
+    alert(t('hub.ui.chatbot_scenario.err_generic', 'Erreur : {msg}', { msg: err?.data?.message || err?.message || t('hub.ui.chatbot_scenario.err_unknown', 'inconnue') }))
   } finally { saving.value = false }
 }
 

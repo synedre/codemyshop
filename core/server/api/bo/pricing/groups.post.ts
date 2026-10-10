@@ -2,7 +2,10 @@
 
 import { createGroup } from '~/enterprise/misc/pricing/server/utils/pricing'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     name: string
     priority?: number

@@ -6,6 +6,7 @@ import {
   toggleFeatureForTenant,
   isFeatureEnabled as isFeatureEnabledDb,
 } from '~/modules/marketplace/server/utils/marketplace'
+import { resolveClientId } from './db'
 
 export interface CatalogFeature {
   id:            string   
@@ -21,7 +22,7 @@ export interface CatalogFeature {
 }
 
 export async function readCatalog(clientId?: string): Promise<CatalogFeature[]> {
-  const cid = clientId || 'ac-hub'
+  const cid = clientId || resolveClientId()
   try {
     const rows = await listCatalogForTenant(cid, { clientId: cid })
     return rows.map((f) => ({

@@ -1,49 +1,64 @@
 
 
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import Beasties from 'beasties'
+import { FastBeasties } from '../utils/critical-css-fast'
+import { beastiesDocument, beastiesOptions, fontFacesHead, parseFontFaces, resolvePublicPath, type ParsedFontFace } from '../utils/critical-css'
 
-const publicPath = (() => {
-  const candidates = [
-    resolve(process.cwd(), '.output/public'),
-    resolve(process.cwd(), 'public'),
-    resolve(process.cwd(), '../public'),
-  ]
-  for (const c of candidates) {
-    if (existsSync(c)) return c
-  }
-  return candidates[0]
-})()
+const resolved = resolvePublicPath(
+  [process.env.pm_exec_path, process.argv[1]],
+  process.cwd(),
+  existsSync,
+)
+const publicPath = resolved ?? resolve(process.cwd(), '.output/public')
 
-if (process.env.CSS_ASYNC_VERBOSE === 'true' || !existsSync(publicPath)) {
-  console.log('[css-async] plugin loaded, publicPath =', publicPath, 'exists =', existsSync(publicPath))
+if (!resolved) {
+  console.error('[css-async] aucun dossier public de build trouvé (script',
+    process.env.pm_exec_path || process.argv[1], ', cwd', process.cwd(),
+    ') : CSS critique INACTIF, feuilles servies en bloquant.')
+} else if (process.env.CSS_ASYNC_VERBOSE === 'true') {
+  console.log('[css-async] plugin loaded, publicPath =', publicPath)
 }
 
-const beasties = new Beasties({
-  path: publicPath,
-  publicPath: '/',
-  preload: 'swap',
-  noscriptFallback: true,
-  pruneSource: false,
-  mergeStylesheets: false,
-  inlineFonts: false,
-  fonts: false,
-  reduceInlineStyles: false,
-  compress: true,
-  logLevel: process.env.CSS_ASYNC_VERBOSE === 'true' ? 'debug' : 'warn',
-})
+const beasties = new FastBeasties(beastiesOptions(publicPath))
+
+const facesByHref = new Map<string, ParsedFontFace[]>()
+function facesOf(href: string): ParsedFontFace[] {
+  let faces = facesByHref.get(href)
+  if (!faces) {
+    try {
+      faces = parseFontFaces(readFileSync(resolve(publicPath, href.slice(1)), 'utf8'), href)
+    } catch {
+      faces = []
+    }
+    facesByHref.set(href, faces)
+  }
+  return faces
+}
+
+let missingWarned = false
+function warnMissingSheets(head: string) {
+  if (missingWarned || !resolved) return
+  for (const [, href] of head.matchAll(/<link[^>]+href="(\/_nuxt\/[\w.-]+\.css)"/g)) {
+    if (!existsSync(resolve(publicPath, href.slice(1)))) {
+      missingWarned = true
+      console.warn('[css-async] feuille', href, 'introuvable sous', publicPath, ': CSS critique non extrait.')
+      return
+    }
+  }
+}
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('render:html', async (htmlContext, { event }) => {
     const url = event?.path || ''
-    if (url.startsWith('/hub')) return
+    if (url.startsWith('/hub') || !resolved) return
 
     
     
-    const html =
-      `<!doctype html><html><head>${htmlContext.head.join('')}</head>` +
-      `<body>${htmlContext.bodyPrepend.join('')}${htmlContext.body.join('')}${htmlContext.bodyAppend.join('')}</body></html>`
+    warnMissingSheets(htmlContext.head.join(''))
+
+    
+    const html = beastiesDocument(htmlContext)
 
     let processed: string
     try {
@@ -56,7 +71,18 @@ export default defineNitroPlugin((nitroApp) => {
     
     const headMatch = processed.match(/<head>([\s\S]*?)<\/head>/)
     if (headMatch) {
-      htmlContext.head = [headMatch[1]]
+      
+      const hrefs = new Set(
+        [...html.matchAll(/<link[^>]+href="(\/_nuxt\/[\w.-]+\.css)"/g)].map(m => m[1]),
+      )
+      let head = headMatch[1]
+      const pageCss = [...head.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('')
+      const fonts = fontFacesHead([...hrefs].flatMap(facesOf), pageCss)
+      if (fonts) {
+        const at = head.indexOf('<style')
+        head = at === -1 ? head + fonts : head.slice(0, at) + fonts + head.slice(at)
+      }
+      htmlContext.head = [head]
     }
     
     

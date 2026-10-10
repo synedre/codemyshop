@@ -34,7 +34,7 @@ export async function readGlobalSecret(slug: string): Promise<string> {
   const config = await readGlobalRowFrom({ global: true })
   const blob = config.secrets?.[slug]
   if (!blob) return ''
-  return decrypt(blob)
+  return decrypt(blob, process.env.AC_GLOBAL_SECRET_KEY)
 }
 
 export async function writeGlobalSecret(
@@ -45,7 +45,7 @@ export async function writeGlobalSecret(
   const config = await readGlobalRowFrom({ global: true })
   const secrets = { ...(config.secrets ?? {}) }
   if (plaintext) {
-    secrets[slug] = encrypt(plaintext)
+    secrets[slug] = encrypt(plaintext, process.env.AC_GLOBAL_SECRET_KEY)
   } else {
     delete secrets[slug]
   }

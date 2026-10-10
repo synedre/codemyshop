@@ -1,4 +1,4 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 import {
   createFreightRule,
@@ -9,6 +9,7 @@ import {
 } from '~/modules/freight-rule/server/utils/freight-rule'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     label: string
     scope?: string

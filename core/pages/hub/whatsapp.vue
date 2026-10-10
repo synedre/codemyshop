@@ -1,17 +1,17 @@
 <template>
   <div class="flex-1 overflow-auto">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-      <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Modèles WhatsApp</h1>
+      <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.whatsapp.title', 'Modèles WhatsApp') }}</h1>
       <button @click="openCreate" class="flex items-center gap-2 bg-success-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-success-700 transition-colors">
-        + Nouveau modèle
+        {{ tHub('hub.ui.whatsapp.new_btn', '+ Nouveau modèle') }}
       </button>
     </header>
 
     <div class="p-6">
-      <div v-if="loading" class="text-center py-20 text-gray-400">Chargement…</div>
+      <div v-if="loading" class="text-center py-20 text-gray-400">{{ tHub('hub.ui.whatsapp.loading', 'Chargement…') }}</div>
 
       <div v-else-if="!templates.length" class="text-center py-20 text-gray-400 text-sm">
-        Aucun modèle WhatsApp.
+        {{ tHub('hub.ui.whatsapp.none', 'Aucun modèle WhatsApp.') }}
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -27,7 +27,7 @@
           <p class="text-xs text-gray-500 line-clamp-3 mb-3">{{ t.message_body }}</p>
           <div class="flex gap-2">
             <button @click="openEdit(t)" class="flex-1 text-xs py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 hover:bg-gray-50">
-              Modifier
+              {{ tHub('hub.ui.whatsapp.edit', 'Modifier') }}
             </button>
             <button @click="confirmDelete(t)" class="text-xs py-1.5 px-3 rounded-lg border border-danger-100 text-danger-400 hover:bg-danger-50">
               ✕
@@ -43,31 +43,31 @@
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="closeModal">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg">
             <div class="flex items-center justify-between px-6 py-4 border-b">
-              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ editingId ? 'Modifier le modèle' : 'Nouveau modèle' }}</h2>
+              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ editingId ? tHub('hub.ui.whatsapp.edit_title', 'Modifier le modèle') : tHub('hub.ui.whatsapp.new_title', 'Nouveau modèle') }}</h2>
               <button @click="closeModal" class="text-gray-400">✕</button>
             </div>
             <form @submit.prevent="saveTemplate" class="px-6 py-5 space-y-4">
               <div>
-                <label class="label">Titre *</label>
+                <label class="label">{{ tHub('hub.ui.whatsapp.f_title', 'Titre *') }}</label>
                 <input v-model="form.title" required class="input-field" />
               </div>
               <div>
-                <label class="label">Type</label>
+                <label class="label">{{ tHub('hub.ui.whatsapp.f_type', 'Type') }}</label>
                 <select v-model="form.type" class="input-field">
-                  <option value="">— Choisir —</option>
-                  <option value="bot">Bot</option>
-                  <option value="human">Humain</option>
+                  <option value="">{{ tHub('hub.ui.whatsapp.choose', '— Choisir —') }}</option>
+                  <option value="bot">{{ tHub('hub.ui.whatsapp.bot', 'Bot') }}</option>
+                  <option value="human">{{ tHub('hub.ui.whatsapp.human', 'Humain') }}</option>
                 </select>
               </div>
               <div>
-                <label class="label">Message *</label>
-                <textarea v-model="form.message_body" required rows="5" class="input-field resize-none" placeholder="Utilisez {{1}}, {{2}}… pour les variables" />
+                <label class="label">{{ tHub('hub.ui.whatsapp.f_message', 'Message *') }}</label>
+                <textarea v-model="form.message_body" required rows="5" class="input-field resize-none" :placeholder="tHub('hub.ui.whatsapp.msg_ph', 'Utilisez {{1}}, {{2}}… pour les variables')" />
               </div>
               <p v-if="formError" class="text-sm text-danger-500">{{ formError }}</p>
               <div class="flex gap-3">
-                <button type="button" @click="closeModal" class="flex-1 py-2 border rounded-lg text-sm text-gray-600">Annuler</button>
+                <button type="button" @click="closeModal" class="flex-1 py-2 border rounded-lg text-sm text-gray-600">{{ tHub('hub.ui.whatsapp.cancel', 'Annuler') }}</button>
                 <button type="submit" :disabled="saving" class="flex-1 py-2 bg-success-600 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-                  {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+                  {{ saving ? tHub('hub.ui.whatsapp.saving', 'Enregistrement…') : tHub('hub.ui.whatsapp.save', 'Enregistrer') }}
                 </button>
               </div>
             </form>
@@ -81,11 +81,11 @@
       <Transition name="fade">
         <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="deleteTarget = null">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <h3 class="font-bold text-gray-800 dark:text-slate-100 mb-2">Supprimer ce modèle ?</h3>
+            <h3 class="font-bold text-gray-800 dark:text-slate-100 mb-2">{{ tHub('hub.ui.whatsapp.del_title', 'Supprimer ce modèle ?') }}</h3>
             <p class="text-sm text-gray-500 mb-5">{{ deleteTarget.title }}</p>
             <div class="flex gap-3">
-              <button @click="deleteTarget = null" class="flex-1 py-2 border rounded-lg text-sm">Annuler</button>
-              <button @click="deleteTemplate" class="flex-1 py-2 bg-danger-500 text-white rounded-lg text-sm">Supprimer</button>
+              <button @click="deleteTarget = null" class="flex-1 py-2 border rounded-lg text-sm">{{ tHub('hub.ui.whatsapp.cancel', 'Annuler') }}</button>
+              <button @click="deleteTemplate" class="flex-1 py-2 bg-danger-500 text-white rounded-lg text-sm">{{ tHub('hub.ui.whatsapp.delete', 'Supprimer') }}</button>
             </div>
           </div>
         </div>
@@ -96,6 +96,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 const templates   = ref<any[]>([])
 const loading     = ref(true)
@@ -149,7 +150,7 @@ const saveTemplate = async () => {
       closeModal()
       await loadTemplates()
     } else {
-      formError.value = data.error || 'Erreur'
+      formError.value = data.error || tHub('hub.ui.whatsapp.error', 'Erreur')
     }
   } finally {
     saving.value = false

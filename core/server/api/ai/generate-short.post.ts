@@ -9,12 +9,7 @@ export interface ShortScript {
   estimatedDuration: number
 }
 
-const TONE_MAP: Record<string, string> = {
-  smokevape:  'énergétique, funky et percutant — texte court, emojis, argot jeune',
-  example-shop:    'professionnel, expert et rassurant — vocabulaire B2B, sobre',
-  codemyshop: 'tech, enthousiaste et innovant — orienté résultats, moderne',
-  'ac-hub':   'professionnel mais accessible — clair, direct, sans jargon',
-}
+const DEFAULT_TONE = 'professionnel et accessible'
 
 const STUB: ShortScript = {
   hook:             '🎬 Découvrez ce qui change tout pour votre boutique !',
@@ -41,7 +36,10 @@ export default defineEventHandler(async (event) => {
     tone?:    string
   }>(event)
 
-  const tonePref = TONE_MAP[body.clientId] ?? body.tone ?? 'professionnel et accessible'
+  
+  
+  const declaredTone = String(useRuntimeConfig(event).public?.brandTone || '').trim()
+  const tonePref = declaredTone || body.tone || DEFAULT_TONE
 
   const sourceLabel: Record<string, string> = {
     product: 'un produit',

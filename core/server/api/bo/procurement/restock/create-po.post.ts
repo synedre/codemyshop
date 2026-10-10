@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<any>(event)
   const idSupplier = Number(body?.idSupplier || 0)
   const items = Array.isArray(body?.items) ? body.items : []

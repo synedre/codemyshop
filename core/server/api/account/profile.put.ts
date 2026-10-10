@@ -1,8 +1,7 @@
 
 
 import { useClientDb } from '~/server/utils/db'
-import { getSession } from '~/server/utils/session'
-import { signToken } from '~/server/utils/session-crypto'
+import { getSession, setHubSessionCookie } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
   const session = getSession(event)
@@ -29,8 +28,11 @@ export default defineEventHandler(async (event) => {
   const idCol = isEmployee ? 'id_employee' : 'id_customer'
   const where = isEmployee ? '' : ' AND deleted = 0'
 
+  
+  
+  
   const dup = await db.get<any>(
-    `SELECT ${idCol} AS uid FROM ${table} WHERE email = ? AND ${idCol} != ?${where} LIMIT 1`,
+    `SELECT ${idCol} AS uid FROM ${table} WHERE LOWER(email) = ? AND ${idCol} != ?${where} LIMIT 1`,
     [email, userId],
   )
   if (dup) {
@@ -44,7 +46,7 @@ export default defineEventHandler(async (event) => {
   )
 
   if (email !== session.email) {
-    const newToken = signToken({
+    setHubSessionCookie(event, {
       employeeId: session.employeeId,
       email,
       firstname,
@@ -54,13 +56,6 @@ export default defineEventHandler(async (event) => {
       clientId: session.clientId,
       userType: session.userType,
       isAdmin: session.isAdmin,
-    })
-    setCookie(event, 'hub_session', newToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
     })
   }
 

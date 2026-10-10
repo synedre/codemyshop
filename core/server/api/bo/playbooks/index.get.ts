@@ -2,7 +2,10 @@
 
 import { listPlaybooks } from '~/modules/playbook/server/utils/playbook'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const role = (q.role || '').toUpperCase().trim() || undefined
   const status = q.status || 'published'

@@ -1,9 +1,12 @@
 
 <script setup lang="ts">
+import { useMarchesOuverts } from '~/composables/useMarchesOuverts'
+
 definePageMeta({ layout: false })
 
-const { t } = useHubT()
 const { t: i18nt } = useI18nField()
+
+const { t } = useT()
 
 const _cfg = useRuntimeConfig()
 const pub = _cfg.public as Record<string, any>
@@ -16,15 +19,34 @@ const contactDescription = String(pub.contactDescription ?? '')
 const socialLinks = Array.isArray(pub.socialLinks) ? pub.socialLinks : []
 const logoPath = String(pub.logoPath ?? '/logo.svg')
 const localBusiness = pub.localBusiness ?? null
-const metaTitle = String(pub.metaTitle ?? (brandName ? `${brandName} — ${contactDescription.slice(0, 80)}` : ''))
-const heroH1 = String(pub.heroH1 ?? brandName)
+
+const metaTitleFallback = String(pub.metaTitle ?? (brandName ? `${brandName} — ${contactDescription.slice(0, 80)}` : ''))
+
+const heroH1Config = String(pub.heroH1 ?? brandName)
+const heroH1 = computed(() => t('home.hero_h1', heroH1Config))
 
 const { activeLang: sectionsLang } = useRouteLang()
+
+const route = useRoute()
+const previewVariant = computed(() => {
+  const hp = route.query.hp
+  return typeof hp === 'string' && hp ? hp : undefined
+})
+
 const { data: sectionsData } = await useFetch<{ sections: Array<{ id: number; position: number; type: string; title: string | null; subtitle: string | null; payload: any; active: boolean }> }>('/api/homepage-sections', {
-  query: { lang: sectionsLang },
-  watch: [sectionsLang],
+  query: { lang: sectionsLang, hp: previewVariant },
+  watch: [sectionsLang, previewVariant],
   default: () => ({ sections: [] }),
 })
+
+const { data: pageMeta } = await useFetch<{ title: string | null; description: string | null }>('/api/page-meta', {
+  query: { page: 'index', lang: sectionsLang },
+  watch: [sectionsLang],
+  default: () => ({ title: null, description: null }),
+})
+
+const metaTitle = computed(() => String(pageMeta.value?.title || metaTitleFallback))
+const metaDescription = computed(() => String(pageMeta.value?.description || contactDescription))
 
 const editorDbSections = useDbHomepageSections()
 
@@ -45,10 +67,15 @@ function resolveI18n(value: any, fallback: string = ''): string {
   if (!value) return fallback
   if (typeof value === 'object') return i18nt(value) || fallback
   if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value)
-      if (typeof parsed === 'object' && parsed !== null) return i18nt(parsed) || fallback
-    } catch {  }
+    
+    
+    const trimmed = value.trimStart()
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(value)
+        if (typeof parsed === 'object' && parsed !== null) return i18nt(parsed) || fallback
+      } catch {  }
+    }
     return value || fallback
   }
   return fallback
@@ -58,219 +85,89 @@ const heroSection = computed(() => {
   const s = findDb('hero')
   return s ? { ...s.payload, title: resolveI18n(s.title, s.payload?.title), subtitle: resolveI18n(s.subtitle, s.payload?.subtitle) } : null
 })
-const iframeSection = computed(() => {
-  const s = findDb('iframe-embed')
-  if (!s) return null
-  return { src: s.payload?.src, height: s.payload?.height, title: s.payload?.title }
-})
-const heroSliderSection = computed(() => {
-  const s = findDb('hero-slider')
-  return s ? { ...s, title: resolveI18n(s.title), subtitle: resolveI18n(s.subtitle) } : null
-})
-const promotionsSection = computed(() => {
-  const s = findDb('promotions')
-  return s ? { ...s, title: resolveI18n(s.title, t('home.home_promotions')), subtitle: resolveI18n(s.subtitle) } : null
-})
-const bestsellersSection = computed(() => {
-  const s = findDb('bestsellers')
-  return s ? { ...s, title: resolveI18n(s.title, t('home.home_bestsellers')), subtitle: resolveI18n(s.subtitle) } : null
-})
-const narrativeSection = computed(() => {
-  const s = findDb('narrative-blocks')
-  return s ? { ...s, title: resolveI18n(s.title), subtitle: resolveI18n(s.subtitle) } : null
-})
-const bannersSection = computed(() => {
-  const s = findDb('banners')
-  return s ? { ...s, title: resolveI18n(s.title), subtitle: resolveI18n(s.subtitle) } : null
-})
-const brandStripSection = computed(() => {
-  const s = findDb('brand-strip')
-  return s ? { ...s, title: resolveI18n(s.title), subtitle: resolveI18n(s.subtitle) } : null
-})
-const featuresSection = computed(() => {
-  const s = findDb('features')
-  return s?.payload?.items ?? []
-})
-const categoriesSection = computed(() => {
-  const s = findDb('categories')
-  return { items: s?.payload?.items ?? [], title: resolveI18n(s?.title, t('home.home_categories')) }
-})
-const blogSection = computed(() => {
-  const s = findDb('blog')
-  return s ? { ...s, title: resolveI18n(s.title, t('home.home_blog')), subtitle: resolveI18n(s.subtitle) } : null
-})
-const newProductsSection = computed(() => {
-  const s = findDb('new-products')
-  return s ? { ...s, title: resolveI18n(s.title, t('home.home_new_products')), subtitle: resolveI18n(s.subtitle) } : null
-})
-const faqSection = computed(() => {
-  const s = findDb('faq')
-  return s ? { ...s, title: resolveI18n(s.title, t('home.home_faq')), subtitle: resolveI18n(s.subtitle) } : null
-})
-const showNewProducts = computed(() => !!findDb('new-products'))
-const showInstagram = computed(() => !!findDb('instagram'))
-const giftcardSection = computed(() => {
-  const s = findDb('giftcard-promo')
-  return s ? { ...s, title: resolveI18n(s.title), subtitle: resolveI18n(s.subtitle) } : null
-})
 
-const orderedSectionTypes = computed<string[]>(() =>
-  [...dbSections.value].sort((a, b) => a.position - b.position).map(s => s.type),
-)
+const hasVisibleH1Hero = computed(() => !!heroSection.value || dbSections.value.some(s => s.type === 'hero-cta'))
 
-const organizationLd: Record<string, unknown> = {
-  '@type': 'Organization',
-  '@id': `${siteUrl}#organization`,
-  name: brandName,
-  url: siteUrl,
-  logo: `${siteUrl}${logoPath}`,
-  ...(contactEmail ? { email: contactEmail } : {}),
-  ...(contactPhone ? { telephone: contactPhone } : {}),
-  ...(contactDescription ? { description: contactDescription } : {}),
-  ...(socialLinks.length ? { sameAs: socialLinks } : {}),
-}
+const LOCALE_BCP47: Record<string, string> = { fr: 'fr-FR', en: 'en-US', de: 'de-DE' }
+const localeBcp47 = computed(() => LOCALE_BCP47[String(sectionsLang.value || 'fr')] ?? 'fr-FR')
 
-const websiteLd = {
+const organizationLd = computed<Record<string, unknown>>(() => buildOrganizationNode({
+  siteUrl,
+  brandName,
+  logoPath,
+  contactEmail,
+  contactPhone,
+  
+  
+  description: metaDescription.value,
+  socialLinks,
+  
+  
+  organizationLegal: pub.organizationLegal,
+}))
+
+const websiteLd = computed(() => ({
   '@type': 'WebSite',
   '@id': `${siteUrl}#website`,
   url: siteUrl,
   name: brandName,
   publisher: { '@id': `${siteUrl}#organization` },
-  inLanguage: 'fr-FR',
+  inLanguage: localeBcp47.value,
   potentialAction: {
     '@type': 'SearchAction',
     target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}/recherche?q={search_term_string}` },
     'query-input': 'required name=search_term_string',
   },
-}
+}))
 
-const graph: unknown[] = [organizationLd, websiteLd]
+const businessLocationNodes = computed(() => buildBusinessLocationNodes({
+  siteUrl,
+  brandName,
+  logoPath,
+  contactEmail,
+  contactPhone,
+  localBusiness,
+  businessLocations: pub.businessLocations,
+}))
 
-if (localBusiness && typeof localBusiness === 'object') {
-  graph.push({
-    '@type': 'LocalBusiness',
-    '@id': `${siteUrl}#localbusiness`,
-    name: brandName,
-    url: siteUrl,
-    image: `${siteUrl}${logoPath}`,
-    ...(contactPhone ? { telephone: contactPhone } : {}),
-    ...(contactEmail ? { email: contactEmail } : {}),
-    priceRange: localBusiness.priceRange ?? '€€',
-    ...(localBusiness.address ? { address: { '@type': 'PostalAddress', ...localBusiness.address } } : {}),
-    ...(localBusiness.openingHoursSpecification ? {
-      openingHoursSpecification: localBusiness.openingHoursSpecification.map((h: any) => ({ '@type': 'OpeningHoursSpecification', ...h })),
-    } : {}),
-  })
-}
+const graph = computed<unknown[]>(() => {
+  const g: unknown[] = [organizationLd.value, websiteLd.value]
+  g.push(...businessLocationNodes.value)
+  return g
+})
 
-const jsonLd = {
+const ogLocaleAlternates = useMarchesOuverts()
+  .filter((l: string) => l !== String(sectionsLang.value || 'fr'))
+  .map((l: string) => LOCALE_BCP47[l])
+  .filter(Boolean)
+  .map((l: string) => ({ property: 'og:locale:alternate', content: l }))
+
+const jsonLd = computed(() => ({
   '@context': 'https://schema.org',
-  '@graph': graph,
-}
+  '@graph': graph.value,
+}))
 
 useHead({
   title: metaTitle,
   meta: [
-    { name: 'description', content: contactDescription },
+    { name: 'description', content: metaDescription },
+    
+    
+    { property: 'og:locale', content: localeBcp47 },
+    ...ogLocaleAlternates,
   ],
   script: [
-    { type: 'application/ld+json', innerHTML: JSON.stringify(jsonLd) },
+    { type: 'application/ld+json', innerHTML: () => JSON.stringify(jsonLd.value) },
   ],
 })
 </script>
 
 <template>
   <NuxtLayout name="white-label">
-    <h1 class="sr-only">{{ heroH1 }}</h1>
+    
+    <h1 v-if="!hasVisibleH1Hero" class="sr-only">{{ heroH1 }}</h1>
 
-    <template v-for="type in orderedSectionTypes" :key="type">
-
-      <HomeHero v-if="type === 'hero' && heroSection" :hero="heroSection" />
-
-      <HomeIframe
-        v-else-if="type === 'iframe-embed' && iframeSection?.src"
-        :src="iframeSection.src"
-        :height="iframeSection.height"
-        :title="iframeSection.title"
-      />
-
-      <HomeHeroSlider
-        v-else-if="type === 'hero-slider' && heroSliderSection"
-        :payload="heroSliderSection.payload"
-      />
-
-      <HomeFeatureStrip v-else-if="type === 'features' && featuresSection.length" :features="featuresSection" />
-
-      <HomeUniverseGrid
-        v-else-if="type === 'categories' && categoriesSection.items.length"
-        :categories="categoriesSection.items"
-        :title="categoriesSection.title"
-      />
-
-      <HomePromotions
-        v-else-if="type === 'promotions' && promotionsSection"
-        :title="promotionsSection.title"
-        :subtitle="promotionsSection.subtitle"
-        :payload="promotionsSection.payload"
-      />
-
-      <HomeBestsellers
-        v-else-if="type === 'bestsellers' && bestsellersSection"
-        :title="bestsellersSection.title"
-        :subtitle="bestsellersSection.subtitle"
-        :payload="bestsellersSection.payload"
-      />
-
-      <HomeNarrativeBlocks
-        v-else-if="type === 'narrative-blocks' && narrativeSection"
-        :title="narrativeSection.title"
-        :subtitle="narrativeSection.subtitle"
-        :payload="narrativeSection.payload"
-      />
-
-      <HomeBanners
-        v-else-if="type === 'banners' && bannersSection"
-        :title="bannersSection.title"
-        :subtitle="bannersSection.subtitle"
-        :payload="bannersSection.payload"
-      />
-
-      <HomeNewProducts
-        v-else-if="type === 'new-products' && showNewProducts"
-        :title="newProductsSection?.title"
-        :subtitle="newProductsSection?.subtitle"
-        :payload="newProductsSection?.payload"
-      />
-
-      <HomeLatestArticles
-        v-else-if="type === 'blog' && blogSection"
-        :title="blogSection.title"
-        :subtitle="blogSection.subtitle"
-        :payload="blogSection.payload"
-      />
-
-      <HomeInstagram v-else-if="type === 'instagram' && showInstagram" />
-
-      <HomeFaqDb
-        v-else-if="type === 'faq' && faqSection"
-        :title="faqSection.title"
-        :subtitle="faqSection.subtitle"
-        :payload="faqSection.payload"
-      />
-
-      <HomeBrandStrip
-        v-else-if="type === 'brand-strip' && brandStripSection?.payload?.items?.length"
-        :title="brandStripSection.title"
-        :subtitle="brandStripSection.subtitle"
-        :items="brandStripSection.payload.items"
-      />
-
-      <HomeGiftcard
-        v-else-if="type === 'giftcard-promo' && giftcardSection"
-        :title="giftcardSection.title"
-        :subtitle="giftcardSection.subtitle"
-      />
-
-    </template>
+    
+    <PageSections :sections="dbSections" />
   </NuxtLayout>
 </template>

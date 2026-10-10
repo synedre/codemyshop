@@ -1,7 +1,10 @@
 
 
 import { findLearnerByEmailWithPseudo } from '~/internal/academy/server/utils/academy'
-import { signToken } from '~/server/utils/session-crypto'
+import { setHubSessionCookie } from '~/server/utils/session'
+import { resolveClientId } from '~/server/utils/db'
+
+const ACADEMY_SESSION_MAX_AGE_S = 60 * 60 * 24 * 30
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ email: string; password: string }>(event)
@@ -13,6 +16,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: 'Email et mot de passe requis' })
   }
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  throw createError({
+    statusCode: 501,
+    message: 'Connexion Academy indisponible — authentification non implémentée.',
+  })
+
+  
   try {
     const learner = await findLearnerByEmailWithPseudo(email, { event })
     if (!learner) {
@@ -24,16 +42,11 @@ export default defineEventHandler(async (event) => {
       email: learner.email,
       pseudo: learner.pseudo,
       role: 'student',
-      clientId: 'ac-hub',
+      clientId: resolveClientId(event),
+      
+      userType: 'customer',
     }
-    const token = signToken(sessionData)
-    setCookie(event, 'hub_session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-    })
+    setHubSessionCookie(event, sessionData, ACADEMY_SESSION_MAX_AGE_S)
 
     return {
       success: true,

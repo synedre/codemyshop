@@ -3,6 +3,7 @@
 import http from 'node:http'
 import https from 'node:https'
 import sharp from 'sharp'
+import { resolveClientId } from '~/server/utils/db'
 
 const SIZE_MAP: Record<string, string> = {
   thumb:  'small_default',
@@ -71,7 +72,7 @@ export default defineEventHandler(async (event) => {
   const ext = match[4].toLowerCase()
 
   const { clientId } = getQuery(event) as { clientId?: string }
-  const resolvedClient = clientId || 'ac-hub'
+  const resolvedClient = clientId || resolveClientId(event)
   const baseUrl = resolveBaseUrl(resolvedClient)
 
   const digits = imageId.toString().split('')

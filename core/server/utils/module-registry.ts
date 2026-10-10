@@ -4,13 +4,13 @@ import { eq, and, sql } from 'drizzle-orm'
 import { usePocPg } from '../db/drizzle-pg'
 import {
   moduleRegistryVaisseau,
-  type ModuleManifest,
+  type ModuleRuntimeRecord,
   type ModuleRegistryPgRow,
   type ModuleStatus,
   type Runtime,
 } from '../db/schema-pg/module-registry'
 
-export type { Runtime, ModuleStatus, ModuleManifest }
+export type { Runtime, ModuleStatus, ModuleRuntimeRecord }
 export type ModuleRegistryRow = ModuleRegistryPgRow
 
 interface RegistryContext {
@@ -45,7 +45,7 @@ export async function listModules(
 export async function setRuntime(
   codename: string,
   runtime: Runtime,
-  manifest: ModuleManifest | null = null,
+  manifest: ModuleRuntimeRecord | null = null,
   ctx: RegistryContext = {},
 ): Promise<ModuleRegistryRow> {
   const existing = await getModule(codename, ctx)
@@ -77,7 +77,7 @@ export async function upsertModule(
     runtime?: Runtime
     status?: ModuleStatus
     schemaHash?: string
-    manifest?: ModuleManifest
+    manifest?: ModuleRuntimeRecord
   },
   ctx: RegistryContext = {},
 ): Promise<ModuleRegistryRow> {

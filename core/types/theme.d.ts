@@ -123,6 +123,16 @@ export interface HomepageHero {
   subtitle?: string
   
   image?:    string
+  
+  imageHref?: string
+  
+
+  bare?:     boolean
+  
+
+  video?:     string
+  
+  videoWebm?: string
   cta?:      { label: string; href: string }
   
   cta2?:     { label: string; href: string }
@@ -142,6 +152,7 @@ export interface HomepageCategory {
 
 export type HomepageFeatureIcon =
   | 'truck' | 'shield' | 'store' | 'credit' | 'star' | 'clock' | 'check' | 'leaf'
+  | 'return' | 'headset' | 'zap' | 'map-pin' | 'refresh' | 'house'
 
 export interface HomepageFeature {
   icon:         HomepageFeatureIcon
@@ -236,6 +247,15 @@ export interface FooterTrustBadge {
   description?: string
 }
 
+export interface FooterLoyaltyBanner {
+  title:     string
+  image:     string
+  imageAlt?: string
+  logo?:     string
+  logoAlt?:  string
+  href?:     string
+}
+
 export interface FooterConfig {
   logo?:        LogoConfig
   description?: string
@@ -268,6 +288,9 @@ export interface FooterConfig {
   
 
   trustBadges?: FooterTrustBadge[]
+  loyaltyBanner?: FooterLoyaltyBanner
+  
+  preludePaths?: string[]
 }
 
 export interface TopBarConfig {
@@ -284,6 +307,8 @@ export interface HeaderFeatures {
   
   showCart?:     boolean
   
+  showQuoteButton?: boolean
+  
   showEvents?:   boolean
   
   stickyHeader?: boolean
@@ -297,6 +322,8 @@ export interface HeaderConfig {
   topBar?:  TopBarConfig
   logo:     LogoConfig
   contactEmail?: string
+  
+  contactPhone?: string
   features?: HeaderFeatures
   menu: { items: NavItem[] }
 

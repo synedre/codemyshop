@@ -1,21 +1,21 @@
 <template>
   <div class="space-y-2">
     <div class="flex items-center justify-between">
-      <label class="text-xs font-medium text-gray-500">Catégorie parente</label>
+      <label class="text-xs font-medium text-gray-500">{{ t('hub.ui.category_tree_select.parent', 'Catégorie parente') }}</label>
       <div class="flex items-center gap-2">
         <input
           v-model="filter"
           type="text"
-          placeholder="Filtrer…"
+          :placeholder="t('hub.ui.category_tree_select.filter_ph', 'Filtrer…')"
           class="text-[11px] border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-primary-500/40"
         />
         <button
           type="button"
           @click="expandAll"
           class="text-[10px] uppercase tracking-wide px-2 py-1 rounded border border-gray-200 dark:border-slate-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-          :title="allExpanded ? 'Replier tout' : 'Déplier tout'"
+          :title="allExpanded ? t('hub.ui.category_tree_select.collapse_all', 'Replier tout') : t('hub.ui.category_tree_select.expand_all', 'Déplier tout')"
         >
-          {{ allExpanded ? 'Replier' : 'Déplier' }}
+          {{ allExpanded ? t('hub.ui.category_tree_select.collapse', 'Replier') : t('hub.ui.category_tree_select.expand', 'Déplier') }}
         </button>
       </div>
     </div>
@@ -34,11 +34,11 @@
         @select="onSelect"
         @toggle="onToggle"
       />
-      <p v-if="!filteredRoots.length" class="text-xs text-gray-400 px-2 py-3">Aucune catégorie ne correspond.</p>
+      <p v-if="!filteredRoots.length" class="text-xs text-gray-400 px-2 py-3">{{ t('hub.ui.category_tree_select.no_match', 'Aucune catégorie ne correspond.') }}</p>
     </div>
 
     <p class="text-[10px] text-gray-400">
-      Sélectionnée :
+      {{ t('hub.ui.category_tree_select.selected', 'Sélectionnée :') }}
       <span class="font-mono text-gray-700 dark:text-slate-200">
         {{ selectedLabel }}
       </span>
@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+const { t } = useHubT()
 
 interface FlatCategory {
   id: number
@@ -80,10 +81,14 @@ const tree = computed<TreeCategory[]>(() => {
     if (!byParent.has(c.parentId)) byParent.set(c.parentId, [])
     byParent.get(c.parentId)!.push(c)
   }
+  
+  
+  
+  
   for (const c of all) {
-    c.children = (byParent.get(c.id) || []).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+    c.children = (byParent.get(c.id) || []).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr'))
   }
-  const roots = (byParent.get(rootId.value) || []).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  const roots = (byParent.get(rootId.value) || []).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr'))
   return roots
 })
 
@@ -92,7 +97,7 @@ const filteredRoots = computed<TreeCategory[]>(() => {
   if (!q) return tree.value
 
   function keepSubtree(node: TreeCategory): TreeCategory | null {
-    const matchSelf = node.name.toLowerCase().includes(q)
+    const matchSelf = (node.name || '').toLowerCase().includes(q)
     const keptChildren = node.children
       .map((c) => keepSubtree(c))
       .filter((c): c is TreeCategory => !!c)
@@ -153,7 +158,7 @@ function expandAll() {
 }
 
 const selectedLabel = computed(() => {
-  if (selectedId.value === rootId.value) return 'Racine'
+  if (selectedId.value === rootId.value) return t('hub.ui.category_tree_select.root', 'Racine')
   const found = props.categories.find((c) => c.id === selectedId.value)
   if (!found) return `#${selectedId.value}`
   const path: string[] = [found.name]

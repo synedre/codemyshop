@@ -2,9 +2,11 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const ALLOWED_STATUSES = ['open', 'closed', 'pending1', 'pending2'] as const
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
   const threadId = Number(id)

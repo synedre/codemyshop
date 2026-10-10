@@ -23,6 +23,15 @@ html.dark {
   --color-muted:      #64748b;
   --color-header-bg:  #0f172a;
   --color-footer-bg:  #0f172a;
+
+  /* Tokens « fiche produit » — pendant sombre des défauts de main.css.
+     La surface suit .bg-gray-100 dark (#1e293b) déjà posé plus bas ; les deux
+     couleurs d'état sont remontées d'un cran de luminosité, sans quoi un vert
+     de mode clair (#047857, pensé pour tenir sur du blanc) tomberait à 1.7:1
+     sur fond ardoise. Mesurés sur #1e293b : 7.61:1 et 8.76:1. */
+  --cs-surface-muted: #1e293b;
+  --cs-stock-ok:      #34d399;
+  --cs-rating-star:   #fbbf24;
 }
 
 /* ── Surfaces ──────────────────────────────────────────────────────────────── */

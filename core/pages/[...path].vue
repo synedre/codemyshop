@@ -1,12 +1,26 @@
 
 <script setup lang="ts">
+
+import { classifyCmsRoute } from '~/utils/cms-route'
+import { categoryFetchKey, categoryLookupFor, resolveCatchAllCategoryId } from '~/utils/catch-all-category'
+
 definePageMeta({ layout: false })
+const { localePath } = useLocalePath()
 
 const route = useRoute()
 const router = useRouter()
 const { menuItems } = useMegamenu()
 const { showPrices } = useB2bVisibility()
-const { t } = useHubT()
+const { t, prime } = useHubT()
+
+prime?.([
+  'cart.article',
+  'cart.articles',
+  'catalogue.add_to_cart',
+  'catalogue.add_to_quote',
+  'catalogue.label_ht',
+  'catalogue.price_on_quote',
+])
 const _cfg = useRuntimeConfig()
 const clientId = String((_cfg.public as any).clientId ?? '')
 
@@ -15,15 +29,9 @@ const rawSegments = computed<string[]>(() => {
   const arr = Array.isArray(raw) ? raw : (raw ? [raw] : [])
   return arr.filter(Boolean) as string[]
 })
-
-const piliersList = ((_cfg.public as any).piliers ?? []) as string[]
-const piliersSlugs = piliersList.map((p) => (p.split(':', 1)[0] || p))
-const isPilierRoute = computed(() => {
-  const first = rawSegments.value[0]
-  return !!first && piliersSlugs.includes(first)
-})
-const activePilier = computed(() => (isPilierRoute.value ? rawSegments.value[0] : ''))
-const pilierSubSegments = computed(() => (isPilierRoute.value ? rawSegments.value.slice(1) : []))
+const hasPath = computed(() => rawSegments.value.length > 0)
+const rootSlug = computed(() => rawSegments.value[0] || '')
+const subSegments = computed(() => rawSegments.value.slice(1))
 
 const { addToCart, totalItems } = useServerCart(clientId)
 const { open: openCartDrawer } = useCartDrawer()
@@ -67,60 +75,129 @@ function findPsId(menuList: any[], targetSlug: string): number | null {
 }
 
 const { activeLang } = useRouteLang()
-const { data: allCategories } = await useFetch('/api/catalogue/categories', {
-  query: { clientId, limit: 200, lang: activeLang },
-  watch: [activeLang],
-})
+
+useI18nAlternates(
+  computed(() => rawSegments.value.length > 1 ? '' : route.path),
+  computed(() => activeLang.value),
+)
+
+const { data: allCategories } = hasPath.value
+  ? { data: ref(null) }
+  : await useFetch('/api/catalogue/categories', {
+      query: { clientId, limit: 200, lang: activeLang },
+      watch: [activeLang],
+    })
 
 const lastSeg = computed(() => (slug.value.split('/').pop() ?? '').toLowerCase())
-const { data: directCategory } = await useFetch('/api/catalogue/category-by-slug', {
-  query: computed(() => ({ slug: lastSeg.value, clientId, lang: activeLang.value })),
-  watch: [lastSeg, activeLang],
-})
+const categoryLookup = categoryLookupFor(rawSegments.value)
+const { data: directCategory } = categoryLookup === 'slug'
+  ? await useFetch('/api/catalogue/category-by-slug', {
+      query: computed(() => ({ slug: lastSeg.value, clientId, lang: activeLang.value })),
+      watch: [lastSeg, activeLang],
+    })
+  : { data: ref(null) }
+const subPath = computed(() => subSegments.value.join('/'))
+const { data: pathCategory } = categoryLookup === 'path'
+  ? await useFetch<{ found?: boolean, id_category?: number | null }>('/api/category', {
+      query: { path: subPath, pilier: rootSlug, lang: activeLang },
+      key: () => categoryFetchKey(rootSlug.value, subPath.value, activeLang.value),
+      watch: [activeLang],
+    })
+  : { data: ref(null) }
 
 const psId = computed(() => {
   const items = menuItems.value
   const fromMenu = findPsId(items, slug.value) ?? findPsId(items, lastSeg.value)
-  if (fromMenu) return fromMenu
-  return (directCategory.value as any)?.id ?? null
+  return resolveCatchAllCategoryId({
+    lookup: categoryLookup,
+    fromMenu,
+    bySlugId: (directCategory.value as any)?.id ?? null,
+    byPath: pathCategory.value as any,
+  })
 })
 
 const isCmsCandidate = computed(() => {
   const segments = slug.value.split('/').filter(Boolean)
   return segments.length === 1 && /^[a-z0-9][a-z0-9-]*$/.test(segments[0])
 })
-const { data: cmsPageData } = isCmsCandidate.value
+
+const cmsRouteKind = computed(() => classifyCmsRoute(rawSegments.value, { hasCategoryMatch: !!psId.value }))
+const cmsParentPath = computed(() =>
+  cmsRouteKind.value === 'nested' ? rawSegments.value.slice(0, -1).join('/') : '',
+)
+const { data: cmsPageData } = cmsRouteKind.value !== 'none'
   ? await useFetch(`/api/catalogue/cms/by-slug/${lastSeg.value}`, {
-      query: { clientId, lang: activeLang },
-      key: () => `cms-slug-${lastSeg.value}-${activeLang.value}`,
-      watch: [lastSeg, activeLang],
-    })
-  : { data: ref(null) }
-const { data: footerData } = isCmsCandidate.value
-  ? await useFetch('/api/footer-config', {
-      query: { lang: activeLang },
-      key: () => `footer-config-${activeLang.value}`,
-      watch: [activeLang],
+      query: computed(() => ({
+        clientId,
+        lang: activeLang.value,
+        ...(cmsParentPath.value ? { parent: cmsParentPath.value } : {}),
+      })),
+      
+      
+      key: () => `cms-slug-${slug.value}-${activeLang.value}`,
+      
+      
+      watch: [slug, activeLang],
     })
   : { data: ref(null) }
 
+const { footer: sharedFooter } = useFooterDb()
+
 const cmsPage = computed<any>(() => {
   
-  if (!isCmsCandidate.value) return null
-  if (psId.value) return null
+  
+  
+  
+  
+  if (cmsRouteKind.value === 'none') return null
   const raw = cmsPageData.value as any
   if (!raw || raw.error || !raw.title) return null
   return raw
 })
-const cmsContact = computed(() => (footerData.value as any)?.footer?.contact ?? null)
+
+if (cmsPage.value?.slug && lastSeg.value && cmsPage.value.slug !== lastSeg.value) {
+  const canonicalPath = route.path.replace(new RegExp(`${lastSeg.value}/?$`), cmsPage.value.slug)
+  await navigateTo(canonicalPath, { redirectCode: 301 })
+}
+
+const cmsContact = computed(() => (sharedFooter.value as any)?.contact ?? null)
 const cmsCanonicalUrl = computed(() => {
   const base = String((_cfg.public as any).psFrontUrl ?? '')
   return `${base}${route.path}`
 })
 
-if (!psId.value && isCmsCandidate.value && cmsPageData.value !== null && !cmsPage.value) {
-  
-  throw createError({ statusCode: 404, statusMessage: 'Page introuvable', fatal: true })
+const idCms = computed(() => (cmsPage.value?.id ? Number(cmsPage.value.id) : null))
+const { data: cmsSectionsData } = idCms.value
+  ? await useFetch<{ sections: any[] }>('/api/page-sections', {
+      query: { parent_type: 'cms', parent_id: idCms.value },
+      key: () => `cms-sections-${idCms.value}-${activeLang.value}`,
+      watch: [activeLang],
+      default: () => ({ sections: [] }),
+    })
+  : { data: ref({ sections: [] }) }
+
+const editorCmsSections = computed(() => (idCms.value ? useDbPageSections('cms', idCms.value).value : []))
+const cmsSections = computed(() => {
+  if (editorCmsSections.value.length > 0) {
+    return [...editorCmsSections.value]
+      .filter((s: any) => s.active)
+      .sort((a: any, b: any) => a.position - b.position)
+  }
+  return (cmsSectionsData.value as any)?.sections?.filter((s: any) => s.active !== false) ?? []
+})
+
+const { registerContext, clearContext } = useEditorContext()
+onMounted(() => {
+  if (cmsPage.value && idCms.value) {
+    registerContext('cms', { idCms: idCms.value, slug: lastSeg.value })
+  }
+})
+onUnmounted(() => {
+  clearContext()
+})
+
+if (!cmsPage.value && !psId.value && isCmsCandidate.value && cmsPageData.value !== null) {
+  throw createError({ statusCode: 404, statusMessage: 'Page introuvable' })
 }
 
 const category = computed(() => {
@@ -135,6 +212,10 @@ const subcategories = computed(() => {
   const cats = Array.isArray(allCategories.value) ? allCategories.value : (allCategories.value as any)?.categories ?? allCategories.value ?? []
   return cats.filter((c: any) => c.id_parent === psId.value)
 })
+
+const facetedNavEnabled = computed(() => !!(_cfg.public as any).facetedNav)
+
+const facetSidebarRef = ref<{ openMobile: () => void } | null>(null)
 
 const sortBy = ref<string>((route.query.sort as string) || 'name_asc')
 const priceMin = ref<number>(Number(route.query.priceMin) || 0)
@@ -183,26 +264,65 @@ function syncUrl() {
 const perPage = 24
 const listKey = computed(() => `${psId.value}-${sortBy.value}-${priceMin.value}-${priceMax.value}-${currentPage.value}-${serializeFParam(selectedFeatures.value)}`)
 
-const { data: listData, pending: loadingProducts } = useLazyFetch(() => `/api/catalogue/${psId.value}/list`, {
-  query: computed(() => ({
-    clientId,
-    page: currentPage.value,
-    limit: perPage,
-    sort: sortBy.value,
-    ...(priceMin.value > 0 ? { priceMin: priceMin.value } : {}),
-    ...(priceMax.value < 10000 ? { priceMax: priceMax.value } : {}),
-    ...(serializeFParam(selectedFeatures.value) ? { f: serializeFParam(selectedFeatures.value) } : {}),
-  })),
-  watch: [psId, listKey],
-  immediate: !!psId.value,
-  server: false,
-})
+const { data: listData, pending: loadingProducts } = hasPath.value
+  ? { data: ref(null), pending: ref(false) }
+  : useLazyFetch(() => `/api/catalogue/${psId.value}/list`, {
+      query: computed(() => ({
+        clientId,
+        page: currentPage.value,
+        limit: perPage,
+        sort: sortBy.value,
+        ...(priceMin.value > 0 ? { priceMin: priceMin.value } : {}),
+        ...(priceMax.value < 10000 ? { priceMax: priceMax.value } : {}),
+        ...(serializeFParam(selectedFeatures.value) ? { f: serializeFParam(selectedFeatures.value) } : {}),
+      })),
+      watch: [psId, listKey],
+      immediate: !!psId.value,
+      server: false,
+    })
 
 const products = computed(() => (listData.value as any)?.products ?? [])
 const total = computed(() => (listData.value as any)?.total ?? 0)
-const filters = computed<Array<{ id: number; name: string; values: Array<{ id: number; name: string; count: number }> }>>(() => ((listData.value as any)?.filters ?? []).filter((f: any) => !/prix/i.test(f.name)))
+
+const facetsKey = computed(() =>
+  `facets-${psId.value}-${serializeFParam(selectedFeatures.value)}-${priceMin.value}-${priceMax.value}`,
+)
+const { data: facetsData } = facetedNavEnabled.value && !hasPath.value
+  ? useLazyFetch(() => `/api/catalogue/${psId.value}/facets`, {
+      query: computed(() => ({
+        clientId,
+        lang: activeLang.value,
+        ...(serializeFParam(selectedFeatures.value) ? { f: serializeFParam(selectedFeatures.value) } : {}),
+        ...(priceMin.value > 0 ? { priceMin: priceMin.value } : {}),
+        ...(priceMax.value < 10000 ? { priceMax: priceMax.value } : {}),
+      })),
+      watch: [psId, facetsKey, activeLang],
+      immediate: !!psId.value,
+      server: false,
+    })
+  : { data: ref(null) }
+
+const facets = computed(() => {
+  if (!facetedNavEnabled.value) return []
+  const raw = (facetsData.value as any)?.facets ?? []
+  return raw.filter((f: any) => !/marque|brand/i.test(f.name))
+})
+const priceBounds = computed(() => (facetsData.value as any)?.price ?? { min: 0, max: 10000 })
+const hasFacets = computed(() => facetedNavEnabled.value && facets.value.length > 0)
+
+const filters = computed<Array<{ id: number; name: string; values: Array<{ id: number; name: string; count: number }> }>>(() => {
+  if (facetedNavEnabled.value) return []
+  return ((listData.value as any)?.filters ?? []).filter((f: any) => !/prix/i.test(f.name))
+})
 
 const totalPages = computed(() => Math.ceil(total.value / perPage) || 1)
+
+const activeFiltersCount = computed(() => {
+  let n = Object.values(selectedFeatures.value).filter(vs => vs.length > 0).length
+  if (priceMin.value > 0) n++
+  if (priceMax.value < 10000) n++
+  return n
+})
 
 function toggleFeatureValue(fId: number, vId: number) {
   const current = selectedFeatures.value[fId] || []
@@ -254,7 +374,10 @@ function findSlugForPsId(id: number): string {
       }
     }
   }
-  return `/catalogue/${id}`
+  
+  
+  
+  return '#'
 }
 
 useCategoryBodyId(() => psId.value ?? null)
@@ -262,44 +385,78 @@ useCategoryBodyId(() => psId.value ?? null)
 const brandName = computed(() => (_cfg.public as any).brandName || 'Catalogue')
 const siteUrl = computed(() => (_cfg.public as any).psFrontUrl || '')
 
-useHead({
-  title: computed(() => category.value ? `${category.value.name} — ${brandName.value}` : `Catalogue — ${brandName.value}`),
-  meta: [
-    { name: 'description', content: computed(() => category.value?.meta_description || category.value?.description?.slice(0, 160) || '') },
-  ],
+const hasFlatTierB = computed(() => {
+  if (!facetedNavEnabled.value || hasPath.value) return false
+  const q = route.query
+  if (q.f && String(q.f).trim()) return true
+  if (q.priceMin && Number(q.priceMin) > 0) return true
+  if (q.priceMax && Number(q.priceMax) < 10000) return true
+  if (q.sort && String(q.sort) !== 'name_asc') return true
+  return false
+})
+const flatCurrentPage = computed(() => {
+  const raw = Number(route.query.page)
+  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 1
+})
+
+const flatCanonicalUrl = computed(() => {
+  const base = String(siteUrl.value).replace(/\/+$/, '')
+  const p = route.path.endsWith('/') ? route.path : route.path + '/'
+  return `${base}${p}`
+})
+
+useHead(() => {
   
   
   
   
   
-  script: computed(() => {
-    if (isPilierRoute.value || !category.value || total.value <= 0) return []
-    return [{
-      key: 'jsonld-collectionpage',
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: category.value.name,
-        description: category.value.meta_description || category.value.description,
-        url: `${siteUrl.value}/${slug.value}`,
-        numberOfItems: total.value,
-        isPartOf: { '@type': 'WebSite', name: brandName.value, url: siteUrl.value },
-      }),
-    }]
-  }),
+  const seoActive = facetedNavEnabled.value
+  const isFlatTierB = hasFlatTierB.value
+  const flatPaginated = flatCurrentPage.value > 1
+  const flatNeedsNoindex = seoActive && (isFlatTierB || flatPaginated)
+  return {
+    title: category.value ? `${category.value.name} — ${brandName.value}` : `Catalogue — ${brandName.value}`,
+    meta: [
+      { name: 'description', content: category.value?.meta_description || category.value?.description?.slice(0, 160) || '' },
+      
+      
+      ...(flatNeedsNoindex ? [{ name: 'robots', content: 'noindex,follow' }] : []),
+    ],
+    
+    
+    
+    
+    link: seoActive ? [{ rel: 'canonical', href: flatCanonicalUrl.value }] : [],
+    
+    
+    
+    
+    
+    script: (() => {
+      
+      
+      if (hasPath.value || !category.value || total.value <= 0) return []
+      return [{
+        key: 'jsonld-collectionpage',
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: category.value.name,
+          description: category.value.meta_description || category.value.description,
+          url: `${siteUrl.value}/${slug.value}`,
+          numberOfItems: total.value,
+          isPartOf: { '@type': 'WebSite', name: brandName.value, url: siteUrl.value },
+        }),
+      }]
+    })(),
+  }
 })
 </script>
 
 <template>
-  
-  <CategoryPage
-    v-if="isPilierRoute"
-    :pilier="activePilier"
-    :initial-segments="pilierSubSegments"
-  />
-
-  <NuxtLayout v-else name="white-label">
+  <NuxtLayout name="white-label">
     
     <CmsPage
       v-if="cmsPage"
@@ -307,10 +464,20 @@ useHead({
       :contact="cmsContact"
       :canonical-url="cmsCanonicalUrl"
       :active-lang="activeLang"
+      :sections="cmsSections"
     />
 
     
-    <div v-else class="min-h-screen bg-white">
+    <CategoryPage
+      v-else-if="hasPath"
+      :pilier="rootSlug"
+      :initial-segments="subSegments"
+    />
+
+    <template v-else>
+
+    
+    <div class="min-h-screen bg-white">
 
       
       <div class="bg-gray-50 border-b border-gray-100">
@@ -343,19 +510,37 @@ useHead({
         </div>
 
         
-        <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
+        <div
+          class="grid grid-cols-1 gap-8"
+          :class="hasFacets ? 'lg:grid-cols-[260px_1fr]' : ''"
+        >
 
           
-          <aside class="hidden lg:block">
-            <div class="sticky top-24 space-y-6">
+          
+          <CategoryFacetSidebar
+            v-if="hasFacets"
+            ref="facetSidebarRef"
+            :facets="facets"
+            :price="priceBounds"
+            :selected-features="selectedFeatures"
+            :price-min="priceMin"
+            :price-max="priceMax"
+            :has-active-filters="hasActiveFilters"
+            :active-filters-count="activeFiltersCount"
+            @toggle-feature="toggleFeatureValue"
+            @update-price-min="priceMin = $event"
+            @update-price-max="priceMax = $event"
+            @reset="resetFilters"
+          />
 
-              
+          
+          
+          <aside v-else-if="filters.length" class="hidden lg:block">
+            <div class="sticky top-24 space-y-6">
               <div v-if="hasActiveFilters" class="flex items-center justify-between">
                 <span class="text-xs text-gray-500">{{ t('catalogue.filters_active') }}</span>
                 <button class="text-xs font-medium text-primary-600 hover:underline" @click="resetFilters">{{ t('catalogue.filters_clear_all') }}</button>
               </div>
-
-              
               <section v-for="feat in filters" :key="feat.id" class="border-b border-gray-100 pb-5">
                 <button
                   class="flex items-center justify-between w-full mb-3 text-left"
@@ -381,7 +566,6 @@ useHead({
                   </li>
                 </ul>
               </section>
-
             </div>
           </aside>
 
@@ -391,7 +575,26 @@ useHead({
             <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
               <p class="text-sm text-gray-500">{{ total }} produit{{ total > 1 ? 's' : '' }}</p>
               <div class="flex items-center gap-3">
+                
                 <button
+                  v-if="hasFacets"
+                  type="button"
+                  class="lg:hidden inline-flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:border-primary-600 transition-colors"
+                  @click="facetSidebarRef?.openMobile()"
+                >
+                  <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                  </svg>
+                  {{ t('catalogue.filters') }}
+                  <span
+                    v-if="activeFiltersCount > 0"
+                    class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-primary-600 text-white text-[10px] rounded-full"
+                    aria-hidden="true"
+                  >{{ activeFiltersCount }}</span>
+                </button>
+                
+                <button
+                  v-else-if="filters.length"
                   class="lg:hidden inline-flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:border-primary-600 transition-colors"
                   @click="showMobileFilters = true"
                 >
@@ -509,7 +712,8 @@ useHead({
         </div>
 
         
-        <Teleport to="body">
+        
+        <Teleport v-if="!facetedNavEnabled" to="body">
           <Transition name="fade">
             <div v-if="showMobileFilters" class="fixed inset-0 z-50 lg:hidden">
               <div class="absolute inset-0 bg-black/40" @click="showMobileFilters = false" />
@@ -543,7 +747,7 @@ useHead({
                 </div>
                 <div class="border-t border-gray-100 px-5 py-3 flex items-center gap-3">
                   <button class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600" @click="resetFilters">{{ t('catalogue.filters_clear_all') }}</button>
-                  <button class="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg text-xs font-semibold" @click="showMobileFilters = false">Voir {{ total }}</button>
+                  <button class="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg text-xs font-semibold" @click="showMobileFilters = false">{{ t('catalogue.filters_see_results', 'Voir {total}', { total: String(total) }) }}</button>
                 </div>
               </div>
             </div>
@@ -553,9 +757,9 @@ useHead({
         
         <ClientOnly>
           
-          <div v-if="showPrices && totalItems > 0" class="fixed bottom-6 right-6 z-40">
+          <div v-if="showPrices && totalItems > 0" class="fixed bottom-[calc(1.5rem+var(--cc-banner-h,0px))] right-6 z-40">
             <NuxtLink
-              to="/panier"
+              :to="localePath('/panier')"
               class="flex items-center gap-2 px-5 py-3 bg-primary-600 text-white font-semibold rounded-full shadow-lg hover:bg-primary-700 transition-colors"
             >
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>
@@ -568,6 +772,7 @@ useHead({
 
       </div>
     </div>
+    </template>
   </NuxtLayout>
 </template>
 

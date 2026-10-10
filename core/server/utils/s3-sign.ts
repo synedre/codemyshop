@@ -143,6 +143,52 @@ export function presignS3GetUrl(
   return `${creds.endpoint}${canonicalUri}?${canonicalQs}&X-Amz-Signature=${signature}`
 }
 
+export async function putS3Object(
+  creds: S3Creds,
+  key: string,
+  body: Buffer,
+  contentType: string,
+  extraHeaders: Record<string, string> = {},
+): Promise<void> {
+  const { iso, date } = nowStamps()
+  const host = new URL(creds.endpoint).host
+  const canonicalUri = '/' + uriEncode(creds.bucket, true) + '/' + uriEncode(key, true)
+  const payloadHash = sha256(body)
+
+  
+  const hdrs: Record<string, string> = {
+    'cache-control': 'public, max-age=31536000, immutable',
+    'content-type': contentType,
+    'host': host,
+    'x-amz-content-sha256': payloadHash,
+    'x-amz-date': iso,
+    ...Object.fromEntries(Object.entries(extraHeaders).map(([k, v]) => [k.toLowerCase(), v])),
+  }
+  const signedNames = Object.keys(hdrs).sort()
+  const canonicalHeaders = signedNames.map(n => `${n}:${hdrs[n]}\n`).join('')
+  const signedHeaders = signedNames.join(';')
+
+  const canonicalRequest = [
+    'PUT', canonicalUri, '', canonicalHeaders, signedHeaders, payloadHash,
+  ].join('\n')
+
+  const scope = `${date}/${creds.region}/${SERVICE}/aws4_request`
+  const stringToSign = [ALGO, iso, scope, sha256(canonicalRequest)].join('\n')
+  const key4 = signingKey(creds.secretKey, date, creds.region)
+  const signature = hmacHex(key4, stringToSign)
+  const auth = `${ALGO} Credential=${creds.accessKey}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
+
+  const url = `${creds.endpoint}${canonicalUri}`
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { ...hdrs, authorization: auth } as Record<string, string>,
+    body,
+  })
+  if (!res.ok) {
+    throw new Error(`S3 PUT ${key} failed (${res.status}): ${(await res.text()).slice(0, 300)}`)
+  }
+}
+
 export interface S3Object {
   key: string
   size: number
@@ -180,4 +226,15 @@ export async function listS3Objects(
     }
   }
   return objects
+}
+
+export function scwCredsFromEnv(): S3Creds | null {
+  const e = process.env
+  const accessKey = (e.NUXT_SCW_ACCESS_KEY || e.SCW_ACCESS_KEY || '').trim()
+  const secretKey = (e.NUXT_SCW_SECRET_KEY || e.SCW_SECRET_KEY || '').trim()
+  const endpoint = (e.NUXT_SCW_ENDPOINT || e.SCW_ENDPOINT || '').trim()
+  const bucket = (e.NUXT_SCW_BUCKET || e.SCW_BUCKET || '').trim()
+  const region = (e.NUXT_SCW_REGION || e.SCW_REGION || 'fr-par').trim()
+  if (!accessKey || !secretKey || !endpoint || !bucket) return null
+  return { accessKey, secretKey, region, endpoint, bucket }
 }

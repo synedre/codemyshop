@@ -2,7 +2,9 @@
 
 import { listProducts } from '~/modules/product-extra/server/utils/productextra'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   const limit = Number(q.limit) || 100
   const offset = Number(q.offset) || 0

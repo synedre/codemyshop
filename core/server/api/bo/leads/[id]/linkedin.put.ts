@@ -3,7 +3,10 @@
 import { useClientDb } from '~/server/utils/db'
 import { setCustomerLinkedinUrl } from '~/modules/customer-extra/server/utils/customer-extra'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!Number.isFinite(id) || id <= 0) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid id' })

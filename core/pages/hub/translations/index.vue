@@ -5,15 +5,15 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Traductions IA</h1>
-          <p class="text-xs text-gray-400 mt-0.5">ps_translation + tables _lang PrestaShop &mdash; prompt IA enrichi par profil culturel</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.translations.title', 'Traductions IA') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.translations.subtitle', 'ps_translation + tables _lang PrestaShop — prompt IA enrichi par profil culturel') }}</p>
         </div>
         <div class="flex items-center gap-2">
           <button
             @click="profilesOpen = !profilesOpen"
             class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
           >
-            Profils par langue ({{ profiles.length }})
+            {{ tHub('hub.ui.translations.profiles_btn', 'Profils par langue ({n})', { n: profiles.length }) }}
           </button>
         </div>
       </div>
@@ -25,19 +25,19 @@
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
         <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 items-end">
           <div>
-            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Langue source</label>
+            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.source_lang', 'Langue source') }}</label>
             <select v-model.number="sourceLang" class="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:border-primary-400 focus:ring-0">
               <option v-for="l in langs" :key="l.id_lang" :value="l.id_lang">{{ l.name }} ({{ l.iso_code }})</option>
             </select>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Langue cible</label>
+            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.target_lang', 'Langue cible') }}</label>
             <select v-model.number="targetLang" class="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:border-primary-400 focus:ring-0">
               <option v-for="l in langs" :key="l.id_lang" :value="l.id_lang">{{ l.name }} ({{ l.iso_code }})</option>
             </select>
           </div>
           <div class="lg:col-span-2">
-            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Scope</label>
+            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.scope', 'Scope') }}</label>
             <select v-model="scope" class="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:border-primary-400 focus:ring-0">
               <optgroup v-for="grp in scopeGroups" :key="grp.label" :label="grp.label">
                 <option v-for="s in grp.items" :key="s.slug" :value="s.slug">
@@ -47,10 +47,10 @@
             </select>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Filtre</label>
+            <label class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.filter', 'Filtre') }}</label>
             <select v-model="filter" class="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2">
-              <option value="missing">Non traduites</option>
-              <option value="all">Toutes</option>
+              <option value="missing">{{ tHub('hub.ui.translations.f_missing', 'Non traduites') }}</option>
+              <option value="all">{{ tHub('hub.ui.translations.f_all', 'Toutes') }}</option>
             </select>
           </div>
           <div>
@@ -59,7 +59,7 @@
               :disabled="loadingStrings || !scope || sourceLang === targetLang"
               class="w-full text-sm font-bold px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {{ loadingStrings ? 'Chargement…' : 'Charger' }}
+              {{ loadingStrings ? tHub('hub.ui.translations.loading', 'Chargement…') : tHub('hub.ui.translations.load', 'Charger') }}
             </button>
           </div>
         </div>
@@ -68,7 +68,7 @@
             v-model="search"
             @keyup.enter="loadStrings"
             type="search"
-            placeholder="Rechercher dans les chaînes source (clé ou texte)…"
+            :placeholder="tHub('hub.ui.translations.search_ph', 'Rechercher dans les chaînes source (clé ou texte)…')"
             class="w-full text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 focus:border-primary-400 focus:ring-0"
           />
         </div>
@@ -81,18 +81,18 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">
-              1. Chaînes à traduire
-              <span v-if="strings.length" class="ml-2 text-xs text-gray-400">({{ selected.size }} / {{ strings.length }} sélectionnées)</span>
+              {{ tHub('hub.ui.translations.step1', '1. Chaînes à traduire') }}
+              <span v-if="strings.length" class="ml-2 text-xs text-gray-400">{{ tHub('hub.ui.translations.selected_count', '({sel} / {total} sélectionnées)', { sel: selected.size, total: strings.length }) }}</span>
             </h2>
             <div v-if="strings.length" class="flex items-center gap-2">
-              <button @click="selectAll" class="text-xs text-primary-600 hover:underline">Tout</button>
+              <button @click="selectAll" class="text-xs text-primary-600 hover:underline">{{ tHub('hub.ui.translations.all', 'Tout') }}</button>
               <span class="text-gray-200 dark:text-slate-700">|</span>
-              <button @click="selectNone" class="text-xs text-gray-500 hover:underline">Rien</button>
+              <button @click="selectNone" class="text-xs text-gray-500 hover:underline">{{ tHub('hub.ui.translations.none', 'Rien') }}</button>
             </div>
           </div>
 
           <div v-if="!strings.length && !loadingStrings" class="text-sm text-gray-400 italic py-10 text-center">
-            Choisissez un scope et cliquez sur "Charger".
+            {{ tHub('hub.ui.translations.empty_hint', 'Choisissez un scope et cliquez sur "Charger".') }}
           </div>
 
           <div v-else-if="loadingStrings" class="space-y-2">
@@ -119,7 +119,7 @@
                   <span class="text-success-500 font-semibold">✓</span> {{ row.target }}
                 </p>
                 <p v-else class="text-xs text-amber-600 dark:text-amber-400 mt-1 italic">
-                  Non traduite
+                  {{ tHub('hub.ui.translations.untranslated', 'Non traduite') }}
                 </p>
               </div>
             </label>
@@ -132,32 +132,32 @@
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">2. Prompt IA</h2>
+              <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">{{ tHub('hub.ui.translations.step2', '2. Prompt IA') }}</h2>
               <div class="flex items-center gap-2">
                 <button
                   @click="generatePrompt"
                   :disabled="!selected.size || generating"
                   class="text-xs font-bold px-3 py-1.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  {{ generating ? 'Génération…' : 'Générer le prompt' }}
+                  {{ generating ? tHub('hub.ui.translations.generating', 'Génération…') : tHub('hub.ui.translations.generate', 'Générer le prompt') }}
                 </button>
                 <button
                   v-if="prompt"
                   @click="copyPrompt"
                   class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  {{ promptCopied ? 'Copié !' : 'Copier' }}
+                  {{ promptCopied ? tHub('hub.ui.translations.copied', 'Copié !') : tHub('hub.ui.translations.copy', 'Copier') }}
                 </button>
               </div>
             </div>
 
             <div v-if="!prompt" class="text-sm text-gray-400 italic py-10 text-center">
-              Sélectionnez des chaînes et générez un prompt. Collez-le dans ChatGPT / Claude / Mistral.
+              {{ tHub('hub.ui.translations.prompt_hint', 'Sélectionnez des chaînes et générez un prompt. Collez-le dans ChatGPT / Claude / Mistral.') }}
             </div>
             <div v-else>
               <p v-if="!promptMeta?.hasTargetProfile" class="mb-2 text-xs text-amber-600 dark:text-amber-400">
-                ⚠ Pas de profil culturel pour la langue cible.
-                <button @click="profilesOpen = true" class="underline font-semibold">Configurer maintenant</button>
+                {{ tHub('hub.ui.translations.no_profile', '⚠ Pas de profil culturel pour la langue cible.') }}
+                <button @click="profilesOpen = true" class="underline font-semibold">{{ tHub('hub.ui.translations.configure', 'Configurer maintenant') }}</button>
               </p>
               <textarea
                 :value="prompt"
@@ -170,29 +170,29 @@
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">3. Réponse JSON de l'IA</h2>
+              <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200">{{ tHub('hub.ui.translations.step3', '3. Réponse JSON de l\'IA') }}</h2>
               <button
                 @click="applyTranslations"
                 :disabled="!responseJson.trim() || applying"
                 class="text-xs font-bold px-3 py-1.5 rounded-lg bg-success-600 text-white hover:bg-success-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {{ applying ? 'Application…' : 'Appliquer les traductions' }}
+                {{ applying ? tHub('hub.ui.translations.applying', 'Application…') : tHub('hub.ui.translations.apply', 'Appliquer les traductions') }}
               </button>
             </div>
 
             <textarea
               v-model="responseJson"
-              placeholder='Collez ici la réponse JSON de l&apos;IA (format : { "translations": [ { "id": "…", "target": "…" } ] })'
+              :placeholder="responsePlaceholder"
               class="w-full text-xs font-mono rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 h-48 resize-none focus:border-primary-400 focus:ring-0"
             />
 
             <div v-if="applyResult" class="mt-3 text-xs p-3 rounded-lg"
                  :class="applyResult.errors?.length ? 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300' : 'bg-success-50 dark:bg-success-950 text-success-700 dark:text-success-300'">
               <p class="font-semibold">
-                {{ applyResult.updated }} mise(s) à jour, {{ applyResult.inserted }} insérée(s), {{ applyResult.skipped }} ignorée(s).
+                {{ tHub('hub.ui.translations.apply_result', '{updated} mise(s) à jour, {inserted} insérée(s), {skipped} ignorée(s).', { updated: applyResult.updated, inserted: applyResult.inserted, skipped: applyResult.skipped }) }}
               </p>
               <p v-if="applyResult.errors?.length" class="mt-1">
-                {{ applyResult.errors.length }} erreur(s) — voir la console.
+                {{ tHub('hub.ui.translations.apply_errors', '{n} erreur(s) — voir la console.', { n: applyResult.errors.length }) }}
               </p>
             </div>
           </div>
@@ -208,7 +208,7 @@
         class="fixed inset-y-0 right-0 w-full max-w-lg bg-white dark:bg-slate-900 shadow-2xl z-30 overflow-y-auto border-l border-gray-100 dark:border-slate-800"
       >
         <header class="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-5 py-4 flex items-center justify-between z-10">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Profils culturels par langue</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.translations.drawer_title', 'Profils culturels par langue') }}</h2>
           <button @click="profilesOpen = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-slate-200">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -218,29 +218,29 @@
 
         <div class="p-5 space-y-5">
           <p v-if="!profiles.length" class="text-sm text-gray-400 italic">
-            Aucun profil. Le module ac_translate est-il installé sur le tenant ?
+            {{ tHub('hub.ui.translations.no_profiles', 'Aucun profil. Le module ac_translate est-il installé sur le tenant ?') }}
           </p>
 
           <details v-for="p in profiles" :key="p.id_lang" class="border border-gray-200 dark:border-slate-700 rounded-lg" :open="p.iso_code === activeProfileIso">
             <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-gray-800 dark:text-slate-100 flex items-center justify-between">
               <span>{{ p.lang_name }} <span class="text-xs text-gray-400 ml-1">({{ p.iso_code }})</span></span>
-              <span v-if="profileDirty[p.id_lang]" class="text-[10px] font-bold text-amber-600">Non enregistré</span>
+              <span v-if="profileDirty[p.id_lang]" class="text-[10px] font-bold text-amber-600">{{ tHub('hub.ui.translations.unsaved', 'Non enregistré') }}</span>
             </summary>
             <div class="p-4 space-y-3 border-t border-gray-100 dark:border-slate-800">
               <div>
-                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Profil du marché</label>
+                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.market_profile', 'Profil du marché') }}</label>
                 <textarea v-model="p.profile" @input="profileDirty[p.id_lang] = true" class="mt-1 w-full text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 h-20 resize-y focus:border-primary-400 focus:ring-0" />
               </div>
               <div>
-                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Ton de voix</label>
+                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.tone', 'Ton de voix') }}</label>
                 <textarea v-model="p.tone" @input="profileDirty[p.id_lang] = true" class="mt-1 w-full text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 h-20 resize-y focus:border-primary-400 focus:ring-0" />
               </div>
               <div>
-                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Spécificités culturelles</label>
+                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.culture_notes', 'Spécificités culturelles') }}</label>
                 <textarea v-model="p.culture_notes" @input="profileDirty[p.id_lang] = true" class="mt-1 w-full text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 h-20 resize-y focus:border-primary-400 focus:ring-0" />
               </div>
               <div>
-                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Glossaire (JSON optionnel)</label>
+                <label class="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{{ tHub('hub.ui.translations.glossary', 'Glossaire (JSON optionnel)') }}</label>
                 <textarea v-model="p.glossary" @input="profileDirty[p.id_lang] = true" class="mt-1 w-full text-xs font-mono rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 h-16 resize-y focus:border-primary-400 focus:ring-0" placeholder='{"palette":"pallet","tournée":"route"}' />
               </div>
               <div class="flex justify-end">
@@ -249,7 +249,7 @@
                   :disabled="!profileDirty[p.id_lang] || savingProfile === p.id_lang"
                   class="text-xs font-bold px-3 py-1.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  {{ savingProfile === p.id_lang ? 'Enregistrement…' : 'Enregistrer' }}
+                  {{ savingProfile === p.id_lang ? tHub('hub.ui.translations.saving', 'Enregistrement…') : tHub('hub.ui.translations.save', 'Enregistrer') }}
                 </button>
               </div>
             </div>
@@ -265,6 +265,8 @@
 <script setup lang="ts">
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+
+const { t: tHub } = useHubT()
 
 interface Lang { id_lang: number; iso_code: string; name: string; language_code: string; locale: string }
 interface Scope { slug: string; label: string; category: string; rowCount?: number; multiline?: boolean; html?: boolean }
@@ -303,20 +305,22 @@ const profilesOpen = ref(false)
 const profileDirty = reactive<Record<number, boolean>>({})
 const savingProfile = ref<number | null>(null)
 
-const CATEGORY_LABELS: Record<string, string> = {
-  'i18n-hub': 'Hub (ps_translation)',
-  catalog:    'Catalogue produit',
-  seo:        'SEO & meta',
-  cms:        'CMS',
-  features:   'Attributs & caractéristiques',
-  config:     'Configuration',
-}
+const CATEGORY_LABELS = computed<Record<string, string>>(() => ({
+  'i18n-hub': tHub('hub.ui.translations.cat_hub', 'Hub (ps_translation)'),
+  catalog:    tHub('hub.ui.translations.cat_catalog', 'Catalogue produit'),
+  seo:        tHub('hub.ui.translations.cat_seo', 'SEO & meta'),
+  cms:        tHub('hub.ui.translations.cat_cms', 'CMS'),
+  features:   tHub('hub.ui.translations.cat_features', 'Attributs & caractéristiques'),
+  config:     tHub('hub.ui.translations.cat_config', 'Configuration'),
+}))
+
+const responsePlaceholder = computed(() => tHub('hub.ui.translations.response_ph', 'Collez ici la réponse JSON de l\'IA (format : { "translations": [ { "id": "…", "target": "…" } ] })'))
 
 const scopeGroups = computed(() => {
   const out: Array<{ label: string; items: Scope[] }> = []
   
   if (groupScopes.value.length) {
-    out.push({ label: '⭐ Groupes (tout-en-un)', items: groupScopes.value })
+    out.push({ label: tHub('hub.ui.translations.groups', '⭐ Groupes (tout-en-un)'), items: groupScopes.value })
   }
   const map: Record<string, Scope[]> = {}
   for (const s of [...dynamicScopes.value, ...staticScopes.value]) {
@@ -325,7 +329,7 @@ const scopeGroups = computed(() => {
     map[key].push(s)
   }
   for (const [k, items] of Object.entries(map)) {
-    out.push({ label: CATEGORY_LABELS[k] || k, items })
+    out.push({ label: CATEGORY_LABELS.value[k] || k, items })
   }
   return out
 })
@@ -377,7 +381,7 @@ async function loadStrings() {
     strings.value = res.rows
   } catch (err: any) {
     console.error('[translations] load error:', err)
-    alert('Erreur de chargement : ' + (err?.data?.statusMessage || err?.message || 'inconnue'))
+    alert(tHub('hub.ui.translations.load_error', 'Erreur de chargement : {msg}', { msg: err?.data?.statusMessage || err?.message || tHub('hub.ui.translations.unknown', 'inconnue') }))
   } finally {
     loadingStrings.value = false
   }
@@ -408,7 +412,7 @@ async function generatePrompt() {
     promptMeta.value = res.meta
   } catch (err: any) {
     console.error('[translations] generate error:', err)
-    alert('Erreur : ' + (err?.data?.statusMessage || err?.message))
+    alert(tHub('hub.ui.translations.error_msg', 'Erreur : {msg}', { msg: err?.data?.statusMessage || err?.message }))
   } finally {
     generating.value = false
   }
@@ -429,12 +433,12 @@ function parseResponse(raw: string): Array<{ id: string; target: string }> {
   const cleaned = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '')
   let parsed: any
   try { parsed = JSON.parse(cleaned) } catch {
-    throw new Error('JSON invalide. Vérifie que la réponse de l\'IA est bien parsable.')
+    throw new Error(tHub('hub.ui.translations.json_invalid', 'JSON invalide. Vérifie que la réponse de l\'IA est bien parsable.'))
   }
   let arr: any[] = []
   if (Array.isArray(parsed)) arr = parsed
   else if (parsed && Array.isArray(parsed.translations)) arr = parsed.translations
-  else throw new Error('Format inattendu : attendu { translations: [...] } ou un tableau.')
+  else throw new Error(tHub('hub.ui.translations.format_unexpected', 'Format inattendu : attendu { translations: [...] } ou un tableau.'))
   return arr.filter(x => x && typeof x.id === 'string' && typeof x.target === 'string')
 }
 
@@ -447,7 +451,7 @@ async function applyTranslations() {
     return
   }
   if (!translations.length) {
-    alert('Aucune traduction valide dans la réponse.')
+    alert(tHub('hub.ui.translations.no_valid', 'Aucune traduction valide dans la réponse.'))
     return
   }
   applying.value = true
@@ -466,7 +470,7 @@ async function applyTranslations() {
     await loadStrings()
   } catch (err: any) {
     console.error('[translations] apply error:', err)
-    alert('Erreur : ' + (err?.data?.statusMessage || err?.message))
+    alert(tHub('hub.ui.translations.error_msg', 'Erreur : {msg}', { msg: err?.data?.statusMessage || err?.message }))
   } finally {
     applying.value = false
   }
@@ -488,7 +492,7 @@ async function saveProfile(p: Profile) {
     profileDirty[p.id_lang] = false
   } catch (err: any) {
     console.error('[translations] save profile error:', err)
-    alert('Erreur : ' + (err?.data?.statusMessage || err?.message))
+    alert(tHub('hub.ui.translations.error_msg', 'Erreur : {msg}', { msg: err?.data?.statusMessage || err?.message }))
   } finally {
     savingProfile.value = null
   }

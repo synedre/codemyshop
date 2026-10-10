@@ -1,12 +1,12 @@
 <template>
   <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6 space-y-5">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Stock</h2>
+      <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.product_stock.title', 'Stock') }}</h2>
       <span class="text-[10px] uppercase tracking-wide text-gray-400">Inventory</span>
     </div>
 
     <div>
-      <label class="block text-xs font-medium text-gray-500 mb-1">Quantité physique</label>
+      <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('hub.ui.product_stock.physical_qty', 'Quantité physique') }}</label>
       <input
         v-model.number="model.stock"
         type="number"
@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 interface StockForm {
   stock: number
 }
@@ -37,9 +38,9 @@ const model = defineModel<StockForm>({ required: true })
 
 const statusLabel = computed(() => {
   const q = Number(model.value.stock) || 0
-  if (q <= 0) return 'Rupture de stock'
-  if (q < 5) return 'Stock bas'
-  return 'En stock'
+  if (q <= 0) return t('hub.ui.product_stock.out_of_stock', 'Rupture de stock')
+  if (q < 5) return t('hub.ui.product_stock.low_stock', 'Stock bas')
+  return t('hub.ui.product_stock.in_stock', 'En stock')
 })
 
 const badgeClass = computed(() => {

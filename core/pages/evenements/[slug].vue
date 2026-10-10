@@ -1,6 +1,11 @@
 
 <script setup lang="ts">
+
+import { useDisplayTimeZone } from '../../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
 definePageMeta({ layout: false })
+const { localePath } = useLocalePath()
 
 interface EventApi {
   id: number; slug: string; type: 'online' | 'irl' | 'hybrid'
@@ -9,6 +14,7 @@ interface EventApi {
   postcode: string | null; city: string | null; country: string | null
   lat: number | null; lng: number | null
   meetingUrl: string | null
+  hasMeetingUrl: boolean
   maxParticipants: number | null
   isFree: boolean; priceCents: number
   registrationOpen: boolean; registrationDeadline: string | null
@@ -24,30 +30,35 @@ const cfg = useRuntimeConfig()
 const brand = String((cfg.public as any).brandName ?? '')
 const psFrontUrl = String((cfg.public as any).psFrontUrl ?? '')
 const { activeLang } = useRouteLang()
+const { t } = useHubT()
 
-const { data, error } = await useFetch<{ event: EventApi; participants: Array<{ name: string }> }>(
+const { data, error } = await useFetch<{ event: EventApi; participants: Array<{ name: string }>; confirmationEmail?: boolean }>(
   `/api/events/${route.params.slug}`,
   { query: { lang: activeLang }, watch: [activeLang] },
 )
 
 if (error.value || !data.value?.event) {
-  throw createError({ statusCode: 404, statusMessage: 'Événement introuvable', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: 'Événement introuvable' })
 }
 
 const ev = computed(() => data.value!.event)
 const participants = computed(() => data.value!.participants)
+
+const confirmationEmail = computed(() => data.value?.confirmationEmail === true)
 
 const form = ref({ email: '', name: '', phone: '', attendeesCount: 1, note: '', consent: false })
 const submitting = ref(false)
 const submitted = ref(false)
 const submitError = ref<string | null>(null)
 const cancelToken = ref<string | null>(null)
+const emailSent = ref(false)
+const meetingLink = ref<string | null>(null)
 
 async function submit() {
   submitError.value = null
   submitting.value = true
   try {
-    const res = await $fetch<{ ok: boolean; cancelToken?: string; alreadyRegistered?: boolean }>(
+    const res = await $fetch<{ ok: boolean; cancelToken?: string; alreadyRegistered?: boolean; confirmationEmail?: boolean; meetingUrl?: string | null }>(
       `/api/events/${route.params.slug}/register`,
       {
         method: 'POST',
@@ -58,11 +69,14 @@ async function submit() {
           attendeesCount: form.value.attendeesCount,
           note: form.value.note || undefined,
           consentParticipantsList: form.value.consent,
+          lang: activeLang.value,
         },
       },
     )
     submitted.value = true
     cancelToken.value = res.cancelToken || null
+    emailSent.value = res.confirmationEmail === true
+    meetingLink.value = res.meetingUrl || null
   } catch (e: any) {
     submitError.value = e?.data?.statusMessage || e?.message || 'Erreur'
   } finally {
@@ -73,7 +87,7 @@ async function submit() {
 const TYPE_LABEL: Record<string, string> = { online: '🎥 En ligne', irl: '📍 Sur place', hybrid: '🌍 Hybride' }
 
 function formatLong(s: string): string {
-  return new Date(s).toLocaleDateString('fr-FR', {
+  return new Date(s).toLocaleDateString('fr-FR', { timeZone: displayTz,
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
@@ -102,7 +116,7 @@ const jsonLd = computed(() => ({
   image: ev.value.coverImageUrl ? `${psFrontUrl}${ev.value.coverImageUrl}` : undefined,
   location: ev.value.type === 'online' ? {
     '@type': 'VirtualLocation',
-    url: ev.value.meetingUrl || `${psFrontUrl}/evenements/${ev.value.slug}/`,
+    url: `${psFrontUrl}/evenements/${ev.value.slug}/`,
   } : {
     '@type': 'Place',
     name: ev.value.venueName,
@@ -156,7 +170,7 @@ useHead(() => ({
           <nav class="text-xs text-gray-400 mb-4">
             <NuxtLink to="/" class="hover:text-gray-600">Accueil</NuxtLink>
             <span class="mx-1.5">/</span>
-            <NuxtLink to="/evenements/" class="hover:text-gray-600">Événements</NuxtLink>
+            <NuxtLink :to="localePath('/evenements/')" class="hover:text-gray-600">Événements</NuxtLink>
             <span class="mx-1.5">/</span>
             <span class="text-gray-700 truncate inline-block max-w-[300px] align-bottom">{{ ev.title }}</span>
           </nav>
@@ -201,9 +215,11 @@ useHead(() => ({
                 <span v-if="ev.postcode || ev.city" class="block text-gray-600">{{ ev.postcode }} {{ ev.city }}</span>
               </span>
             </p>
-            <p v-if="ev.type === 'online' && ev.meetingUrl" class="flex items-start gap-2">
+            <p v-if="ev.type !== 'irl' && ev.hasMeetingUrl" class="flex items-start gap-2">
               <span aria-hidden="true">🎥</span>
-              <span>Lien envoyé par email après inscription</span>
+              <span>{{ confirmationEmail
+                ? t('events.meeting_link_by_email', 'Lien de connexion envoyé par email après inscription')
+                : t('events.meeting_link_after_signup', 'Lien de connexion donné après inscription') }}</span>
             </p>
             <p class="flex items-start gap-2 border-t border-gray-100 pt-3">
               <span aria-hidden="true">{{ ev.isFree ? '🎁' : '€' }}</span>
@@ -217,8 +233,14 @@ useHead(() => ({
 
           
           <div v-if="submitted" class="rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-sm">
-            <p class="font-semibold text-emerald-800 mb-2">✓ Inscription confirmée</p>
-            <p class="text-emerald-700">Tu reçois un récap par email. À très vite !</p>
+            <p class="font-semibold text-emerald-800 mb-2">✓ {{ t('events.signup_confirmed', 'Inscription confirmée') }}</p>
+            <p class="text-emerald-700">{{ emailSent
+              ? t('events.signup_email_sent', 'Tu reçois un récap par email. À très vite !')
+              : t('events.signup_no_email', 'À très vite !') }}</p>
+            <p v-if="meetingLink" class="mt-2 text-emerald-700 break-all">
+              {{ t('events.meeting_link_label', 'Lien de connexion :') }}
+              <a :href="meetingLink" class="underline font-medium" rel="noopener" target="_blank">{{ meetingLink }}</a>
+            </p>
           </div>
           <form v-else-if="!isClosed && !isComplet" @submit.prevent="submit" class="rounded-lg border border-gray-200 bg-white p-5 space-y-3">
             <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">S'inscrire</h2>

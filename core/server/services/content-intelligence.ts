@@ -1,8 +1,8 @@
 
 
 import { getTopOpportunities, getDecliningPages } from './gsc'
-import { getInsights } from './analytics'
 import { getClientConfigJson } from '~/internal/clientconfig/server/utils/clientconfig'
+import { resolveClientId } from '../utils/db'
 
 async function resolveClientGscSite(clientId: string): Promise<string> {
   
@@ -27,7 +27,7 @@ async function resolveClientGscSite(clientId: string): Promise<string> {
 export interface ContentBrief {
   title: string
   slug: string
-  source: 'gsc-conquest' | 'gsc-defend' | 'matomo-search' | 'matomo-bounce' | 'fallback'
+  source: 'gsc-conquest' | 'gsc-defend' | 'fallback'
   priority: number       
   context: string        
   dataPoints: string[]   
@@ -76,7 +76,7 @@ const FALLBACK_TOPICS: ContentBrief[] = [
   },
 ]
 
-export async function getNextTopic(clientId = 'ac-hub'): Promise<ContentBrief> {
+export async function getNextTopic(clientId = resolveClientId()): Promise<ContentBrief> {
   const briefs: ContentBrief[] = []
 
   
@@ -122,49 +122,6 @@ export async function getNextTopic(clientId = 'ac-hub'): Promise<ContentBrief> {
   }
 
   
-  try {
-    const insights = await getInsights(clientId)
-    if (insights?.results) {
-      
-      const searchEvents = insights.results
-        ?.filter((r: any) => r.name === 'search')
-        ?.slice(0, 5)
-
-      for (const evt of searchEvents ?? []) {
-        const query = evt.properties?.query ?? ''
-        if (query && query.length > 3) {
-          briefs.push({
-            title: `${capitalize(query)} — ce que nos visiteurs cherchent`,
-            slug: slugify(query),
-            source: 'matomo-search',
-            priority: 3,
-            context: `"${query}" est une recherche fréquente sur le site. Écrire un contenu qui répond directement à cette intention.`,
-            dataPoints: [`Recherche interne fréquente: "${query}"`],
-          })
-        }
-      }
-
-      
-      const bouncePages = insights.results
-        ?.filter((r: any) => r.name === '$pageview' && (r.bounce_rate ?? 0) > 0.7)
-        ?.slice(0, 3)
-
-      for (const page of bouncePages ?? []) {
-        briefs.push({
-          title: `[OPTIMISER] ${page.url ?? 'page'}`,
-          slug: `optimize-${slugify((page.url ?? '').split('/').pop() ?? 'page')}`,
-          source: 'matomo-bounce',
-          priority: 4,
-          context: `Cette page a un taux de rebond de ${Math.round((page.bounce_rate ?? 0) * 100)}%. Le contenu ne répond pas aux attentes des visiteurs. Réécrire.`,
-          dataPoints: [`Taux de rebond: ${Math.round((page.bounce_rate ?? 0) * 100)}%`],
-        })
-      }
-    }
-  } catch (err: any) {
-    console.warn(`[content-intelligence] Matomo indisponible:`, err?.message?.slice(0, 100))
-  }
-
-  
   if (briefs.length === 0) {
     console.log(`[content-intelligence] Aucune donnée disponible — fallback activé`)
     
@@ -182,7 +139,7 @@ export async function getNextTopic(clientId = 'ac-hub'): Promise<ContentBrief> {
   return winner
 }
 
-export async function getTopicQueue(clientId = 'ac-hub', limit = 5): Promise<ContentBrief[]> {
+export async function getTopicQueue(clientId = resolveClientId(), limit = 5): Promise<ContentBrief[]> {
   const topic = await getNextTopic(clientId)
   
   

@@ -2,7 +2,9 @@
 
 import { deleteTeamMember } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idStr = getRouterParam(event, 'id')
   const idMember = Number(idStr)
   if (!idMember || idMember <= 0) {

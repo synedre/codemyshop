@@ -42,6 +42,9 @@ export interface LoyaltyAccountResponse {
     tierMaxMultiplier: number
     expireMonths: number
     validityDays: number
+    
+
+    configured: { ratio: boolean; tier: boolean }
   }
   tiers: LoyaltyTier[]
   transactions: LoyaltyTransaction[]
@@ -70,6 +73,10 @@ export default defineEventHandler(async (event): Promise<LoyaltyAccountResponse>
   const tierMaxMultiplier = Number(cfg.AC_LOYALTY_TIER_MAX_MULTIPLIER ?? 2)
   const expireMonths      = Number(cfg.AC_LOYALTY_EXPIRE_MONTHS ?? 12)
   const validityDays      = Number(cfg.AC_LOYALTY_CART_RULE_VALIDITY_DAYS ?? 90)
+  const configured = {
+    ratio: cfg.AC_LOYALTY_RATIO != null && String(cfg.AC_LOYALTY_RATIO).trim() !== '',
+    tier:  cfg.AC_LOYALTY_TIER_POINTS != null && String(cfg.AC_LOYALTY_TIER_POINTS).trim() !== '',
+  }
 
   const account = await db.get<{ balance_points: number; total_earned: number; total_spent: number }>(
     `SELECT balance_points, total_earned, total_spent
@@ -169,7 +176,7 @@ export default defineEventHandler(async (event): Promise<LoyaltyAccountResponse>
     balance,
     totalEarned,
     totalSpent,
-    config: { ratio, tierPoints, tierValue, tierMaxMultiplier, expireMonths, validityDays },
+    config: { ratio, tierPoints, tierValue, tierMaxMultiplier, expireMonths, validityDays, configured },
     tiers,
     transactions,
     vouchers,

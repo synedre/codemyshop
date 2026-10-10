@@ -1,7 +1,6 @@
 
 
-import { defineTask } from 'nitropack/runtime'
-import { skipIfNotAcInternal } from '~/server/utils/cron-context'
+import { defineLeaderTask } from '~/server/utils/schedule-leader'
 import { withAutomateLock } from '~/server/utils/automate-lock'
 import { runAutomate } from '~/server/utils/automate-logger'
 import { getPgClient } from '~/server/utils/db-pg-adapter'
@@ -21,16 +20,32 @@ async function pgSchemaExists(schema: string): Promise<boolean> {
   return rows[0]?.exists ?? false
 }
 
-export default defineTask({
+async function tenantHasActiveCoverConfig(): Promise<boolean> {
+  try {
+    const sql = getPgClient()
+    const rows = await sql<{ exists: boolean }[]>`
+      SELECT EXISTS (
+        SELECT 1 FROM cs_main.cs_cover_tenant_config WHERE active = 1
+      ) AS exists
+    `
+    return rows[0]?.exists ?? false
+  } catch {
+    return false
+  }
+}
+
+export default defineLeaderTask({
   meta: {
     name: 'cover:queue-process',
     description: 'Consumer cs_covergen_queue (port ac_covergen --process-queue, Wave 3 #3 Phase D)',
   },
   async run() {
-    const skip = skipIfNotAcInternal('cover:queue-process')
-    if (skip) return skip
     if (!(await pgSchemaExists(PG_SCHEMA))) {
       return { result: { status: 'skipped', reason: `schema-absent:${PG_SCHEMA}` } }
+    }
+    
+    if (!(await tenantHasActiveCoverConfig())) {
+      return { result: { status: 'skipped', reason: 'no-active-cover-config' } }
     }
 
     const lockResult = await withAutomateLock(AUTOMATE_KEY, async () => {

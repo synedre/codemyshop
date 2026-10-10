@@ -5,6 +5,7 @@ import { eq, sql } from 'drizzle-orm'
 import { usePocPg } from '../db/drizzle-pg'
 import { aiQueueVaisseau, type AiQueuePgRow } from '../db/schema-pg/ai-queue'
 import { callAnthropicRaw } from './anthropic'
+import { costUsd } from '../../utils/llm-pricing'
 
 export type AiTaskStatus = 'pending' | 'processing' | 'completed' | 'failed'
 
@@ -37,26 +38,20 @@ export interface AiTask {
   completedAt?:    string
 }
 
-export const MODEL_PRICING: Record<string, { input: number; output: number }> = {
-  'claude-sonnet-4-6':          { input: 3.00,  output: 15.00 },
-  'claude-haiku-4-5-20251001':  { input: 0.80,  output: 4.00 },
-  'claude-opus-4-6':            { input: 15.00, output: 75.00 },
-  'gpt-4o':                     { input: 2.50,  output: 10.00 },
-  'gpt-4o-mini':                { input: 0.15,  output: 0.60 },
-}
+const FALLBACK_MODEL = 'claude-sonnet-4-6'
 
 export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4)
 }
 
 export function estimateCost(model: string, inputTokens: number, outputTokens: number): number {
-  const pricing = MODEL_PRICING[model] ?? MODEL_PRICING['claude-sonnet-4-6']
-  return ((inputTokens * pricing.input) + (outputTokens * pricing.output)) / 1_000_000
+  return costUsd(model, inputTokens, outputTokens)
+    ?? costUsd(FALLBACK_MODEL, inputTokens, outputTokens)
+    ?? 0
 }
 
 export function calculateActualCost(model: string, usage: { prompt_tokens: number; completion_tokens: number }): number {
-  const pricing = MODEL_PRICING[model] ?? MODEL_PRICING['claude-sonnet-4-6']
-  return ((usage.prompt_tokens * pricing.input) + (usage.completion_tokens * pricing.output)) / 1_000_000
+  return estimateCost(model, usage.prompt_tokens, usage.completion_tokens)
 }
 
 function toIso(d: Date | string | null | undefined): string | undefined {

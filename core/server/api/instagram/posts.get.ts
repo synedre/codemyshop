@@ -25,7 +25,7 @@ export default defineEventHandler(async (event): Promise<{ items: Post[]; total:
     const total = await countInstagramPosts(mediaType, { event })
     if (total === 0) return { items: [], total: 0, hasMore: false }
 
-    const rows = await listInstagramPosts(mediaType, lim, off, { event })
+    const rows = await listInstagramPosts(mediaType, lim, off, 1, { event })
 
     const items: Post[] = rows.map((r) => ({
       id:        Number(r.id_post),

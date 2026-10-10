@@ -1,12 +1,12 @@
 
 
 import { useClientDb, resolveClientId } from '~/server/utils/db'
-import { resolveIdLang } from '~/server/utils/lang'
-import { buildProductUrl, buildImageUrl, buildImageSrcset } from '~/server/utils/product-urls'
-import { buildCategoryPathMap, buildProductUrlFromCategory } from '~/server/utils/category-path'
-import { resolveTenantPiliers } from '~/server/utils/tenant-piliers'
-import { localizeRootSegment } from '~/utils/locale-route-roots'
+import { resolveIdLang, langPrefixFor } from '~/server/utils/lang'
+import { buildImageUrl, buildImageSrcset } from '~/server/utils/product-urls'
+import { getProductUrls } from '~/server/utils/product-url'
 import { isTenantB2b, buildTaxJoinForPrice, buildPriceExpr } from '~/server/utils/ps-tax'
+import { attachTaxRateToCards } from '~/server/utils/product-card-tax'
+import { visibiliteSql } from '~/utils/product-visibility'
 
 interface BestSellerRow {
   id: number
@@ -75,6 +75,8 @@ export default defineEventHandler(async (event): Promise<{ products: BestSellerP
          LEFT JOIN ps_image img ON img.id_product = p.id_product AND img.cover = 1
          ${taxJoin}
         WHERE p.active = 1
+          -- Produits techniques (personnalisation : visibility 'none') : jamais en vitrine.
+          AND ${visibiliteSql('p', 'catalog')}
           AND o.valid = 1
           AND o.date_add >= DATE_SUB(NOW(), INTERVAL 90 DAY)
         GROUP BY od.product_id, p.id_product, p.reference, p.price,
@@ -85,25 +87,20 @@ export default defineEventHandler(async (event): Promise<{ products: BestSellerP
       [idLang, lim],
     )
 
-    const piliers = await resolveTenantPiliers(event, db, idLang)
-    const idCats = [...new Set(rows.map(r => Number(r.id_category_default)).filter(Boolean))]
-    const pathMap = await buildCategoryPathMap(db, idCats, idLang, piliers)
     const langRow = await db.get<{ iso_code: string }>(
       `SELECT iso_code FROM ps_lang WHERE id_lang = ? LIMIT 1`, [idLang],
     )
     const iso = langRow?.iso_code || 'fr'
-    const langPrefix = iso && iso !== 'fr' ? `/${iso}` : ''
-    const prefixesByPilier: Record<string, string> = {}
-    for (const p of piliers) prefixesByPilier[p.slug] = localizeRootSegment(p.slug, iso)
+    const langPrefix = langPrefixFor(event, iso)
+    const ids = rows.map(r => Number(r.id))
+    const urlMap = await getProductUrls(db, ids, idLang, { langPrefix, iso, event })
 
     const products: BestSellerProduct[] = rows.map(r => {
       const price = Number(r.priceRaw || 0)
       const imgId = Number(r.id_image || 0)
       const descShort = r.description_short ? stripHtml(r.description_short).slice(0, 180) : undefined
       const slug = r.link_rewrite || ''
-      const url = slug && Number(r.id_category_default)
-        ? buildProductUrlFromCategory(Number(r.id_category_default), slug, pathMap, { prefixesByPilier, langPrefix, productId: Number(r.id) })
-        : buildProductUrl(Number(r.id), slug)
+      const url = urlMap.get(Number(r.id)) ?? `/produit/${r.id}`
       return {
         id: Number(r.id),
         ref: r.ref || '',
@@ -117,6 +114,10 @@ export default defineEventHandler(async (event): Promise<{ products: BestSellerP
         imageSrcset: buildImageSrcset(imgId, slug),
       }
     })
+
+    
+    
+    await attachTaxRateToCards(db, products)
 
     return { products }
   } catch (err: any) {

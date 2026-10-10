@@ -3,7 +3,10 @@
 import { useClientDb } from '~/server/utils/db'
 import { upsertConfiguration } from '~/server/utils/ps-configuration'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     auto?: boolean
     ageMinH?: number

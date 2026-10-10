@@ -10,42 +10,44 @@ Public 12-month roadmap for CodeMyShop. We update this quarterly.
 
 ### Foundation
 
-- ✅ Nuxt 4 + Drizzle PG + Redis monolith stable in production (3 internal tenants)
+- ✅ Nuxt 4 + Drizzle PG + Redis monolith stable in production across multiple live verticals (food B2B, automotive, home & CHR, sports)
 - ✅ AGPL-3.0 publication + governance setup
 - 🚧 First external community installations (target: 3 documented installs by Q4 2026)
-- 🚧 Discord community channel
-- 📅 Stripe products & prices for the three tiers (Community / Standard / Pro)
-- 📅 Ansible playbook hardening (UFW, fail2ban, daily backup to S3)
+- 🚧 Discord & GitHub community channels
+- 📅 Stripe billing & onboarding for official tiers (Community / Pro Cloud / Enterprise Scale)
+- 📅 Ansible playbook hardening (UFW, fail2ban, daily backup to S3/OVH)
 
 ### Storefront
 
-- ✅ SSR product pages with structured JSON-LD
+- ✅ SSR product pages with structured JSON-LD & PageSpeed 100
 - ✅ Cart, checkout, payment via SystemPay (CB) and Stripe
 - ✅ Customer account self-service (orders, invoices, addresses)
 - 📅 Wishlists and product comparison
 - 📅 B2B quote-to-cart workflow
-- 💭 Live chat module (Crisp, Tawk integration)
+- 💭 Live chat & AI concierge module
 
 ### Admin hub
 
 - ✅ Product CRUD with i18n, variants, multipack pricing
 - ✅ Category CRUD with polymorphic FAQ
 - ✅ Order management with status workflow
-- ✅ CRM with leads, customers, B2B accounts
+- ✅ CRM with leads, customers, B2B accounts & buyer management
 - ✅ Email templates with i18n DB-first
 - 📅 Marketing automation (cart recovery, post-purchase, win-back)
 - 📅 Vendor / supplier management
-- 📅 Inventory transfers between warehouses
+- 📅 Inventory transfers between warehouses & lot tracking
 
-### AI (Centaure)
+### Agentic AI & Autonomous Fleet
 
-- ✅ SEO article generation
-- ✅ Product description rewriting
-- ✅ Category cover image generation
-- ✅ FAQ enrichment
-- 📅 Multi-provider routing (cost optimization across OpenAI / Anthropic / Mistral)
-- 📅 Embedding-based semantic search on the storefront
-- 💭 Image generation for marketing assets (DALL-E / Midjourney API)
+- ✅ Autonomous agent fleet access (agents for design, code, SEO, catalog enrichment)
+- ✅ Model Context Protocol (MCP) server for Claude / IDE / Cursor integration
+- ✅ SEO article generation & automated internal linking
+- ✅ Product description rewriting & structured spec sheet generation
+- ✅ Category cover image generation & visual merchandising
+- ✅ FAQ enrichment & polymorphic schemas
+- 📅 Multi-agent orchestration via MCP tools (catalog sync, stock alerts, price rules)
+- 📅 Embedding-based semantic search & vector recommendations (pgvector)
+- 📅 Automated social & marketing asset generation
 
 ---
 
@@ -58,31 +60,32 @@ Public 12-month roadmap for CodeMyShop. We update this quarterly.
 - 📅 Maintainer contributors recruited (1-2 outside the core team)
 - 📅 Quarterly newsletter
 
-### Commercial launch (Managed plans)
+### Commercial launch & Growth (Pro Cloud & Enterprise Scale)
 
-- 📅 First three Managed customers signed
-- 📅 Customer onboarding playbook
-- 📅 Per-customer SLA dashboards
+- 🚧 Onboarding playbook for Pro Cloud (490 €/mo, 1 active request SLA 48-72h)
+- 📅 Enterprise Scale multi-tenant dedicated architecture (1 200 – 1 800 €/mo)
+- 📅 Payment flow monetization (`cs_payment`)
+- 📅 Per-tenant SLA & latency monitoring dashboards
 
 ### Storefront
 
 - 📅 Multi-currency
 - 📅 Multi-language (DE, ES, IT in addition to FR / EN)
 - 📅 Native PWA install banner
-- 💭 AMP fallback for product pages
+- 💭 Mobile app companion via Capacitor
 
 ### Admin hub
 
 - 📅 Real-time dashboard (orders / cart abandonments)
 - 📅 A/B testing module for landing pages
-- 📅 ERP / accounting connector framework (Pennylane, Sage)
-- 📅 Native Matomo integration in BI view
+- 📅 ERP / accounting connector framework (Sage, Cegid, EBP, SAP, Pennylane)
+- 📅 Native AIO & BI analytics (GA4, Google Search Console, Google Ads & LLM indexing)
 
-### AI
+### Agentic AI & Autonomous Fleet Integration
 
-- 📅 Centaure agent orchestration (planning, decomposition)
-- 📅 Self-improvement via feedback loops
-- 💭 Voice interface for hub (vocal commands)
+- 📅 Direct autonomous swarm bridge: one-click task dispatch from Admin Hub to AI agents
+- 📅 Automated feedback loops and regression testing for tenant updates
+- 💭 Natural language voice & chat interface for admin hub operations
 
 ---
 
@@ -115,12 +118,13 @@ We deliberately reject some features that complicate the platform without propor
 - ❌ **Headless architecture** — the monolith is a feature, not a limitation. See [ARCHITECTURE.md](ARCHITECTURE.md).
 - ❌ **Plugin marketplace with binary distribution** — modules ship via PRs into the core. No App Store, no quality lottery.
 - ❌ **Vendor-specific SaaS lock-in** — every dependency is replaceable. No tight coupling to AWS, Vercel, Cloudflare, etc.
-- ❌ **Closed-source paid modules** — premium features are delivered via the Managed plans (service tier), not via paywalled code.
+- ❌ **Closed-source paid modules** — the core is 100% open source under AGPL-3.0. Premium features and ongoing evolution are delivered via Managed Cloud and autonomous agent fleet access (service tiers), never paywalled behind closed binaries.
 - ❌ **Auto-upgrades that change DB schema without consent** — every breaking change is announced in CHANGELOG and gated behind a manual `npm run db:migrate`.
 
 ## How to influence the roadmap
 
-- Open a [GitHub Discussion](https://github.com/codemyshop/codemyshop/discussions) with your use case
+- Open a [GitHub Discussion](https://github.com/synedre/codemyshop/discussions) with your use case
 - 👍 reactions on existing discussions / issues weight prioritization
-- Sponsor specific features via the Managed Pro tier (4 days/month of dev included)
-- For commercial customers: feature requests via your account architect
+- Access ongoing feature development via the Pro Cloud plan (autonomous agent fleet access included)
+- For Enterprise customers: priority feature development via your dedicated architect
+

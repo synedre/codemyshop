@@ -27,6 +27,12 @@ export const moduleslistVaisseau = vaisseauMereAcSchema.table(
     tags: text('tags'),
     status: varchar('status', { length: 64 }).notNull().default('Production'),
     link: varchar('link', { length: 255 }).default(''),
+    
+    
+    
+    slug: varchar('slug', { length: 160 }),
+    summary: text('summary'),
+    contentMd: text('content_md'),
     position: integer('position').notNull().default(0),
     active: integer('active').notNull().default(1),
     exclusiveToAc: integer('exclusive_to_ac').notNull().default(1),
@@ -35,6 +41,9 @@ export const moduleslistVaisseau = vaisseauMereAcSchema.table(
   },
   (t) => ({
     uCodename: uniqueIndex('idx_moduleslist_codename').on(t.codename),
+    
+    
+    uSlug: uniqueIndex('idx_moduleslist_slug').on(t.slug),
     kActive: index('idx_moduleslist_active').on(t.active),
     kExclusive: index('idx_moduleslist_exclusive').on(t.exclusiveToAc),
   }),

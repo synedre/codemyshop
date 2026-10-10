@@ -16,6 +16,8 @@ const { loggedIn, customer } = useCustomerAuth()
 const { applyPromoCode, discountCode } = useServerCart(resolvedClientId.value)
 
 const ordersCount = ref<number | null>(null)
+
+const promoAvailable = ref(false)
 const applying = ref(false)
 const errorMsg = ref<string | null>(null)
 
@@ -26,15 +28,16 @@ async function refresh() {
     return
   }
   try {
-    const data = await $fetch<{ count: number }>('/api/orders/count', {
+    const data = await $fetch<{ count: number; promoAvailable?: boolean }>('/api/orders/count', {
       query: { customerId: customer.value.customerId, clientId: resolvedClientId.value },
     })
     ordersCount.value = Number(data?.count ?? 0)
-  } catch { ordersCount.value = null }
+    promoAvailable.value = data?.promoAvailable === true
+  } catch { ordersCount.value = null; promoAvailable.value = false }
 }
 
 const isFirstOrder = computed(() => ordersCount.value === 0)
-const visible = computed(() => isFirstOrder.value && !discountCode.value)
+const visible = computed(() => isFirstOrder.value && promoAvailable.value && !discountCode.value)
 
 async function apply() {
   errorMsg.value = null

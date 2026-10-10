@@ -2,7 +2,10 @@
 
 import { upsertLegalLang, upsertLegalParent } from '~/enterprise/vertical-food/product-food/server/utils/product-food'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     idProduct: number
     idLang?: number

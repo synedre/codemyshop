@@ -14,7 +14,10 @@ export const headlesscontactMessage = vaisseauMereAcSchema.table(
   'cs_headlesscontact_message',
   {
     idMessage: serial('id_message').primaryKey(),
-    company: varchar('company', { length: 200 }).notNull(),
+    
+    
+    
+    company: varchar('company', { length: 200 }),
     siret: varchar('siret', { length: 14 }),
     name: varchar('name', { length: 200 }).notNull(),
     email: varchar('email', { length: 200 }).notNull(),
@@ -26,6 +29,19 @@ export const headlesscontactMessage = vaisseauMereAcSchema.table(
     emailVerifiedStatus: varchar('email_verified_status', { length: 16 }),
     emailVerifiedAt: timestamp('email_verified_at', { mode: 'date', precision: 0 }),
     linkedinUrl: varchar('linkedin_url', { length: 255 }),
+    
+    
+    
+    gclid: varchar('gclid', { length: 255 }),
+    gbraid: varchar('gbraid', { length: 255 }),
+    wbraid: varchar('wbraid', { length: 255 }),
+    utmSource: varchar('utm_source', { length: 128 }),
+    utmMedium: varchar('utm_medium', { length: 128 }),
+    utmCampaign: varchar('utm_campaign', { length: 255 }),
+    landingUrl: varchar('landing_url', { length: 1024 }),
+    clickAt: timestamp('click_at', { mode: 'date', precision: 0 }),
+    adsUploadedAt: timestamp('ads_uploaded_at', { mode: 'date', precision: 0 }),
+    adsUploadError: varchar('ads_upload_error', { length: 500 }),
     dateAdd: timestamp('date_add', { mode: 'date', precision: 0 }).notNull().defaultNow(),
     dateUpd: timestamp('date_upd', { mode: 'date', precision: 0 }).notNull().defaultNow(),
   },

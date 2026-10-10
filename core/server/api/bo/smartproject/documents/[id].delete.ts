@@ -2,7 +2,9 @@
 
 import { deleteProjectDocument } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idStr = getRouterParam(event, 'id')
   const idDocument = Number(idStr)
   if (!idDocument || idDocument <= 0) {

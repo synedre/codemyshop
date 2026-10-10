@@ -6,9 +6,9 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Ventes & CA</h1>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_sales.title', 'Ventes & CA') }}</h1>
           <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">
-            Performance commerciale, évolution du chiffre d'affaires et top produits
+            {{ t('hub.ui.bi_sales.subtitle', 'Performance commerciale, évolution du chiffre d\'affaires et top produits') }}
           </p>
         </div>
         <div class="flex items-center gap-1.5 bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
@@ -42,7 +42,7 @@
               <path v-if="kpi.trend > 0" stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
               <path v-else stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
-            {{ kpi.trend > 0 ? '+' : '' }}{{ kpi.trend }}% vs {{ periodLabelShort }} précédent{{ periodDays > 1 ? 's' : '' }}
+            {{ periodDays > 1 ? t('hub.ui.bi_sales.trend_vs_other', '{sign}{trend}% vs {period} précédents', { sign: kpi.trend > 0 ? '+' : '', trend: kpi.trend, period: periodLabelShort }) : t('hub.ui.bi_sales.trend_vs_one', '{sign}{trend}% vs {period} précédent', { sign: kpi.trend > 0 ? '+' : '', trend: kpi.trend, period: periodLabelShort }) }}
           </p>
         </div>
       </div>
@@ -51,18 +51,18 @@
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Évolution du CA — 12 derniers mois</h2>
-            <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">Chiffre d'affaires TTC par mois</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_sales.evo_title', 'Évolution du CA — 12 derniers mois') }}</h2>
+            <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ t('hub.ui.bi_sales.evo_sub', 'Chiffre d\'affaires TTC par mois') }}</p>
           </div>
           <p v-if="!loading && monthlyTotal > 0" class="text-xs text-gray-500 dark:text-slate-500">
-            Total 12 mois : <span class="font-bold text-gray-800 dark:text-slate-200">{{ fmtEur(monthlyTotal) }}</span>
+            {{ t('hub.ui.bi_sales.total_12', 'Total 12 mois :') }} <span class="font-bold text-gray-800 dark:text-slate-200">{{ fmtEur(monthlyTotal) }}</span>
           </p>
         </div>
         <div class="px-6 py-5">
           <div v-if="loading" class="h-56 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
           <HubSimpleChart v-else-if="data?.monthly?.length" :data="data.monthly" unit="€" />
           <div v-else class="h-56 flex items-center justify-center text-sm text-gray-400 dark:text-slate-500">
-            Aucune donnée sur les 12 derniers mois.
+            {{ t('hub.ui.bi_sales.empty_12', 'Aucune donnée sur les 12 derniers mois.') }}
           </div>
         </div>
       </div>
@@ -72,8 +72,8 @@
         
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Top 10 produits</h2>
-            <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">Sur la période sélectionnée</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_sales.top_title', 'Top 10 produits') }}</h2>
+            <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ t('hub.ui.bi_sales.top_sub', 'Sur la période sélectionnée') }}</p>
           </div>
           <div class="divide-y divide-gray-100 dark:divide-slate-800">
             <template v-if="loading">
@@ -86,20 +86,20 @@
                 <span class="text-xs font-bold text-gray-400 dark:text-slate-500 w-5 text-right">{{ idx + 1 }}</span>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{{ p.name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-slate-500">{{ p.qty }} unité{{ p.qty > 1 ? 's' : '' }} vendue{{ p.qty > 1 ? 's' : '' }}</p>
+                  <p class="text-xs text-gray-500 dark:text-slate-500">{{ p.qty > 1 ? t('hub.ui.bi_sales.units_sold_other', '{n} unités vendues', { n: p.qty }) : t('hub.ui.bi_sales.units_sold_one', '{n} unité vendue', { n: p.qty }) }}</p>
                 </div>
                 <p class="text-sm font-bold text-gray-800 dark:text-slate-200 shrink-0">{{ fmtEur(p.revenue) }}</p>
               </div>
             </template>
-            <div v-else class="px-6 py-10 text-center text-sm text-gray-400">Aucun produit vendu sur la période.</div>
+            <div v-else class="px-6 py-10 text-center text-sm text-gray-400">{{ t('hub.ui.bi_sales.top_empty', 'Aucun produit vendu sur la période.') }}</div>
           </div>
         </div>
 
         
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Répartition par statut</h2>
-            <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ statusTotalCount }} commande{{ statusTotalCount > 1 ? 's' : '' }} sur la période</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_sales.status_title', 'Répartition par statut') }}</h2>
+            <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ statusTotalCount > 1 ? t('hub.ui.bi_sales.status_sub_other', '{n} commandes sur la période', { n: statusTotalCount }) : t('hub.ui.bi_sales.status_sub_one', '{n} commande sur la période', { n: statusTotalCount }) }}</p>
           </div>
           <div class="divide-y divide-gray-100 dark:divide-slate-800">
             <template v-if="loading">
@@ -121,7 +121,7 @@
                 </div>
               </div>
             </template>
-            <div v-else class="px-6 py-10 text-center text-sm text-gray-400">Aucune commande sur la période.</div>
+            <div v-else class="px-6 py-10 text-center text-sm text-gray-400">{{ t('hub.ui.bi_sales.status_empty', 'Aucune commande sur la période.') }}</div>
           </div>
         </div>
 
@@ -133,6 +133,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 
+const { t } = useHubT()
+
 interface KpiBlock  { current: number; previous: number; trend: number }
 interface SalesData {
   period: number
@@ -142,22 +144,22 @@ interface SalesData {
   byStatus: { statusId: number; name: string; color: string | null; count: number; revenue: number }[]
 }
 
-const periods = [
-  { value: 7,   label: '7 j' },
-  { value: 30,  label: '30 j' },
-  { value: 90,  label: '90 j' },
-  { value: 365, label: '1 an' },
-]
+const periods = computed(() => [
+  { value: 7,   label: t('hub.ui.bi_sales.period_days', '{n} j', { n: 7 }) },
+  { value: 30,  label: t('hub.ui.bi_sales.period_days', '{n} j', { n: 30 }) },
+  { value: 90,  label: t('hub.ui.bi_sales.period_days', '{n} j', { n: 90 }) },
+  { value: 365, label: t('hub.ui.bi_sales.period_year', '1 an') },
+])
 const period  = ref(30)
 const data    = ref<SalesData | null>(null)
 const loading = ref(true)
 
 const periodDays       = computed(() => period.value)
 const periodLabelShort = computed(() => {
-  if (period.value === 7)   return '7 j'
-  if (period.value === 30)  return '30 j'
-  if (period.value === 90)  return '90 j'
-  return '1 an'
+  if (period.value === 7)   return t('hub.ui.bi_sales.period_days', '{n} j', { n: 7 })
+  if (period.value === 30)  return t('hub.ui.bi_sales.period_days', '{n} j', { n: 30 })
+  if (period.value === 90)  return t('hub.ui.bi_sales.period_days', '{n} j', { n: 90 })
+  return t('hub.ui.bi_sales.period_year', '1 an')
 })
 
 const fmtEur = (v: number) => v.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
@@ -166,10 +168,10 @@ const fmtInt = (v: number) => v.toLocaleString('fr-FR')
 const kpiCards = computed(() => {
   const k = data.value?.kpis
   return [
-    { key: 'revenue',   label: "Chiffre d'affaires TTC",   value: fmtEur(k?.revenue.current   ?? 0), trend: k?.revenue.trend   ?? 0 },
-    { key: 'revenueHT', label: "Chiffre d'affaires HT",    value: fmtEur(k?.revenueHT.current ?? 0), trend: k?.revenueHT.trend ?? 0 },
-    { key: 'orders',    label: 'Commandes payées',         value: fmtInt(k?.orders.current    ?? 0), trend: k?.orders.trend    ?? 0 },
-    { key: 'avgCart',   label: 'Panier moyen TTC',         value: fmtEur(k?.avgCart.current   ?? 0), trend: k?.avgCart.trend   ?? 0 },
+    { key: 'revenue',   label: t('hub.ui.bi_sales.kpi_revenue_ttc', 'Chiffre d\'affaires TTC'),   value: fmtEur(k?.revenue.current   ?? 0), trend: k?.revenue.trend   ?? 0 },
+    { key: 'revenueHT', label: t('hub.ui.bi_sales.kpi_revenue_ht', 'Chiffre d\'affaires HT'),    value: fmtEur(k?.revenueHT.current ?? 0), trend: k?.revenueHT.trend ?? 0 },
+    { key: 'orders',    label: t('hub.ui.bi_sales.kpi_orders_paid', 'Commandes payées'),         value: fmtInt(k?.orders.current    ?? 0), trend: k?.orders.trend    ?? 0 },
+    { key: 'avgCart',   label: t('hub.ui.bi_sales.kpi_avg_cart', 'Panier moyen TTC'),         value: fmtEur(k?.avgCart.current   ?? 0), trend: k?.avgCart.trend   ?? 0 },
   ]
 })
 

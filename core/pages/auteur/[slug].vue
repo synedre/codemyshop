@@ -1,4 +1,16 @@
 <script setup lang="ts">
+import { blogHrefFromApi } from '~/utils/blog-url'
+import { BLOG_INDEX_PATH } from '~/utils/category-canonical'
+import { useDisplayTimeZone } from '../../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
+const { localePath } = useLocalePath()
+const { t } = useT()
+
+const blogDefaultLocale = String((useRuntimeConfig().public as any).i18nDefaultLocale || 'fr')
+const { activeLang: blogLang } = useRouteLang()
+
+const urlArticle = (nuxtUrl: string) => blogHrefFromApi(nuxtUrl, blogLang.value, blogDefaultLocale)
 
 interface AuthorArticle {
   id: number
@@ -37,11 +49,13 @@ const slug = computed(() => String(route.params.slug || ''))
 const { siteUrl } = useBlogConfig()
 
 const { data, error } = await useFetch<AuthorPayload>(`/api/public/author/${slug.value}`, {
-  key: `author-${slug.value}`,
+  key: `author-${slug.value}-${blogLang.value}`,
+  query: { lang: blogLang },
+  watch: [blogLang],
 })
 
 if (error.value || !data.value?.author) {
-  throw createError({ statusCode: 404, statusMessage: 'Auteur introuvable', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: t('author.not_found', 'Auteur introuvable') })
 }
 
 const author = computed(() => data.value!.author)
@@ -49,17 +63,21 @@ const articles = computed(() => data.value!.articles || [])
 
 const canonical = computed(() => `${siteUrl.value}/auteur/${author.value.slug}`)
 
-const pageTitle = computed(() => `${author.value.displayName} — auteur sur le blog`)
+const pageTitle = computed(() => t('author.page_title', '{name} — auteur sur le blog', { name: author.value.displayName }))
+const articlesBy = computed(() => t('author.articles_by', 'Articles signés par {name}', { name: author.value.firstname || author.value.displayName }))
 const pageDescription = computed(() =>
   author.value.expertise
-  || (author.value.bio ? author.value.bio.slice(0, 160) : `Articles signés par ${author.value.displayName}.`)
+  || (author.value.bio ? author.value.bio.slice(0, 160) : `${articlesBy.value}.`)
 )
+const countLabel = computed(() => articles.value.length > 1
+  ? t('author.count_many', '{n} articles publiés', { n: articles.value.length })
+  : t('author.count_one', '{n} article publié', { n: articles.value.length }))
 
 function formatDate(raw: string): string {
   if (!raw) return ''
   const d = new Date(raw.replace(' ', 'T'))
   if (Number.isNaN(d.getTime())) return ''
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  return d.toLocaleDateString(blogLang.value || blogDefaultLocale, { timeZone: displayTz, day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 const personJsonLd = computed(() => {
@@ -85,7 +103,7 @@ const itemListJsonLd = computed(() => ({
   itemListElement: articles.value.map((a, i) => ({
     '@type': 'ListItem',
     position: i + 1,
-    url: `${siteUrl.value}${a.nuxtUrl}`,
+    url: `${siteUrl.value}${urlArticle(a.nuxtUrl)}`,
     name: a.title,
   })),
 }))
@@ -94,7 +112,7 @@ const breadcrumbJsonLd = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl.value}/` },
+    { '@type': 'ListItem', position: 1, name: t('common.home', 'Accueil'), item: `${siteUrl.value}/` },
     { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteUrl.value}/blog/` },
     { '@type': 'ListItem', position: 3, name: author.value.displayName, item: canonical.value },
   ],
@@ -133,10 +151,10 @@ function authorInitials(): string {
   <main class="bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100">
 
     
-    <nav class="max-w-5xl mx-auto px-6 pt-8 text-xs text-gray-500 dark:text-slate-400" aria-label="Fil d'Ariane">
-      <NuxtLink to="/" class="hover:text-primary-600">Accueil</NuxtLink>
+    <nav class="max-w-5xl mx-auto px-6 pt-8 text-xs text-gray-500 dark:text-slate-400" :aria-label="t('blog.breadcrumb_aria', 'Fil d\'Ariane')">
+      <NuxtLink :to="localePath('/')" class="hover:text-primary-600">{{ t('common.home', 'Accueil') }}</NuxtLink>
       <span class="mx-2">/</span>
-      <NuxtLink to="/blog" class="hover:text-primary-600">Blog</NuxtLink>
+      <NuxtLink :to="localePath(BLOG_INDEX_PATH)" class="hover:text-primary-600">Blog</NuxtLink>
       <span class="mx-2">/</span>
       <span class="text-gray-700 dark:text-slate-200">{{ author.displayName }}</span>
     </nav>
@@ -148,7 +166,7 @@ function authorInitials(): string {
           <img
             v-if="author.photoUrl"
             :src="author.photoUrl"
-            :alt="`Portrait de ${author.displayName}`"
+            :alt="t('author.portrait_alt', 'Portrait de {name}', { name: author.displayName })"
             class="w-32 h-32 md:w-40 md:h-40 rounded-2xl object-cover ring-1 ring-gray-200 dark:ring-slate-700 shadow-sm"
             loading="eager"
           />
@@ -181,7 +199,7 @@ function authorInitials(): string {
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
               </svg>
-              Voir le profil LinkedIn
+              {{ t('author.linkedin', 'Voir le profil LinkedIn') }}
             </a>
           </div>
         </div>
@@ -192,10 +210,10 @@ function authorInitials(): string {
     <section class="max-w-5xl mx-auto px-6 pb-20 border-t border-gray-100 dark:border-slate-800 pt-10">
       <header class="mb-8">
         <h2 class="text-xl md:text-2xl font-bold tracking-tight">
-          Articles signés par {{ author.firstname || author.displayName }}
+          {{ articlesBy }}
         </h2>
         <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">
-          {{ articles.length }} article{{ articles.length > 1 ? 's' : '' }} publié{{ articles.length > 1 ? 's' : '' }}
+          {{ countLabel }}
         </p>
       </header>
 
@@ -205,7 +223,7 @@ function authorInitials(): string {
           :key="a.id"
           class="group rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
         >
-          <NuxtLink :to="a.nuxtUrl" class="block">
+          <NuxtLink :to="urlArticle(a.nuxtUrl)" class="block">
             <div class="aspect-[16/10] bg-gray-100 dark:bg-slate-800 overflow-hidden">
               <img
                 v-if="a.thumbnailImage || a.coverImage"
@@ -215,7 +233,7 @@ function authorInitials(): string {
                 class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
               />
               <div v-else class="w-full h-full flex items-center justify-center text-xs text-gray-400">
-                Pas d'illustration
+                {{ t('author.no_cover', 'Pas d\'illustration') }}
               </div>
             </div>
             <div class="p-5">
@@ -231,7 +249,7 @@ function authorInitials(): string {
               <div class="flex items-center gap-3 mt-4 text-[11px] text-gray-400">
                 <span v-if="a.datePublished">{{ formatDate(a.datePublished) }}</span>
                 <span v-if="a.datePublished && a.readingTime">·</span>
-                <span v-if="a.readingTime">{{ a.readingTime }} min de lecture</span>
+                <span v-if="a.readingTime">{{ t('author.reading_time', '{n} min de lecture', { n: a.readingTime }) }}</span>
               </div>
             </div>
           </NuxtLink>
@@ -239,7 +257,7 @@ function authorInitials(): string {
       </div>
 
       <p v-else class="text-sm text-gray-500 dark:text-slate-400 italic">
-        Aucun article publié pour l'instant.
+        {{ t('author.none', 'Aucun article publié pour l\'instant.') }}
       </p>
     </section>
 

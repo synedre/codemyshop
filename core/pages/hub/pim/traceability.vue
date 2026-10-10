@@ -2,37 +2,37 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Traçabilité &amp; Lots</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ stats.total || 0 }} lot{{ (stats.total || 0) > 1 ? 's' : '' }} actif{{ (stats.total || 0) > 1 ? 's' : '' }} · {{ formatNum(stats.totalQtyRemaining) }} unités en stock</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.pim_traceability.title', 'Traçabilité & Lots') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ (stats.total || 0) > 1 ? t('hub.ui.pim_traceability.lots_active_other', '{n} lots actifs', { n: stats.total || 0 }) : t('hub.ui.pim_traceability.lots_active_one', '{n} lot actif', { n: stats.total || 0 }) }} · {{ t('hub.ui.pim_traceability.units_in_stock', '{n} unités en stock', { n: formatNum(stats.totalQtyRemaining) }) }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <input v-model="search" type="text" placeholder="Lot, produit, fournisseur…" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-56" @keyup.enter="load" />
+        <input v-model="search" type="text" :placeholder="t('hub.ui.pim_traceability.ph_search', 'Lot, produit, fournisseur…')" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-56" @keyup.enter="load" />
         <div class="flex border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <button @click="setWindow('all')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="expiryWindow === 'all' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">Tous</button>
-          <button @click="setWindow('30')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="expiryWindow === '30' ? 'bg-amber-500 text-white' : 'text-gray-600 hover:bg-gray-50'">DLC 30j</button>
-          <button @click="setWindow('7')"  class="px-3 py-1.5 text-xs font-medium transition-colors" :class="expiryWindow === '7'  ? 'bg-danger-500 text-white' : 'text-gray-600 hover:bg-gray-50'">DLC 7j</button>
+          <button @click="setWindow('all')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="expiryWindow === 'all' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.pim_traceability.f_all', 'Tous') }}</button>
+          <button @click="setWindow('30')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="expiryWindow === '30' ? 'bg-amber-500 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.pim_traceability.f_dlc30', 'DLC 30j') }}</button>
+          <button @click="setWindow('7')"  class="px-3 py-1.5 text-xs font-medium transition-colors" :class="expiryWindow === '7'  ? 'bg-danger-500 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.pim_traceability.f_dlc7', 'DLC 7j') }}</button>
         </div>
-        <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Actualiser</button>
-        <button @click="openCreate" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold">+ Nouveau lot</button>
+        <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">{{ t('hub.ui.pim_traceability.refresh', 'Actualiser') }}</button>
+        <button @click="openCreate" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold">{{ t('hub.ui.pim_traceability.new_lot', '+ Nouveau lot') }}</button>
       </div>
     </header>
 
     
     <div class="grid grid-cols-4 gap-3 px-6 py-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 shrink-0">
       <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-800 p-3">
-        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Lots actifs</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ t('hub.ui.pim_traceability.kpi_active', 'Lots actifs') }}</p>
         <p class="text-xl font-bold text-gray-800 dark:text-slate-100">{{ stats.total || 0 }}</p>
       </div>
       <div class="bg-white dark:bg-slate-900 rounded-lg border border-amber-200 dark:border-amber-700/30 p-3">
-        <p class="text-[10px] text-amber-600 uppercase tracking-wider">DLC &lt; 7 jours</p>
+        <p class="text-[10px] text-amber-600 uppercase tracking-wider">{{ t('hub.ui.pim_traceability.kpi_soon', 'DLC < 7 jours') }}</p>
         <p class="text-xl font-bold text-amber-600">{{ stats.expiringSoon || 0 }}</p>
       </div>
       <div class="bg-white dark:bg-slate-900 rounded-lg border border-danger-200 dark:border-danger-700/30 p-3">
-        <p class="text-[10px] text-danger-500 uppercase tracking-wider">Expirés</p>
+        <p class="text-[10px] text-danger-500 uppercase tracking-wider">{{ t('hub.ui.pim_traceability.kpi_expired', 'Expirés') }}</p>
         <p class="text-xl font-bold text-danger-500">{{ stats.expired || 0 }}</p>
       </div>
       <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-800 p-3">
-        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Épuisés</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ t('hub.ui.pim_traceability.kpi_depleted', 'Épuisés') }}</p>
         <p class="text-xl font-bold text-gray-500">{{ stats.depleted || 0 }}</p>
       </div>
     </div>
@@ -44,29 +44,29 @@
 
       <div v-else-if="!lots.length" class="flex flex-col items-center justify-center py-20 text-center">
         <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-3xl mb-4">🧬</div>
-        <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">Aucun lot</p>
-        <p class="text-xs text-gray-400 mt-2 max-w-md">Les lots de traçabilité s'enregistrent à la réception fournisseur. Le module ac_lot crée la table cs_lot et propose des seeds de démo.</p>
+        <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">{{ t('hub.ui.pim_traceability.empty_title', 'Aucun lot') }}</p>
+        <p class="text-xs text-gray-400 mt-2 max-w-md">{{ t('hub.ui.pim_traceability.empty_body', 'Les lots de traçabilité s\'enregistrent à la réception fournisseur. Le module ac_lot crée la table cs_lot et propose des seeds de démo.') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-            <th class="px-4 py-2.5 font-medium">Lot</th>
-            <th class="px-4 py-2.5 font-medium">Produit</th>
-            <th class="px-4 py-2.5 font-medium">Fournisseur</th>
-            <th class="px-4 py-2.5 font-medium">Origine</th>
-            <th class="px-4 py-2.5 font-medium">Réception</th>
-            <th class="px-4 py-2.5 font-medium">DLC</th>
-            <th class="px-4 py-2.5 font-medium text-right">Reçu</th>
-            <th class="px-4 py-2.5 font-medium text-right">Restant</th>
-            <th class="px-4 py-2.5 font-medium text-center">Action</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.pim_traceability.col_lot', 'Lot') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.pim_traceability.col_product', 'Produit') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.pim_traceability.col_supplier', 'Fournisseur') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.pim_traceability.col_origin', 'Origine') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.pim_traceability.col_reception', 'Réception') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.pim_traceability.col_dlc', 'DLC') }}</th>
+            <th class="px-4 py-2.5 font-medium text-right">{{ t('hub.ui.pim_traceability.col_received', 'Reçu') }}</th>
+            <th class="px-4 py-2.5 font-medium text-right">{{ t('hub.ui.pim_traceability.col_remaining', 'Restant') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center">{{ t('hub.ui.pim_traceability.col_action', 'Action') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="l in lots" :key="l.id" class="border-b border-gray-50 dark:border-slate-800/50 hover:bg-blue-50/30 dark:hover:bg-slate-800/30 transition-colors">
             <td class="px-4 py-2.5">
               <div class="font-mono text-xs font-semibold text-primary-600">{{ l.lotNumber }}</div>
-              <div v-if="l.caliber" class="text-[10px] text-gray-400 mt-0.5">Calibre : {{ l.caliber }}</div>
+              <div v-if="l.caliber" class="text-[10px] text-gray-400 mt-0.5">{{ t('hub.ui.pim_traceability.caliber_value', 'Calibre : {value}', { value: l.caliber }) }}</div>
             </td>
             <td class="px-4 py-2.5 text-gray-800 dark:text-slate-100">{{ l.productName || `#${l.idProduct}` }}</td>
             <td class="px-4 py-2.5 text-xs text-gray-500">{{ l.supplierName || '—' }}</td>
@@ -86,8 +86,8 @@
               <span :class="qtyRemainingClass(l)">{{ formatNum(l.qtyRemaining) }}</span>
             </td>
             <td class="px-4 py-2.5 text-center">
-              <button @click="openRecall(l)" class="text-xs font-semibold text-danger-500 hover:text-danger-600" title="Rappel sanitaire : liste des clients à prévenir">
-                Rappel
+              <button @click="openRecall(l)" class="text-xs font-semibold text-danger-500 hover:text-danger-600" :title="t('hub.ui.pim_traceability.recall_hint', 'Rappel sanitaire : liste des clients à prévenir')">
+                {{ t('hub.ui.pim_traceability.recall', 'Rappel') }}
               </button>
             </td>
           </tr>
@@ -95,7 +95,7 @@
       </table>
 
       <div v-if="!loading && lots.length" class="mt-4 mx-6 mb-6 p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-700/30 rounded-lg text-xs text-success-700 dark:text-success-300">
-        ✅ <strong>Phase 3</strong> — FIFO strict actif. Hook <code>actionValidateOrder</code> consomme les lots les plus anciens et loggue le lien exact dans <code>cs_lot_order_detail</code>. Le rappel utilise ce lien quand disponible, fallback approximation sinon.
+        ✅ <strong>Phase 3</strong> {{ t('hub.ui.pim_traceability.note_a', '— FIFO strict actif. Hook') }} <code>actionValidateOrder</code> {{ t('hub.ui.pim_traceability.note_b', 'consomme les lots les plus anciens et loggue le lien exact dans') }} <code>cs_lot_order_detail</code>. {{ t('hub.ui.pim_traceability.note_c', 'Le rappel utilise ce lien quand disponible, fallback approximation sinon.') }}
       </div>
     </div>
 
@@ -103,13 +103,13 @@
     <div v-if="createOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="createOpen = false">
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Nouveau lot — réception fournisseur</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.pim_traceability.create_title', 'Nouveau lot — réception fournisseur') }}</h2>
           <button @click="createOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="submitCreate" class="p-5 space-y-3">
           <div class="grid grid-cols-2 gap-3">
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Numéro de lot *</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.pim_traceability.f_lot_number', 'Numéro de lot *') }}</span>
               <input v-model="form.lotNumber" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="RUN-20260416-A1" />
             </label>
             <label class="text-xs">
@@ -121,34 +121,34 @@
               <input v-model.number="form.idSupplier" type="number" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="0" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Qté reçue *</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.pim_traceability.f_qty_received', 'Qté reçue *') }}</span>
               <input v-model.number="form.qtyReceived" type="number" step="0.001" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Réception *</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.pim_traceability.f_reception', 'Réception *') }}</span>
               <input v-model="form.entryDate" type="date" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">DLC</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.pim_traceability.col_dlc', 'DLC') }}</span>
               <input v-model="form.expiryDate" type="date" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Origine</span>
-              <input v-model="form.origin" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="France" />
+              <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.pim_traceability.col_origin', 'Origine') }}</span>
+              <input v-model="form.origin" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="t('hub.ui.pim_traceability.ph_origin', 'France')" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Calibre</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.pim_traceability.f_caliber', 'Calibre') }}</span>
               <input v-model="form.caliber" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="58/62" />
             </label>
           </div>
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Notes</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ t('hub.ui.pim_traceability.f_notes', 'Notes') }}</span>
             <textarea v-model="form.notes" rows="2" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5"></textarea>
           </label>
           <p v-if="createError" class="text-xs text-danger-500">{{ createError }}</p>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="createOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">Annuler</button>
-            <button type="submit" :disabled="creating" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ creating ? 'Création…' : 'Créer le lot' }}</button>
+            <button type="button" @click="createOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ t('hub.ui.pim_traceability.cancel', 'Annuler') }}</button>
+            <button type="submit" :disabled="creating" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ creating ? t('hub.ui.pim_traceability.creating', 'Création…') : t('hub.ui.pim_traceability.create_lot', 'Créer le lot') }}</button>
           </div>
         </form>
       </div>
@@ -159,12 +159,12 @@
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Rappel sanitaire — lot {{ recallLot?.lotNumber }}</h2>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.pim_traceability.recall_title', 'Rappel sanitaire — lot {lot}', { lot: recallLot?.lotNumber }) }}</h2>
             <p class="text-[10px] mt-0.5">
-              <span class="text-gray-400">{{ recallCustomers.length }} client{{ recallCustomers.length > 1 ? 's' : '' }} à prévenir</span>
+              <span class="text-gray-400">{{ recallCustomers.length > 1 ? t('hub.ui.pim_traceability.recall_count_other', '{n} clients à prévenir', { n: recallCustomers.length }) : t('hub.ui.pim_traceability.recall_count_one', '{n} client à prévenir', { n: recallCustomers.length }) }}</span>
               <span v-if="recallCustomers.length" class="ml-2 font-semibold px-1.5 py-0.5 rounded-full"
                 :class="recallMethod === 'fifo' ? 'bg-success-100 text-success-600' : 'bg-amber-100 text-amber-600'">
-                {{ recallMethod === 'fifo' ? 'FIFO exact' : 'Approximation' }}
+                {{ recallMethod === 'fifo' ? t('hub.ui.pim_traceability.fifo_exact', 'FIFO exact') : t('hub.ui.pim_traceability.approximation', 'Approximation') }}
               </span>
             </p>
           </div>
@@ -174,22 +174,22 @@
           <div v-for="i in 4" :key="i" class="h-10 bg-gray-100 dark:bg-slate-800 rounded animate-pulse" />
         </div>
         <div v-else-if="!recallCustomers.length" class="p-10 text-center">
-          <p class="text-sm text-gray-500">Aucun client à prévenir.</p>
-          <p class="text-xs text-gray-400 mt-2">Aucune commande validée sur ce produit depuis la réception du lot.</p>
+          <p class="text-sm text-gray-500">{{ t('hub.ui.pim_traceability.recall_none', 'Aucun client à prévenir.') }}</p>
+          <p class="text-xs text-gray-400 mt-2">{{ t('hub.ui.pim_traceability.recall_none_hint', 'Aucune commande validée sur ce produit depuis la réception du lot.') }}</p>
         </div>
         <div v-else class="p-5">
           <div class="mb-3 flex items-center justify-between">
-            <span class="text-xs text-gray-500">Emails séparés par virgule :</span>
-            <button @click="copyEmails" class="text-xs px-2 py-1 bg-primary-600 text-white rounded hover:bg-primary-700">{{ copied ? 'Copié ✓' : 'Copier les emails' }}</button>
+            <span class="text-xs text-gray-500">{{ t('hub.ui.pim_traceability.emails_hint', 'Emails séparés par virgule :') }}</span>
+            <button @click="copyEmails" class="text-xs px-2 py-1 bg-primary-600 text-white rounded hover:bg-primary-700">{{ copied ? t('hub.ui.pim_traceability.copied', 'Copié ✓') : t('hub.ui.pim_traceability.copy_emails', 'Copier les emails') }}</button>
           </div>
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
-                <th class="px-2 py-2 font-medium">Client</th>
-                <th class="px-2 py-2 font-medium">Email</th>
-                <th class="px-2 py-2 font-medium">Commande</th>
-                <th class="px-2 py-2 font-medium">Date</th>
-                <th class="px-2 py-2 font-medium text-right">Qté</th>
+                <th class="px-2 py-2 font-medium">{{ t('hub.ui.pim_traceability.col_customer', 'Client') }}</th>
+                <th class="px-2 py-2 font-medium">{{ t('hub.ui.pim_traceability.col_email', 'Email') }}</th>
+                <th class="px-2 py-2 font-medium">{{ t('hub.ui.pim_traceability.col_order', 'Commande') }}</th>
+                <th class="px-2 py-2 font-medium">{{ t('hub.ui.pim_traceability.col_date', 'Date') }}</th>
+                <th class="px-2 py-2 font-medium text-right">{{ t('hub.ui.pim_traceability.col_qty', 'Qté') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -213,6 +213,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+
+const { t } = useHubT()
 
 interface Lot {
   id: number
@@ -286,9 +288,9 @@ function expiryBadgeClass(days: number | null) {
 
 function expiryBadgeLabel(days: number | null) {
   if (days === null || days === undefined) return '—'
-  if (days < 0)  return `Expiré ${-days}j`
-  if (days === 0) return 'Aujourd\'hui'
-  return `J+${days}`
+  if (days < 0)  return t('hub.ui.pim_traceability.expired_days', 'Expiré {n}j', { n: -days })
+  if (days === 0) return t('hub.ui.pim_traceability.today', 'Aujourd\'hui')
+  return t('hub.ui.pim_traceability.day_plus', 'J+{n}', { n: days })
 }
 
 function qtyRemainingClass(l: Lot) {
@@ -359,7 +361,7 @@ async function submitCreate() {
     createOpen.value = false
     await load()
   } catch (e: any) {
-    createError.value = e?.data?.statusMessage || e?.message || 'Erreur inconnue'
+    createError.value = e?.data?.statusMessage || e?.message || t('hub.ui.pim_traceability.error_unknown', 'Erreur inconnue')
   } finally {
     creating.value = false
   }
@@ -373,7 +375,7 @@ async function openRecall(l: Lot) {
   recallMethod.value = 'fifo'
   copied.value = false
   try {
-    const res = await $fetch<{ ok: boolean; customers: any[]; method: 'fifo' | 'approx' }>(`/api/bo/lots/${l.id}/recall`)
+    const res = await $fetch<{ ok: boolean; customers: any[]; method: 'fifo' | 'approx' }>(`/api/bo/lots/${l.id}/memoire`)
     recallCustomers.value = res.customers || []
     recallMethod.value = res.method || 'fifo'
   } catch (e) {

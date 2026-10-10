@@ -2,6 +2,7 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 interface NodeRow {
   id_node: number
   node_key: string
@@ -31,6 +32,7 @@ interface OptionLangRow {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const db = useClientDb(event)
   const nodes = await db.query<NodeRow>(
     `SELECT id_node, node_key, type, capture, next_question, terminal, scenario_root, position

@@ -2,9 +2,11 @@
 
 import { getPgClient } from '~/server/utils/db-pg-adapter'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 const PG_SCHEMA = 'cs_main'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   const status = String(q.status || '').trim()
   const limit  = Math.max(1, Math.min(500, Number(q.limit) || 100))

@@ -1,6 +1,8 @@
 
 
 import { useClientDb } from '~/server/utils/db'
+import { currentStepFor } from '~/server/utils/chatbot-engine'
+import { resolveIdLang } from '~/server/utils/lang'
 
 export default defineEventHandler(async (event) => {
   const q = getQuery(event) as Record<string, string>
@@ -47,27 +49,14 @@ export default defineEventHandler(async (event) => {
 
   
   
-  
   let currentType: 'buttons' | 'text' = 'text'
   let currentOptions: string[] = []
   if (conv.current_node_key) {
-    const node = await db.get<any>(
-      `SELECT type FROM cs_main.cs_chatbot_node WHERE node_key = ? LIMIT 1`,
-      [String(conv.current_node_key)],
+    const step = await currentStepFor(
+      { event }, String(conv.current_node_key), String(conv.scenario_root || ''), await resolveIdLang(event),
     )
-    if (node?.type === 'buttons') {
-      currentType = 'buttons'
-      const opts = await db.query<any>(
-        `SELECT ol.label_text
-           FROM cs_main.cs_chatbot_option o
-           JOIN cs_main.cs_chatbot_node n ON n.id_node = o.id_node
-      LEFT JOIN cs_main.cs_chatbot_option_lang ol
-             ON ol.id_option = o.id_option AND ol.id_lang = 1
-          WHERE n.node_key = ? ORDER BY o.position ASC`,
-        [String(conv.current_node_key)],
-      ) as any[]
-      currentOptions = opts.map((r) => String(r.label_text || ''))
-    }
+    currentType = step.type
+    currentOptions = step.type === 'buttons' ? step.options : []
   }
 
   return {

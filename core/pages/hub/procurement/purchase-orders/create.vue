@@ -5,10 +5,10 @@
       <div class="flex items-center gap-3">
         <NuxtLink to="/hub/procurement/purchase-orders" class="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-slate-300 inline-flex items-center gap-1">
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-          Bons de commande
+          {{ tHub('hub.ui.procurement_purchase_orders_create.back', 'Bons de commande') }}
         </NuxtLink>
         <span class="text-gray-300 dark:text-slate-700">/</span>
-        <h1 class="text-lg font-bold">Nouveau BC</h1>
+        <h1 class="text-lg font-bold">{{ tHub('hub.ui.procurement_purchase_orders_create.title', 'Nouveau BC') }}</h1>
       </div>
     </header>
 
@@ -17,20 +17,20 @@
       
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <h2 class="text-sm font-bold">1 · Fournisseur</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Sélection du fournisseur et date de livraison prévisionnelle</p>
+          <h2 class="text-sm font-bold">{{ tHub('hub.ui.procurement_purchase_orders_create.s1', '1 · Fournisseur') }}</h2>
+          <p class="text-xs text-gray-500 mt-0.5">{{ tHub('hub.ui.procurement_purchase_orders_create.s1_hint', 'Sélection du fournisseur et date de livraison prévisionnelle') }}</p>
         </div>
         <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Fournisseur *</label>
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">{{ tHub('hub.ui.procurement_purchase_orders_create.supplier_req', 'Fournisseur *') }}</label>
             <select v-model="idSupplier" @change="loadSupplierProducts"
               class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900">
-              <option :value="0">— Choisir —</option>
-              <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }} ({{ s.productCount }} produits)</option>
+              <option :value="0">{{ tHub('hub.ui.procurement_purchase_orders_create.choose', '— Choisir —') }}</option>
+              <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ tHub('hub.ui.procurement_purchase_orders_create.supplier_opt', '{name} ({n} produits)', { name: s.name, n: s.productCount }) }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Livraison prévue</label>
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">{{ tHub('hub.ui.procurement_purchase_orders_create.delivery_planned', 'Livraison prévue') }}</label>
             <input v-model="deliveryDate" type="date" min="2026-01-01"
               class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900" />
           </div>
@@ -41,11 +41,11 @@
       <div v-if="idSupplier" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h2 class="text-sm font-bold">2 · Produits</h2>
-            <p class="text-xs text-gray-500 mt-0.5">{{ lines.length }} ligne(s) · produits référencés chez ce fournisseur</p>
+            <h2 class="text-sm font-bold">{{ tHub('hub.ui.procurement_purchase_orders_create.s2', '2 · Produits') }}</h2>
+            <p class="text-xs text-gray-500 mt-0.5">{{ tHub('hub.ui.procurement_purchase_orders_create.s2_hint', '{n} ligne(s) · produits référencés chez ce fournisseur', { n: lines.length }) }}</p>
           </div>
           <div class="flex items-center gap-2">
-            <input v-model="productSearch" @input="debouncedSearch" type="text" placeholder="Ajouter un produit…"
+            <input v-model="productSearch" @input="debouncedSearch" type="text" :placeholder="tHub('hub.ui.procurement_purchase_orders_create.add_ph', 'Ajouter un produit…')"
               class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-52 bg-white dark:bg-slate-900" />
           </div>
         </div>
@@ -66,17 +66,17 @@
         <table class="min-w-full text-xs">
           <thead class="bg-gray-50 dark:bg-slate-800/50">
             <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-500">Produit</th>
-              <th class="px-4 py-3 text-right font-semibold text-gray-500 w-24">Qté</th>
-              <th class="px-4 py-3 text-right font-semibold text-gray-500 w-32">PU HT</th>
-              <th class="px-4 py-3 text-right font-semibold text-gray-500 w-32">Total HT</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-500">{{ tHub('hub.ui.procurement_purchase_orders_create.col_product', 'Produit') }}</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-500 w-24">{{ tHub('hub.ui.procurement_purchase_orders_create.col_qty', 'Qté') }}</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-500 w-32">{{ tHub('hub.ui.procurement_purchase_orders_create.col_unit', 'PU HT') }}</th>
+              <th class="px-4 py-3 text-right font-semibold text-gray-500 w-32">{{ tHub('hub.ui.procurement_purchase_orders_create.col_total', 'Total HT') }}</th>
               <th class="w-10" />
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
             <tr v-if="!lines.length">
               <td colspan="5" class="px-4 py-8 text-center text-gray-400">
-                Recherche ci-dessus pour ajouter un produit.
+                {{ tHub('hub.ui.procurement_purchase_orders_create.empty_lines', 'Recherche ci-dessus pour ajouter un produit.') }}
               </td>
             </tr>
             <tr v-for="(l, i) in lines" :key="l.idProduct" class="hover:bg-gray-50 dark:hover:bg-slate-800/40">
@@ -100,7 +100,7 @@
           </tbody>
           <tfoot v-if="lines.length" class="bg-gray-50 dark:bg-slate-800/50 font-bold">
             <tr>
-              <td colspan="3" class="px-4 py-3 text-right text-gray-600 dark:text-slate-300">Total HT</td>
+              <td colspan="3" class="px-4 py-3 text-right text-gray-600 dark:text-slate-300">{{ tHub('hub.ui.procurement_purchase_orders_create.col_total', 'Total HT') }}</td>
               <td class="px-4 py-3 text-right tabular-nums">{{ fmtEur(totalHT) }}</td>
               <td />
             </tr>
@@ -112,14 +112,14 @@
       <div v-if="idSupplier" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm flex items-center justify-between">
         <div>
           <p v-if="error" class="text-xs text-danger-600">{{ error }}</p>
-          <p v-else class="text-xs text-gray-500">Le BC sera créé en état « En cours de création » (modifiable).</p>
+          <p v-else class="text-xs text-gray-500">{{ tHub('hub.ui.procurement_purchase_orders_create.state_hint', 'Le BC sera créé en état « En cours de création » (modifiable).') }}</p>
         </div>
         <div class="flex items-center gap-2">
           <NuxtLink to="/hub/procurement/purchase-orders"
-            class="text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-gray-800 px-3 py-1.5">Annuler</NuxtLink>
+            class="text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-gray-800 px-3 py-1.5">{{ tHub('hub.ui.procurement_purchase_orders_create.cancel', 'Annuler') }}</NuxtLink>
           <button @click="createBC" :disabled="!canSubmit || saving"
             class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 disabled:opacity-40 text-white">
-            {{ saving ? 'Création…' : `Créer le BC (${lines.length} ligne(s))` }}
+            {{ saving ? tHub('hub.ui.procurement_purchase_orders_create.creating', 'Création…') : tHub('hub.ui.procurement_purchase_orders_create.create_btn', 'Créer le BC ({n} ligne(s))', { n: lines.length }) }}
           </button>
         </div>
       </div>
@@ -129,6 +129,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 interface Line { idProduct: number; name: string; reference: string; quantity: number; unitPriceTE: number }
 interface SearchResult { id: number; name: string; reference: string; defaultPrice: number }
@@ -210,7 +211,7 @@ async function createBC() {
     })
     navigateTo(`/hub/procurement/purchase-orders/${res.id}`)
   } catch (e: any) {
-    error.value = e?.statusMessage || 'Erreur lors de la création'
+    error.value = e?.statusMessage || tHub('hub.ui.procurement_purchase_orders_create.err_create', 'Erreur lors de la création')
   } finally { saving.value = false }
 }
 

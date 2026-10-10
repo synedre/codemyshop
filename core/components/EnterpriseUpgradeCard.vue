@@ -1,9 +1,9 @@
 
     <EnterpriseUpgradeCard feature-id="lead.capa" compact />
 
-  @author    CodeMyShop <noreply@codemyshop.com>
+  @author    CodeMyShop
   @copyright 2026 CodeMyShop
-  @license   AGPL-3.0-or-later
+  @license   AGPL-3.0
 -->
 <script setup lang="ts">
 const props = withDefaults(defineProps<{

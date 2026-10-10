@@ -1,6 +1,6 @@
 
 
-import { defineTask } from 'nitropack/runtime'
+import { defineLeaderTask } from '~/server/utils/schedule-leader'
 import { withAutomateLock } from '~/server/utils/automate-lock'
 import { runAutomate } from '~/server/utils/automate-logger'
 import { getPgClient } from '~/server/utils/db-pg-adapter'
@@ -20,7 +20,7 @@ async function pgSchemaExists(schema: string): Promise<boolean> {
   return rows[0]?.exists ?? false
 }
 
-export default defineTask({
+export default defineLeaderTask({
   meta: {
     name: 'email:queue-process',
     description: 'Drain cs_email_queue (1 email/run, anti-spam-ban)',

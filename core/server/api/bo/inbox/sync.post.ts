@@ -2,7 +2,10 @@
 
 import { runInboxSync } from '~/server/tasks/inbox/sync'
 
-export default defineEventHandler(async () => {
+import { requireEmployeeSession } from '~/server/utils/session'
+
+export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   try {
     const result = await runInboxSync()
     return { ok: true, result }

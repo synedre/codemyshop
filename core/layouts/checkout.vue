@@ -1,8 +1,30 @@
 
 <template>
-  <div class="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100">
+  <div class="min-h-screen flex bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100">
+
     
-    <header class="border-b border-gray-100 dark:border-slate-800">
+    <ClientOnly>
+      <Transition
+        enter-active-class="transition-transform duration-300 ease-out"
+        enter-from-class="-translate-x-full"
+        enter-to-class="translate-x-0"
+        leave-active-class="transition-transform duration-200 ease-in"
+        leave-from-class="translate-x-0"
+        leave-to-class="-translate-x-full"
+      >
+        <LazyEditorBuilderSidebar v-if="isEditMode" />
+      </Transition>
+    </ClientOnly>
+
+    
+    <div
+      class="flex-1 min-w-0 min-h-screen flex flex-col transition-all duration-200 ease-out"
+      :style="builderLayoutReady && isEditMode ? { marginLeft: `${effectiveBuilderWidth}px` } : undefined"
+    >
+    <LayoutTheHeader v-if="chromeComplet" />
+
+    
+    <header v-else class="border-b border-gray-100 dark:border-slate-800">
       <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-center">
         <NuxtLink to="/" class="flex items-center gap-2 shrink-0" :aria-label="t('common.common_back_to_home', 'Retour à l\'accueil')">
           <NuxtImg
@@ -30,12 +52,15 @@
     </header>
 
     
-    <main class="flex-1">
+    <main class="flex-1" :class="isEditMode ? 'edit-mode' : ''">
       <slot />
     </main>
 
+    <LayoutPrefooterZone v-if="avecPrefooter" />
+    <LayoutTheFooter v-if="chromeComplet" />
+
     
-    <footer class="border-t border-gray-100 dark:border-slate-800 mt-auto">
+    <footer v-else class="border-t border-gray-100 dark:border-slate-800 mt-auto">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-gray-500 dark:text-slate-400">
         <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 order-2 sm:order-1">
           <span>© {{ year }} {{ brandName }}</span>
@@ -47,6 +72,7 @@
           >
             {{ link.label }}
           </NuxtLink>
+          <CookieSettingsLink class="hover:text-primary-600 dark:hover:text-primary-400" />
         </div>
         <div class="flex items-center gap-2 order-1 sm:order-2 font-medium tracking-wide text-gray-400 dark:text-slate-500">
           <span>CB</span>
@@ -59,10 +85,22 @@
         </div>
       </div>
     </footer>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { resolveLogoAlt } from '~/utils/logo-alt'
+import { checkoutChromeComplet, prefooterDansTunnel } from '~/utils/checkout-chrome'
+
+const props = defineProps<{ prefooter?: boolean }>()
+const { isEditMode } = useEditMode()
+
+const builderLayoutReady = ref(false)
+onMounted(() => { builderLayoutReady.value = true })
+
+const { effectiveWidth: effectiveBuilderWidth } = useBuilderGeometry()
+
 const { header } = useHeaderDb()
 const { footer } = useFooterDb()
 const { t: i18nt } = useI18nField()
@@ -72,10 +110,15 @@ const { public: runtimePublic } = useRuntimeConfig()
 const brandName = computed(() => String((runtimePublic as any).brandName ?? ''))
 const year = new Date().getFullYear()
 
+const chromeComplet = computed(() => checkoutChromeComplet(runtimePublic as Record<string, any>))
+const avecPrefooter = computed(() => prefooterDansTunnel(runtimePublic as Record<string, any>, props.prefooter === true))
+
 const logoSrc = computed(() => header.value?.logo?.src || null)
-const logoAlt = computed(
-  () => i18nt(header.value?.logo?.alt) || i18nt(header.value?.logo?.text) || brandName.value || 'Logo',
-)
+const logoAlt = computed(() => resolveLogoAlt([
+  i18nt(header.value?.logo?.alt),
+  i18nt(header.value?.logo?.text),
+  brandName.value,
+]))
 
 const legalLinks = computed<Array<{ href: string; label: string }>>(() => {
   const raw = (footer.value as any)?.bottomBar?.links as any[] | undefined
@@ -86,7 +129,11 @@ const legalLinks = computed<Array<{ href: string; label: string }>>(() => {
 })
 
 const faviconHref = computed(() => (runtimePublic.favicon as string) || '/favicon.svg')
+const faviconType = computed(() => {
+  const h = faviconHref.value.toLowerCase()
+  return h.endsWith('.ico') ? 'image/x-icon' : h.endsWith('.png') ? 'image/png' : 'image/svg+xml'
+})
 useHead({
-  link: [{ rel: 'icon', type: 'image/svg+xml', href: faviconHref }],
+  link: [{ rel: 'icon', type: faviconType, href: faviconHref }],
 })
 </script>

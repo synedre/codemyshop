@@ -9,10 +9,10 @@ import {
   getActiveLangs,
 } from '~/modules/header/server/utils/header'
 
-function pickLang(v: any, iso: string): string | null {
+function pickLang(v: any, iso: string, isSource: boolean): string | null {
   if (v === null || v === undefined || v === '') return null
-  if (typeof v === 'string') return v
-  if (typeof v === 'object') return v[iso] ?? v.fr ?? null
+  if (typeof v === 'string') return isSource ? v : null
+  if (typeof v === 'object') return v[iso] ?? (isSource ? v.fr : null) ?? null
   return null
 }
 
@@ -23,6 +23,20 @@ export default defineEventHandler(async (event) => {
   const h = body.header
   const clientId = resolveClientId(event)
   const langs = await getActiveLangs({ event })
+
+  
+  
+  
+  
+  
+  
+  
+  if (!h.features || typeof h.features !== 'object') {
+    throw createError({
+      statusCode: 400,
+      message: 'Refus anti-wipe header : payload sans bloc `features` (snapshot non initialisé). Un save header doit inclure l\'état complet des features.',
+    })
+  }
 
   
   await upsertHeader({
@@ -51,10 +65,12 @@ export default defineEventHandler(async (event) => {
 
   
   for (const l of langs) {
+    const isSource = Number(l.id_lang) === 1 
     await upsertHeaderLang(idHeader, l.id_lang, {
-      logoAlt: pickLang(h.logo?.alt, l.iso_code),
-      logoText: pickLang(h.logo?.text, l.iso_code),
-      topbarMessage: pickLang(h.topBar?.message, l.iso_code),
+      logoAlt:             pickLang(h.logo?.alt,             l.iso_code, isSource),
+      logoText:            pickLang(h.logo?.text,            l.iso_code, isSource),
+      topbarMessage:       pickLang(h.topBar?.message,       l.iso_code, isSource),
+      topbarMessageMobile: pickLang(h.topBar?.messageMobile, l.iso_code, isSource),
     }, { event })
   }
 
@@ -71,7 +87,9 @@ export default defineEventHandler(async (event) => {
       position: pos++,
       labelByLang: langs.map((l) => ({
         idLang: l.id_lang,
-        label: pickLang(li.label, l.iso_code) || code.toUpperCase(),
+        
+        
+        label: pickLang(li.label, l.iso_code, true) || code.toUpperCase(),
       })),
     })
   }

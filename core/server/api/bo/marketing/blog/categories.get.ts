@@ -2,6 +2,7 @@
 
 import { useClientDb } from '~/server/utils/db'
 import { requireRoleOrSaas } from '~/server/utils/session'
+import { buildBlogSlugPrefixMap } from '~/server/utils/blog-slug'
 
 export default defineEventHandler(async (event) => {
   requireRoleOrSaas(event, ['root', 'founder', 'market'])
@@ -25,6 +26,13 @@ export default defineEventHandler(async (event) => {
     WHERE c.id_cms_category <> 1
     ORDER BY c.level_depth ASC, c.position ASC, c.id_cms_category ASC
   `, [langId])
+
+  
+  
+  const prefixMap = await buildBlogSlugPrefixMap(db, categories.map((c: any) => Number(c.id)))
+  for (const c of categories) {
+    c.blogSlugPrefix = prefixMap.get(Number(c.id)) || ''
+  }
 
   return { categories, langId }
 })

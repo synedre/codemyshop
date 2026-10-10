@@ -29,6 +29,9 @@ export function useFooterDb() {
 
   const builderFooter = useState<FooterDbData | null>('footer_builder_override', () => null)
 
+  
+  const dirty = useState<boolean>('footer_dirty', () => false)
+
   const footer = computed<FooterDbData>(() => {
     if (builderFooter.value) return builderFooter.value
     if (data.value?.footer) return data.value.footer
@@ -36,12 +39,20 @@ export function useFooterDb() {
   })
 
   function loadIntoBuilder() {
-    builderFooter.value = JSON.parse(JSON.stringify(data.value?.footer || { theme: 'dark' }))
+    
+    
+    
+    
+    if (data.value?.footer) {
+      builderFooter.value = JSON.parse(JSON.stringify(data.value.footer))
+      dirty.value = false
+    }
   }
 
   function updateFooterField(patch: Partial<FooterDbData>) {
     if (!builderFooter.value) loadIntoBuilder()
     builderFooter.value = { ...builderFooter.value!, ...patch }
+    dirty.value = true
   }
 
   function updateContact(patch: Partial<NonNullable<FooterDbData['contact']>>) {
@@ -50,6 +61,7 @@ export function useFooterDb() {
       ...builderFooter.value!,
       contact: { ...builderFooter.value!.contact, ...patch },
     }
+    dirty.value = true
   }
 
   function updateBottomBar(patch: Partial<NonNullable<FooterDbData['bottomBar']>>) {
@@ -58,6 +70,7 @@ export function useFooterDb() {
       ...builderFooter.value!,
       bottomBar: { ...builderFooter.value!.bottomBar, ...patch },
     }
+    dirty.value = true
   }
 
   function updateNewsletter(patch: Partial<NonNullable<FooterDbData['newsletter']>>) {
@@ -66,11 +79,13 @@ export function useFooterDb() {
       ...builderFooter.value!,
       newsletter: { ...builderFooter.value!.newsletter, ...patch },
     }
+    dirty.value = true
   }
 
   function setSocial(social: FooterDbData['social']) {
     if (!builderFooter.value) loadIntoBuilder()
     builderFooter.value = { ...builderFooter.value!, social }
+    dirty.value = true
   }
 
   async function syncToDb() {
@@ -80,12 +95,14 @@ export function useFooterDb() {
       body: { footer: builderFooter.value },
     })
     await refreshNuxtData('footer-db')
+    dirty.value = false
   }
 
   return {
     footer,
     status,
     builderFooter,
+    dirty,
     loadIntoBuilder,
     updateFooterField,
     updateContact,

@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { clientIdToEnvKey, resolveTenantClientId } from './ps-tenant'
+import { indexCategoryCoverFiles, type CategoryCoverIndex } from './category-cover-urls'
 
 function readEnvDir(event: any, suffix: 'DOWNLOAD_DIR' | 'IMG_CATEGORY_DIR'): string | null {
   const clientId = resolveTenantClientId(event)
@@ -91,6 +92,28 @@ export function listLegacyCategoryJpgs(event: any): Array<{ idCategory: number; 
     out.push({ idCategory: Number(m[1]), filename: name, absPath: join(dir, name) })
   }
   return out
+}
+
+const COVER_INDEX_TTL_MS = 60_000
+const coverIndexCache = new Map<string, { index: CategoryCoverIndex; expiresAt: number }>()
+
+export function loadCategoryCoverIndex(event: any): CategoryCoverIndex {
+  const dir = resolvePsImgCategoryDir(event)
+  if (!dir) return null
+
+  const cached = coverIndexCache.get(dir)
+  const now = Date.now()
+  if (cached && cached.expiresAt > now) return cached.index
+
+  let index: CategoryCoverIndex
+  try {
+    index = indexCategoryCoverFiles(readdirSync(dir))
+  } catch {
+    
+    index = null
+  }
+  coverIndexCache.set(dir, { index, expiresAt: now + COVER_INDEX_TTL_MS })
+  return index
 }
 
 export function psFsCanWriteDownload(event: any): boolean {

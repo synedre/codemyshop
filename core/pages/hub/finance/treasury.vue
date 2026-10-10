@@ -4,13 +4,13 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Trésorerie</h1>
-          <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">Prévisionnel cashflow 13 semaines glissantes — historique réel + projection</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.treasury.title', 'Trésorerie') }}</h1>
+          <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ tHub('hub.ui.treasury.subtitle', 'Prévisionnel cashflow 13 semaines glissantes — historique réel + projection') }}</p>
         </div>
         <button @click="exportCsv" :disabled="!data?.weeks.length"
           class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white disabled:opacity-40 disabled:cursor-not-allowed">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>
-          Export CSV
+          {{ tHub('hub.ui.treasury.export_csv', 'Export CSV') }}
         </button>
       </div>
     </header>
@@ -19,22 +19,22 @@
       
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Solde estimé</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ tHub('hub.ui.treasury.kpi_balance', 'Solde estimé') }}</p>
           <p class="text-2xl font-extrabold tabular-nums" :class="(data?.currentBalance ?? 0) < 0 ? 'text-danger-600' : ''">{{ fmtEur(data?.currentBalance ?? 0) }}</p>
-          <p class="text-[10px] text-gray-400 mt-1">YTD net (encaissements − avoirs)</p>
+          <p class="text-[10px] text-gray-400 mt-1">{{ tHub('hub.ui.treasury.kpi_balance_hint', 'YTD net (encaissements − avoirs)') }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Encaissé YTD</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ tHub('hub.ui.treasury.kpi_inflow', 'Encaissé YTD') }}</p>
           <p class="text-2xl font-extrabold tabular-nums text-emerald-600">{{ fmtEur(data?.ytdInflow ?? 0) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Avoirs YTD</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ tHub('hub.ui.treasury.kpi_credits', 'Avoirs YTD') }}</p>
           <p class="text-2xl font-extrabold tabular-nums text-danger-600">{{ fmtEur(data?.ytdOutflow ?? 0) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Carnet à encaisser</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ tHub('hub.ui.treasury.kpi_backlog', 'Carnet à encaisser') }}</p>
           <p class="text-2xl font-extrabold tabular-nums text-primary-600">{{ fmtEur(data?.pendingOrders.amount ?? 0) }}</p>
-          <p class="text-[10px] text-gray-400 mt-1">{{ data?.pendingOrders.count ?? 0 }} commande(s) non finalisée(s)</p>
+          <p class="text-[10px] text-gray-400 mt-1">{{ tHub('hub.ui.treasury.pending_orders', '{count} commande(s) non finalisée(s)', { count: data?.pendingOrders.count ?? 0 }) }}</p>
         </div>
       </div>
 
@@ -47,10 +47,10 @@
             : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300'">
           <span class="text-lg">{{ a.severity === 'critical' ? '⛔' : '⚠️' }}</span>
           <p class="flex-1">
-            <span class="font-bold">{{ a.label }}</span> — solde projeté
+            <span class="font-bold">{{ a.label }}</span>{{ tHub('hub.ui.treasury.alert_projected', ' — solde projeté') }}
             <span class="font-bold tabular-nums">{{ fmtEur(a.balance) }}</span>
-            <span v-if="a.severity === 'critical'"> (négatif)</span>
-            <span v-else> sous le seuil de 4 semaines de décaissements</span>
+            <span v-if="a.severity === 'critical'">{{ tHub('hub.ui.treasury.alert_negative', ' (négatif)') }}</span>
+            <span v-else>{{ tHub('hub.ui.treasury.alert_threshold', ' sous le seuil de 4 semaines de décaissements') }}</span>
           </p>
         </div>
       </div>
@@ -59,23 +59,23 @@
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h2 class="text-sm font-bold">Cashflow hebdomadaire</h2>
-            <p class="text-[11px] text-gray-500 mt-0.5">Médiane d'encaissements projetée : <span class="font-semibold tabular-nums">{{ fmtEur(data?.weeklyInflowMedian ?? 0) }}/sem</span></p>
+            <h2 class="text-sm font-bold">{{ tHub('hub.ui.treasury.chart_title', 'Cashflow hebdomadaire') }}</h2>
+            <p class="text-[11px] text-gray-500 mt-0.5">{{ tHub('hub.ui.treasury.median_label', 'Médiane d\'encaissements projetée :') }} <span class="font-semibold tabular-nums">{{ tHub('hub.ui.treasury.per_week', '{amount}/sem', { amount: fmtEur(data?.weeklyInflowMedian ?? 0) }) }}</span></p>
           </div>
           <div class="flex items-center gap-3 text-[11px]">
-            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"/> Encaissements</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-danger-400"/> Décaissements</span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-0.5 bg-primary-600"/> Solde glissant</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"/> {{ tHub('hub.ui.treasury.inflows', 'Encaissements') }}</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-danger-400"/> {{ tHub('hub.ui.treasury.outflows', 'Décaissements') }}</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-0.5 bg-primary-600"/> {{ tHub('hub.ui.treasury.rolling_balance', 'Solde glissant') }}</span>
           </div>
         </div>
-        <div v-if="loading" class="px-6 py-12 text-center text-sm text-gray-400">Chargement…</div>
-        <div v-else-if="!data?.weeks.length" class="px-6 py-12 text-center text-sm text-gray-400">Aucune donnée disponible.</div>
+        <div v-if="loading" class="px-6 py-12 text-center text-sm text-gray-400">{{ tHub('hub.ui.treasury.loading', 'Chargement…') }}</div>
+        <div v-else-if="!data?.weeks.length" class="px-6 py-12 text-center text-sm text-gray-400">{{ tHub('hub.ui.treasury.no_data_available', 'Aucune donnée disponible.') }}</div>
         <div v-else class="px-6 py-5">
           <svg :viewBox="`0 0 ${chartW} ${chartH}`" class="w-full h-64" preserveAspectRatio="none">
             <line :x1="histDividerX" :y1="0" :x2="histDividerX" :y2="chartH - 22"
               stroke="currentColor" stroke-dasharray="3 3" class="text-gray-300 dark:text-slate-700" />
-            <text :x="histDividerX - 4" y="12" text-anchor="end" class="fill-gray-400 text-[9px]">Historique</text>
-            <text :x="histDividerX + 4" y="12" text-anchor="start" class="fill-primary-600 text-[9px] font-semibold">Projection</text>
+            <text :x="histDividerX - 4" y="12" text-anchor="end" class="fill-gray-400 text-[9px]">{{ tHub('hub.ui.treasury.history', 'Historique') }}</text>
+            <text :x="histDividerX + 4" y="12" text-anchor="start" class="fill-primary-600 text-[9px] font-semibold">{{ tHub('hub.ui.treasury.projection', 'Projection') }}</text>
             <line :x1="0" :y1="zeroY" :x2="chartW" :y2="zeroY" stroke="currentColor" class="text-gray-200 dark:text-slate-800" stroke-width="1"/>
             <g v-for="(w, i) in data.weeks" :key="w.key">
               <rect
@@ -110,23 +110,23 @@
       
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <h2 class="text-sm font-bold">Détail semaine par semaine</h2>
+          <h2 class="text-sm font-bold">{{ tHub('hub.ui.treasury.detail_title', 'Détail semaine par semaine') }}</h2>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full text-xs">
             <thead class="bg-gray-50 dark:bg-slate-800/50">
               <tr>
-                <th class="px-4 py-2 text-left font-semibold text-gray-500">Semaine</th>
-                <th class="px-4 py-2 text-left font-semibold text-gray-500">Type</th>
-                <th class="px-4 py-2 text-right font-semibold text-gray-500">Encaissements</th>
-                <th class="px-4 py-2 text-right font-semibold text-gray-500">Décaissements</th>
-                <th class="px-4 py-2 text-right font-semibold text-gray-500">Net</th>
-                <th class="px-4 py-2 text-right font-semibold text-gray-500">Solde</th>
+                <th class="px-4 py-2 text-left font-semibold text-gray-500">{{ tHub('hub.ui.treasury.col_week', 'Semaine') }}</th>
+                <th class="px-4 py-2 text-left font-semibold text-gray-500">{{ tHub('hub.ui.treasury.col_type', 'Type') }}</th>
+                <th class="px-4 py-2 text-right font-semibold text-gray-500">{{ tHub('hub.ui.treasury.inflows', 'Encaissements') }}</th>
+                <th class="px-4 py-2 text-right font-semibold text-gray-500">{{ tHub('hub.ui.treasury.outflows', 'Décaissements') }}</th>
+                <th class="px-4 py-2 text-right font-semibold text-gray-500">{{ tHub('hub.ui.treasury.col_net', 'Net') }}</th>
+                <th class="px-4 py-2 text-right font-semibold text-gray-500">{{ tHub('hub.ui.treasury.col_balance', 'Solde') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
-              <tr v-if="loading"><td colspan="6" class="px-4 py-8 text-center text-gray-400">Chargement…</td></tr>
-              <tr v-else-if="!data?.weeks.length"><td colspan="6" class="px-4 py-8 text-center text-gray-400">Aucune donnée.</td></tr>
+              <tr v-if="loading"><td colspan="6" class="px-4 py-8 text-center text-gray-400">{{ tHub('hub.ui.treasury.loading', 'Chargement…') }}</td></tr>
+              <tr v-else-if="!data?.weeks.length"><td colspan="6" class="px-4 py-8 text-center text-gray-400">{{ tHub('hub.ui.treasury.no_data', 'Aucune donnée.') }}</td></tr>
               <tr v-for="w in data?.weeks" :key="w.key" class="hover:bg-gray-50 dark:hover:bg-slate-800/40"
                 :class="w.balance < 0 ? 'bg-danger-50/50 dark:bg-danger-500/5' : ''">
                 <td class="px-4 py-2">
@@ -138,7 +138,7 @@
                     :class="w.isHistory
                       ? 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400'
                       : 'bg-primary-100 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400'">
-                    {{ w.isHistory ? 'Réel' : 'Projection' }}{{ w.isPending ? ' + carnet' : '' }}
+                    {{ w.isHistory ? tHub('hub.ui.treasury.actual', 'Réel') : tHub('hub.ui.treasury.projection', 'Projection') }}{{ w.isPending ? tHub('hub.ui.treasury.plus_backlog', ' + carnet') : '' }}
                   </span>
                 </td>
                 <td class="px-4 py-2 text-right tabular-nums text-emerald-600">{{ fmtEur(w.inflow) }}</td>
@@ -153,8 +153,8 @@
 
       
       <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-4 text-xs text-amber-800 dark:text-amber-300">
-        <p class="font-bold mb-1">⚠️ Méthodologie</p>
-        <p>Projection basée sur la médiane glissante des 13 dernières semaines de la boutique PrestaShop. Le carnet de commandes non finalisées (60 derniers jours) est injecté en S+1. Salaires, charges sociales et paiements fournisseurs ne sont pas inclus — à intégrer via votre logiciel de comptabilité.</p>
+        <p class="font-bold mb-1">{{ tHub('hub.ui.treasury.method_title', '⚠️ Méthodologie') }}</p>
+        <p>{{ tHub('hub.ui.treasury.method_body', 'Projection basée sur la médiane glissante des 13 dernières semaines de la boutique PrestaShop. Le carnet de commandes non finalisées (60 derniers jours) est injecté en S+1. Salaires, charges sociales et paiements fournisseurs ne sont pas inclus — à intégrer via votre logiciel de comptabilité.') }}</p>
       </div>
     </div>
   </div>
@@ -162,6 +162,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 interface TreasuryWeek {
   key: string
@@ -234,10 +235,10 @@ const histDividerX = computed(() => histCount.value * slotW.value)
 
 function exportCsv() {
   if (!data.value?.weeks.length) return
-  const headers = ['Semaine', 'Date début', 'Type', 'Encaissements', 'Décaissements', 'Net', 'Solde']
+  const headers = [tHub('hub.ui.treasury.col_week', 'Semaine'), tHub('hub.ui.treasury.csv_start', 'Date début'), tHub('hub.ui.treasury.col_type', 'Type'), tHub('hub.ui.treasury.inflows', 'Encaissements'), tHub('hub.ui.treasury.outflows', 'Décaissements'), tHub('hub.ui.treasury.col_net', 'Net'), tHub('hub.ui.treasury.col_balance', 'Solde')]
   const rows = data.value.weeks.map(w => [
     w.label, w.startDate,
-    w.isHistory ? 'Réel' : 'Projection',
+    w.isHistory ? tHub('hub.ui.treasury.actual', 'Réel') : tHub('hub.ui.treasury.projection', 'Projection'),
     w.inflow, w.outflow, w.net, w.balance,
   ])
   const csv = [headers, ...rows].map(r => r.join(';')).join('\n')

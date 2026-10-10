@@ -5,11 +5,11 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Nurturing Studio</h1>
-          <p class="text-xs text-gray-400 mt-0.5">G&eacute;n&eacute;rez des s&eacute;quences automatis&eacute;es multi-canal avec l'IA</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.marketing_nurturing.title', 'Nurturing Studio') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.marketing_nurturing.subtitle', 'Générez des séquences automatisées multi-canal avec l\'IA') }}</p>
         </div>
         <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-primary-100 text-primary-700 border border-primary-200">
-          Premium
+          {{ t('hub.ui.marketing_nurturing.premium', 'Premium') }}
         </span>
       </div>
     </header>
@@ -22,28 +22,28 @@
 
           
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">Configuration</h2>
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">{{ t('hub.ui.marketing_nurturing.config', 'Configuration') }}</h2>
 
             <div class="space-y-4">
               <div>
-                <label class="label">Objectif de la s&eacute;quence *</label>
+                <label class="label">{{ t('hub.ui.marketing_nurturing.seq_objective', 'Objectif de la séquence *') }}</label>
                 <select v-model="form.objective" class="input-field text-sm">
-                  <option value="">-- Choisir --</option>
+                  <option value="">{{ t('hub.ui.marketing_nurturing.choose', '-- Choisir --') }}</option>
                   <option v-for="obj in OBJECTIVES" :key="obj.value" :value="obj.value">{{ obj.label }}</option>
                 </select>
                 <input
                   v-if="form.objective === 'custom'"
                   v-model="form.customObjective"
-                  placeholder="D&eacute;crivez votre objectif..."
+                  :placeholder="t('hub.ui.marketing_nurturing.custom_ph', 'Décrivez votre objectif...')"
                   class="input-field text-xs mt-2"
                 />
               </div>
 
               <div>
-                <label class="label">Avatar cible *</label>
+                <label class="label">{{ t('hub.ui.marketing_nurturing.target_avatar', 'Avatar cible *') }}</label>
                 <div v-if="avatarsLoading" class="h-10 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
                 <select v-else v-model="form.avatarIdx" class="input-field text-sm">
-                  <option :value="-1">-- Tous les visiteurs --</option>
+                  <option :value="-1">{{ t('hub.ui.marketing_nurturing.all_visitors', '-- Tous les visiteurs --') }}</option>
                   <option v-for="(av, i) in avatarDefs" :key="av.id" :value="i">
                     {{ av.icon }} {{ av.name }}
                   </option>
@@ -51,7 +51,7 @@
               </div>
 
               <div>
-                <label class="label">Dur&eacute;e</label>
+                <label class="label">{{ t('hub.ui.marketing_nurturing.duration', 'Durée') }}</label>
                 <div class="grid grid-cols-3 gap-2">
                   <button
                     v-for="d in DURATIONS"
@@ -65,13 +65,13 @@
                     ]"
                   >
                     {{ d.label }}
-                    <span class="block text-[10px] font-normal mt-0.5" :class="form.duration === d.value ? 'text-primary-500' : 'text-gray-400'">{{ d.steps }} msgs</span>
+                    <span class="block text-[10px] font-normal mt-0.5" :class="form.duration === d.value ? 'text-primary-500' : 'text-gray-400'">{{ t('hub.ui.marketing_nurturing.msgs', '{count} msgs', { count: d.steps }) }}</span>
                   </button>
                 </div>
               </div>
 
               <div>
-                <label class="label">Mix Canaux</label>
+                <label class="label">{{ t('hub.ui.marketing_nurturing.channel_mix', 'Mix Canaux') }}</label>
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     @click="form.channels = 'email'"
@@ -82,7 +82,7 @@
                         : 'border-gray-200 dark:border-slate-700 text-gray-600 hover:border-gray-300',
                     ]"
                   >
-                    &#x1f4e7; Email seul
+                    &#x1f4e7; {{ t('hub.ui.marketing_nurturing.email_only', 'Email seul') }}
                   </button>
                   <button
                     @click="form.channels = 'mix'"
@@ -93,7 +93,7 @@
                         : 'border-gray-200 dark:border-slate-700 text-gray-600 hover:border-gray-300',
                     ]"
                   >
-                    &#x1f4e7; + &#x1f4ac; Mix
+                    &#x1f4e7; + &#x1f4ac; {{ t('hub.ui.marketing_nurturing.mix', 'Mix') }}
                   </button>
                 </div>
               </div>
@@ -102,8 +102,8 @@
 
           
           <AIActionButton
-            label="G&eacute;n&eacute;rer la s&eacute;quence IA"
-            loading-label="G&eacute;n&eacute;ration en cours…"
+            :label="t('hub.ui.marketing_nurturing.generate', 'Générer la séquence IA')"
+            :loading-label="t('hub.ui.marketing_nurturing.generating', 'Génération en cours…')"
             :is-loading="generating"
             :disabled="!canGenerate"
             size="lg"
@@ -120,8 +120,8 @@
             <svg class="w-16 h-16 mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.75">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
             </svg>
-            <p class="text-sm font-medium text-gray-400">La timeline appara&icirc;tra ici</p>
-            <p class="text-xs text-gray-300 mt-1">Configurez et g&eacute;n&eacute;rez votre s&eacute;quence</p>
+            <p class="text-sm font-medium text-gray-400">{{ t('hub.ui.marketing_nurturing.empty_title', 'La timeline apparaîtra ici') }}</p>
+            <p class="text-xs text-gray-300 mt-1">{{ t('hub.ui.marketing_nurturing.empty_hint', 'Configurez et générez votre séquence') }}</p>
           </div>
 
           
@@ -130,7 +130,7 @@
             <div class="bg-white dark:bg-slate-900 rounded-t-xl border border-gray-100 dark:border-slate-800 shadow-sm px-5 py-4 flex items-center justify-between">
               <div>
                 <p class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ sequence.objective }}</p>
-                <p class="text-xs text-gray-400">{{ sequence.steps.length }} &eacute;tapes &middot; Avatar : {{ sequence.avatar }}</p>
+                <p class="text-xs text-gray-400">{{ t('hub.ui.marketing_nurturing.steps_avatar', '{count} étapes · Avatar : {avatar}', { count: sequence.steps.length, avatar: sequence.avatar }) }}</p>
               </div>
               <button
                 @click="exportSequence"
@@ -139,7 +139,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                 </svg>
-                {{ exported ? 'Copi\u00e9 !' : 'Exporter' }}
+                {{ exported ? t('hub.ui.marketing_nurturing.copied', 'Copié !') : t('hub.ui.marketing_nurturing.export', 'Exporter') }}
               </button>
             </div>
 
@@ -180,10 +180,10 @@
                         ? 'bg-green-50 text-green-700 border border-green-100'
                         : 'bg-primary-50 text-primary-700 border border-primary-100'"
                     >
-                      {{ step.channel === 'whatsapp' ? '&#x1f4ac; WhatsApp' : '&#x1f4e7; Email' }}
+                      {{ step.channel === 'whatsapp' ? '💬 WhatsApp' : '📧 ' + t('hub.ui.marketing_nurturing.email', 'Email') }}
                     </span>
                     <span class="text-[10px] text-gray-400">
-                      {{ step.dayOffset === 0 ? 'Imm&eacute;diat' : `Attendre ${step.dayOffset} jour${step.dayOffset > 1 ? 's' : ''}` }}
+                      {{ step.dayOffset === 0 ? t('hub.ui.marketing_nurturing.immediate', 'Immédiat') : (step.dayOffset > 1 ? t('hub.ui.marketing_nurturing.wait_other', 'Attendre {count} jours', { count: step.dayOffset }) : t('hub.ui.marketing_nurturing.wait_one', 'Attendre {count} jour', { count: step.dayOffset })) }}
                     </span>
                   </div>
 
@@ -220,22 +220,23 @@ interface AvatarDefinition { id: number; name: string; slug: string; icon: strin
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
+const { t } = useHubT()
 const { resolvedClientId } = useClientDetection()
 
-const OBJECTIVES = [
-  { value: 'Onboarding nouveau client',            label: 'Onboarding nouveau client' },
-  { value: 'Relance clients inactifs (60+ jours)',  label: 'Relance clients inactifs' },
-  { value: 'Upsell post-achat',                     label: 'Upsell post-achat' },
-  { value: 'Restock automatique',                   label: 'Rappel restock' },
-  { value: 'Promotion saisonnière',                 label: 'Promotion saisonnière' },
-  { value: 'custom',                                label: 'Autre (personnalisé)...' },
-]
+const OBJECTIVES = computed(() => [
+  { value: 'Onboarding nouveau client',            label: t('hub.ui.marketing_nurturing.obj_onboarding', 'Onboarding nouveau client') },
+  { value: 'Relance clients inactifs (60+ jours)',  label: t('hub.ui.marketing_nurturing.obj_inactive', 'Relance clients inactifs') },
+  { value: 'Upsell post-achat',                     label: t('hub.ui.marketing_nurturing.obj_upsell', 'Upsell post-achat') },
+  { value: 'Restock automatique',                   label: t('hub.ui.marketing_nurturing.obj_restock', 'Rappel restock') },
+  { value: 'Promotion saisonnière',                 label: t('hub.ui.marketing_nurturing.obj_seasonal', 'Promotion saisonnière') },
+  { value: 'custom',                                label: t('hub.ui.marketing_nurturing.obj_custom', 'Autre (personnalisé)...') },
+])
 
-const DURATIONS = [
-  { value: 'short',  label: 'Courte',  steps: 3 },
-  { value: 'medium', label: 'Moyenne', steps: 5 },
-  { value: 'long',   label: 'Longue',  steps: 7 },
-]
+const DURATIONS = computed(() => [
+  { value: 'short',  label: t('hub.ui.marketing_nurturing.dur_short', 'Courte'),  steps: 3 },
+  { value: 'medium', label: t('hub.ui.marketing_nurturing.dur_medium', 'Moyenne'), steps: 5 },
+  { value: 'long',   label: t('hub.ui.marketing_nurturing.dur_long', 'Longue'),  steps: 7 },
+])
 
 const form = reactive({
   objective:       '',

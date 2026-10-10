@@ -1,6 +1,32 @@
 
 <script setup lang="ts">
+import { verticalScaleSlots } from '~/utils/vertical-scale'
+
 const { t } = useT()
+
+const runtimePublicConfig = (useRuntimeConfig().public as any) ?? {}
+
+const echelle = verticalScaleSlots(runtimePublicConfig)
+
+const isFood = (runtimePublicConfig.vertical || '') === 'food'
+
+const categoryCardPresentation = computed(() => {
+  const v = runtimePublicConfig.categoryCardPresentation
+  return v === 'minimal' || v === 'flat' ? v : undefined
+})
+
+const categoryCardImageThumbnails = computed(() => {
+  const count = Number(runtimePublicConfig.categoryCardImageThumbnails)
+  return Number.isInteger(count) && count > 0 && count <= 6
+})
+
+const categoryGridConfig = computed(() => {
+  const pageSize = Number(runtimePublicConfig.categoryGridPageSize)
+  return {
+    pageSize: Number.isInteger(pageSize) && pageSize > 0 && pageSize <= 1000 ? pageSize : undefined,
+    paginationMode: runtimePublicConfig.categoryPaginationMode === 'load-more' ? 'load-more' as const : 'pages' as const,
+  }
+})
 interface ProductRow {
   id: number
   ref?: string
@@ -41,10 +67,12 @@ const SORT_OPTIONS = computed<Array<{ value: SortKey; label: string }>>(() => [
   { value: 'relevance',     label: t('catalogue.sort_relevance') },
   { value: 'price-asc',     label: t('catalogue.sort_price_asc') },
   { value: 'price-desc',    label: t('catalogue.sort_price_desc') },
-  { value: 'price-kg-asc',  label: t('catalogue.sort_price_kg_asc') },
-  { value: 'price-kg-desc', label: t('catalogue.sort_price_kg_desc') },
-  { value: 'weight-asc',    label: t('catalogue.sort_weight_asc') },
-  { value: 'weight-desc',   label: t('catalogue.sort_weight_desc') },
+  ...(isFood ? [
+    { value: 'price-kg-asc'  as SortKey, label: t('catalogue.sort_price_kg_asc') },
+    { value: 'price-kg-desc' as SortKey, label: t('catalogue.sort_price_kg_desc') },
+    { value: 'weight-asc'    as SortKey, label: t('catalogue.sort_weight_asc') },
+    { value: 'weight-desc'   as SortKey, label: t('catalogue.sort_weight_desc') },
+  ] : []),
 ])
 const SORT_KEYS: SortKey[] = [
   'relevance',
@@ -60,6 +88,19 @@ type SortCol = 'ref' | 'name' | 'ean13' | 'weight' | 'price' | 'price-kg'
 
 const PAGE_SIZES = [24, 48, 60, 100, 500, 1000] as const
 
+interface EditorialTile {
+  position: number
+  colSpan: 1 | 2 | 3
+  kind: 'image' | 'banner' | 'artwork'
+  imageUrl: string | null
+  linkUrl: string | null
+  logoUrl: string | null
+  title: string | null
+  subtitle: string | null
+  quote: string | null
+  author: string | null
+}
+
 const props = withDefaults(
   defineProps<{
     endpoint: string
@@ -72,9 +113,19 @@ const props = withDefaults(
     defaultSort?: SortKey
     interleaveEvery?: number
     interleaveOnTop?: boolean
+    interleaveOnBottom?: boolean
+    
+
+    tiles?: EditorialTile[]
+    
+
+    toolbar?: 'full' | 'minimal'
   }>(),
-  { limit: 24, title: '', defaultSort: 'relevance', interleaveEvery: 0, interleaveOnTop: false },
+  { limit: 24, title: '', defaultSort: 'relevance', interleaveEvery: 0, interleaveOnTop: false, interleaveOnBottom: false, tiles: () => [], toolbar: 'full' },
 )
+const minimalToolbar = computed(() => props.toolbar === 'minimal')
+const defaultLimit = computed(() => categoryGridConfig.value.pageSize ?? props.limit)
+const loadMoreMode = computed(() => categoryGridConfig.value.paginationMode === 'load-more')
 
 const resolvedTitle = computed(() => props.title || t('catalogue.available_products'))
 
@@ -82,14 +133,17 @@ const route = useRoute()
 const router = useRouter()
 
 const viewCookie = useCookie<ViewMode>('ac_listing_view', {
-  default: () => 'grid',
   maxAge: 60 * 60 * 24 * 365,
   sameSite: 'lax',
+  encode: (v) => String(v),
+  decode: (v) => (v === 'list' ? 'list' : 'grid') as ViewMode,
 })
 const currentView = computed<ViewMode>(() => {
+  
+  if (minimalToolbar.value) return 'grid'
   const raw = String(route.query.view ?? '') as ViewMode
   if (raw === 'grid' || raw === 'list') return raw
-  return viewCookie.value
+  return viewCookie.value ?? 'grid'
 })
 
 function setView(v: ViewMode) {
@@ -124,7 +178,7 @@ function sortIndicator(col: SortCol): string {
 
 const currentLimit = computed(() => {
   const raw = Number(route.query.limit)
-  return PAGE_SIZES.includes(raw as any) ? raw : props.limit
+  return PAGE_SIZES.includes(raw as any) ? raw : defaultLimit.value
 })
 
 const currentSort = computed<SortKey>(() => {
@@ -158,18 +212,20 @@ watch(data, (v) => { if (v !== null && v !== undefined) lastGoodData.value = v }
 const products = computed(() => lastGoodData.value?.products ?? [])
 const total = computed(() => lastGoodData.value?.total ?? 0)
 
-const hasActiveFilters = computed(() =>
-  !!(route.query.origin || route.query.allergens),
-)
+const hasActiveFilters = computed(() => queryHasActiveFilters(route.query))
 const isFilteredEmpty = computed(() => hasActiveFilters.value || currentPage.value > 1)
 const totalPages = computed(() =>
   total.value > 0 ? Math.max(1, Math.ceil(total.value / currentLimit.value)) : 1,
 )
+const remainingProducts = computed(() => Math.max(0, total.value - products.value.length))
+const loadMoreLabel = computed(() => remainingProducts.value === 1
+  ? t('catalogue.load_one_remaining', 'Charger le produit restant')
+  : t('catalogue.load_remaining', 'Charger les {count} produits restants', { count: remainingProducts.value }))
 
 function buildQuery(page: number, extra: Partial<Record<string, string | number>> = {}): Record<string, string | number> {
   const q: Record<string, string | number> = {}
   if (page > 1) q.page = page
-  if (currentLimit.value !== props.limit) q.limit = currentLimit.value
+  if (currentLimit.value !== defaultLimit.value) q.limit = currentLimit.value
   if (currentSort.value !== props.defaultSort) q.sort = currentSort.value
   if (currentView.value === 'list') q.view = 'list'
   for (const [k, v] of Object.entries(extra)) {
@@ -185,6 +241,14 @@ function pageHref(p: number): string {
   if (p <= 1) delete q.page
   const qs = new URLSearchParams(q as Record<string, string>).toString()
   return qs ? `${base}?${qs}` : base
+}
+
+function loadMoreHref(): string {
+  const base = props.canonicalPath.endsWith('/') ? props.canonicalPath : props.canonicalPath + '/'
+  const q = buildQuery(1, { limit: 1000 })
+  delete q.page
+  const qs = new URLSearchParams(q as Record<string, string>).toString()
+  return `${base}?${qs}`
 }
 
 function onSortChange(e: Event) {
@@ -208,20 +272,44 @@ useHead(() => {
   return { link: links }
 })
 
+const EAGER_ROW_COUNT = 4
+
 type GridItem =
-  | { kind: 'product'; product: ProductRow }
+  | { kind: 'product'; product: ProductRow; ordinal: number }
   | { kind: 'interleave'; index: number }
+  | { kind: 'tile'; tile: EditorialTile }
 
 const interleavedItems = computed<GridItem[]>(() => {
   const every = Math.max(0, Math.floor(props.interleaveEvery))
+  
+  
+  
+  const tilesByPosition = new Map<number, EditorialTile[]>()
+  for (const tl of props.tiles) {
+    const pos = Math.max(0, Math.floor(tl.position))
+    const arr = tilesByPosition.get(pos) ?? []
+    arr.push(tl)
+    tilesByPosition.set(pos, arr)
+  }
   const out: GridItem[] = []
   let interleaveIdx = 0
   products.value.forEach((p, i) => {
-    out.push({ kind: 'product', product: p })
+    for (const tl of tilesByPosition.get(i) ?? []) {
+      out.push({ kind: 'tile', tile: tl })
+    }
+    out.push({ kind: 'product', product: p, ordinal: i })
     if (every > 0 && (i + 1) % every === 0 && i !== products.value.length - 1) {
       out.push({ kind: 'interleave', index: interleaveIdx++ })
     }
   })
+  
+  
+  const tail = [...tilesByPosition.entries()]
+    .filter(([pos]) => pos >= products.value.length)
+    .sort(([a], [b]) => a - b)
+  for (const [, arr] of tail) {
+    for (const tl of arr) out.push({ kind: 'tile', tile: tl })
+  }
   return out
 })
 
@@ -240,38 +328,41 @@ const pageWindow = computed<Array<number | '…'>>(() => {
 
 <template>
   <div v-if="total > 0">
-    <div class="mb-5 flex items-baseline justify-between">
-      <h2 class="text-2xl font-bold tracking-tight text-primary-900 dark:text-primary-100">
-        {{ resolvedTitle }}
-      </h2>
-      <p class="text-sm text-slate-500">
-        {{ total }} {{ t(total > 1 ? 'catalogue.references_plural' : 'catalogue.references_singular') }}
-        <span v-if="totalPages > 1">· {{ t('catalogue.page') }} {{ currentPage }} / {{ totalPages }}</span>
-      </p>
-    </div>
-
     
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-3 rounded-xl px-0 py-0 dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h2
+          :class="minimalToolbar
+            ? 'text-base font-bold uppercase tracking-wide text-gray-900 dark:text-white'
+            : 'text-lg font-semibold tracking-tight text-slate-600 dark:text-slate-300'"
+        >
+          {{ resolvedTitle }}<template v-if="minimalToolbar"> ({{ total }} {{ t(total > 1 ? 'catalogue.products_plural' : 'catalogue.products_singular') }})</template>
+        </h2>
+        <p v-if="!minimalToolbar" class="text-sm text-slate-500">
+          {{ total }} {{ t(total > 1 ? 'catalogue.references_plural' : 'catalogue.references_singular') }}
+          <span v-if="totalPages > 1">· {{ t('catalogue.page') }} {{ currentPage }} / {{ totalPages }}</span>
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
       <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
         <span>{{ t('catalogue.sort_by') }}</span>
         <select
-          :value="currentSort"
           class="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 focus:border-primary-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           @change="onSortChange"
         >
-          <option v-for="opt in SORT_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          <option v-for="opt in SORT_OPTIONS" :key="opt.value" :value="opt.value" :selected="opt.value === currentSort">{{ opt.label }}</option>
         </select>
       </label>
 
-      <div class="flex items-center gap-3">
+      <div v-if="!minimalToolbar" class="flex items-center gap-3">
         <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
           <span>{{ t('catalogue.per_page') }}</span>
           <select
-            :value="currentLimit"
             class="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 focus:border-primary-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             @change="onLimitChange"
           >
-            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}</option>
+            <option v-for="s in PAGE_SIZES" :key="s" :value="s" :selected="s === currentLimit">{{ s }}</option>
           </select>
         </label>
 
@@ -310,11 +401,13 @@ const pageWindow = computed<Array<number | '…'>>(() => {
             </svg>
           </button>
         </div>
+        </div>
       </div>
     </div>
 
     
     <CategoryPaginationNav
+      v-if="!loadMoreMode && currentPage > 1"
       class="mb-6"
       :current-page="currentPage"
       :total-pages="totalPages"
@@ -330,18 +423,48 @@ const pageWindow = computed<Array<number | '…'>>(() => {
 
     
     <div
-      v-if="currentView === 'grid'"
+      v-if="products.length === 0"
+      class="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900"
+    >
+      <p class="text-sm text-slate-600 dark:text-slate-400">
+        {{ t('catalogue.empty_page_body', 'Cette page ne contient aucun produit.') }}
+      </p>
+      <NuxtLink
+        :to="pageHref(1)"
+        class="mt-3 inline-block text-sm font-semibold text-primary-600 hover:underline"
+      >
+        {{ t('catalogue.back_to_first_page', 'Retourner à la première page') }}
+      </NuxtLink>
+    </div>
+
+    
+    <div
+      v-else-if="currentView === 'grid'"
       :class="[
         'grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 transition-opacity',
         pending ? 'opacity-50 pointer-events-none' : '',
       ]"
     >
-      <template v-for="item in interleavedItems" :key="item.kind === 'product' ? `p-${item.product.id}` : `int-${item.index}`">
+      <template
+        v-for="(item, itemIndex) in interleavedItems"
+        :key="item.kind === 'product' ? `p-${item.product.id}` : item.kind === 'tile' ? `tile-${item.tile.position}-${itemIndex}` : `int-${item.index}`"
+      >
         <ProductCard
           v-if="item.kind === 'product'"
           :product="item.product"
+          :priority="item.ordinal < EAGER_ROW_COUNT"
+          :lcp="item.ordinal === 0"
+          :presentation="categoryCardPresentation"
+          :show-image-thumbnails="categoryCardImageThumbnails"
         />
-        <div v-else class="col-span-2 sm:col-span-3 lg:col-span-4">
+        <div
+          v-else-if="item.kind === 'tile'"
+          :class="item.tile.colSpan === 3 ? 'sm:col-span-2 md:col-span-3' : item.tile.colSpan === 2 ? 'sm:col-span-2 lg:col-span-2' : ''"
+        >
+          <CategoryEditorialTile :tile="item.tile" />
+        </div>
+        
+        <div v-else class="col-span-full">
           <slot name="interleave" :index="item.index" />
         </div>
       </template>
@@ -368,10 +491,12 @@ const pageWindow = computed<Array<number | '…'>>(() => {
               @click="toggleColumnSort('name')"
             >{{ t('catalogue.col_product') }} <span class="text-primary-600">{{ sortIndicator('name') }}</span></th>
             <th
+              v-if="isFood"
               class="cursor-pointer select-none px-3 py-2.5 text-left font-medium hover:text-primary-700 dark:hover:text-primary-400"
               @click="toggleColumnSort('ean13')"
             >{{ t('catalogue.col_ean13') }} <span class="text-primary-600">{{ sortIndicator('ean13') }}</span></th>
             <th
+              v-if="isFood"
               class="cursor-pointer select-none px-3 py-2.5 text-left font-medium hover:text-primary-700 dark:hover:text-primary-400"
               @click="toggleColumnSort('weight')"
               :title="t('catalogue.col_format_title')"
@@ -379,12 +504,14 @@ const pageWindow = computed<Array<number | '…'>>(() => {
             <th
               class="cursor-pointer select-none px-3 py-2.5 text-right font-medium hover:text-primary-700 dark:hover:text-primary-400"
               @click="toggleColumnSort('price')"
-            >{{ t('catalogue.col_price_ht') }} <span class="text-primary-600">{{ sortIndicator('price') }}</span></th>
+            >{{ isFood ? t('catalogue.col_price_ht') : t('catalogue.col_price', 'Prix') }} <span class="text-primary-600">{{ sortIndicator('price') }}</span></th>
             <th
+              v-if="isFood"
               class="cursor-pointer select-none px-3 py-2.5 text-right font-medium hover:text-primary-700 dark:hover:text-primary-400"
               @click="toggleColumnSort('price-kg')"
             >{{ t('catalogue.col_price_kg') }} <span class="text-primary-600">{{ sortIndicator('price-kg') }}</span></th>
             <th
+              v-if="isFood"
               class="cursor-pointer select-none px-3 py-2.5 text-right font-medium hover:text-primary-700 dark:hover:text-primary-400"
               @click="toggleColumnSort('weight')"
             >{{ t('catalogue.col_weight') }} <span class="text-primary-600">{{ sortIndicator('weight') }}</span></th>
@@ -392,11 +519,20 @@ const pageWindow = computed<Array<number | '…'>>(() => {
           </tr>
         </thead>
         <tbody>
-          <template v-for="item in interleavedItems" :key="item.kind === 'product' ? `pr-${item.product.id}` : `intr-${item.index}`">
+          <template
+            v-for="(item, itemIndex) in interleavedItems"
+            :key="item.kind === 'product' ? `pr-${item.product.id}` : item.kind === 'tile' ? `tilr-${item.tile.position}-${itemIndex}` : `intr-${item.index}`"
+          >
             <ProductListRow
               v-if="item.kind === 'product'"
               :product="item.product"
             />
+            
+            <tr v-else-if="item.kind === 'tile'">
+              <td colspan="9" class="p-3">
+                <CategoryEditorialTile :tile="item.tile" />
+              </td>
+            </tr>
             <tr v-else>
               <td colspan="9" class="p-3">
                 <slot name="interleave" :index="item.index" />
@@ -408,7 +544,26 @@ const pageWindow = computed<Array<number | '…'>>(() => {
     </div>
 
     
+    <div v-if="interleaveOnBottom" class="mt-10">
+      <slot name="interleave" :index="-2" />
+    </div>
+
+    
+    <div
+      v-if="loadMoreMode && remainingProducts > 0 && currentLimit < 1000"
+      :class="echelle.categoryLoadMore"
+    >
+      <NuxtLink
+        :to="loadMoreHref()"
+        class="rounded border border-primary-600 px-5 py-3 text-xs font-bold uppercase text-primary-600 transition-colors hover:bg-primary-600 hover:text-white"
+      >
+        {{ loadMoreLabel }}
+      </NuxtLink>
+    </div>
+
+    
     <CategoryPaginationNav
+      v-else-if="!loadMoreMode"
       class="mt-10"
       :current-page="currentPage"
       :total-pages="totalPages"

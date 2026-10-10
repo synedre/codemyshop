@@ -6,10 +6,18 @@ interface FaqItem {
   answer_html: string
 }
 
+const { t } = useT()
+
 const props = defineProps<{
   items: FaqItem[]
   title?: string
 }>()
+
+const heading = computed(() => {
+  if (props.title) return props.title
+  const tr = t('silo.faq_title')
+  return tr.startsWith('silo.') ? 'FAQ' : tr
+})
 
 const sorted = computed(() =>
   [...props.items].sort((a, b) => a.position - b.position),
@@ -31,7 +39,7 @@ if (import.meta.dev && props.items.length > 0 && props.items.length < 15) {
 <template>
   <div v-if="sorted.length > 0">
     <h2 class="mb-6 text-2xl font-bold tracking-tight text-primary-900 dark:text-primary-100">
-      {{ title || 'Questions fréquentes' }}
+      {{ heading }}
     </h2>
 
     <div class="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">

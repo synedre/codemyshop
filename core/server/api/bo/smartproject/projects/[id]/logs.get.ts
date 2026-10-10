@@ -2,7 +2,9 @@
 
 import { listProjectLogs } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idStr = getRouterParam(event, 'id')
   const idProject = Number(idStr)
   if (!idProject || idProject <= 0) {

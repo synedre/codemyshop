@@ -2,7 +2,10 @@
 
 import { resolvePrice } from '~/enterprise/misc/pricing/server/utils/pricing'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   const idProduct  = Number(q.product)
   const idCustomer = Number(q.customer)

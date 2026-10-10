@@ -1,6 +1,7 @@
 
 
 import { sendEmailViaQueue } from '~/server/utils/email-queue'
+import { getShopConfig } from '~/server/utils/shop-config'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{
@@ -16,10 +17,15 @@ export default defineEventHandler(async (event) => {
   }
 
   
+  const shop = await getShopConfig(event).catch(() => null)
+
+  
   const html = buildEmailHtml({
-    subject: body.subject,
-    body:    body.body,
-    cta:     body.cta,
+    subject:    body.subject,
+    body:       body.body,
+    cta:        body.cta,
+    shopName:   shop?.shopName   || 'CodeMyShop',
+    shopDomain: shop?.shopDomain || '',
   })
 
   const result = await sendEmailViaQueue({
@@ -31,7 +37,7 @@ export default defineEventHandler(async (event) => {
   return result
 })
 
-function buildEmailHtml(params: { subject: string; body: string; cta?: string }): string {
+function buildEmailHtml(params: { subject: string; body: string; cta?: string; shopName: string; shopDomain: string }): string {
   const bodyHtml = params.body
     .split('\n\n')
     .map(p => `<p style="margin: 0 0 16px; color: #374151; font-size: 15px; line-height: 1.6;">${p}</p>`)
@@ -54,7 +60,7 @@ function buildEmailHtml(params: { subject: string; body: string; cta?: string })
       ${ctaHtml}
     </div>
     <p style="text-align: center; margin-top: 24px; font-size: 12px; color: #9CA3AF;">
-      Envoyé via CodeMyShop &mdash; codemyshop.com
+      Envoyé via ${params.shopName}${params.shopDomain ? ` &mdash; ${params.shopDomain}` : ''}
     </p>
   </div>
 </body>

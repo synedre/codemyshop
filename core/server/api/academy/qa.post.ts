@@ -7,7 +7,10 @@ import {
   findLearnerByEmail,
   insertQuestion,
 } from '~/internal/academy/server/utils/academy'
-import { signToken } from '~/server/utils/session-crypto'
+import { setHubSessionCookie } from '~/server/utils/session'
+import { resolveClientId } from '~/server/utils/db'
+
+const ACADEMY_SESSION_MAX_AGE_S = 60 * 60 * 24 * 30
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{
@@ -61,22 +64,15 @@ export default defineEventHandler(async (event) => {
     try {
       await createAiTask({
         name: `academy-qa:${idQa}`,
-        clientId: 'ac-hub',
+        clientId: resolveClientId(event),
         model: 'mistral-large-latest',
         systemPrompt: `Tu es un assistant pédagogique expert en e-commerce PrestaShop et Nuxt 3. Tu fais partie de l'Academy CodeMyShop d'CodeMyShop. Réponds en français, de manière claire, pratique et directe. Pas de blabla. Des exemples concrets.\n\nContexte de la leçon :\n${lessonContext}`,
         userPrompt: question,
       }, event)
     } catch {  }
 
-    const sessionData = { learnerId, email, pseudo: learnerPseudo, role: 'student', clientId: 'ac-hub' }
-    const token = signToken(sessionData)
-    setCookie(event, 'hub_session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-    })
+    const sessionData = { learnerId, email, pseudo: learnerPseudo, role: 'student', clientId: resolveClientId(event), userType: 'customer' }
+    setHubSessionCookie(event, sessionData, ACADEMY_SESSION_MAX_AGE_S)
 
     return {
       success: true,

@@ -1,10 +1,14 @@
 
 
 import type { BlogConfig, BlogPillar } from '~/types/theme'
+import { resolveSiteUrl } from '~/utils/site-url'
 
 interface BlogCategoryNode {
   id: number
   key: string
+  
+
+  keyFr: string
   name: string
   description: string
   metaTitle?: string
@@ -13,6 +17,7 @@ interface BlogCategoryNode {
   subcategories?: Array<{
     id: number
     key: string
+    keyFr: string
     name: string
     description: string
     metaTitle?: string
@@ -88,6 +93,11 @@ const DEFAULT_PILLAR: BlogPillar = { ...DEFAULT_UI, label: '', desc: '' }
 
 export function useBlogConfig() {
   const { resolvedClientId } = useClientDetection()
+  
+  
+  
+  
+  const psFrontUrl = useRuntimeConfig().public.psFrontUrl as string
   const dbConfig = useState<Record<string, unknown> | null>('client_db_config', () => null)
   const categoriesState = useState<BlogCategoryNode[]>('blog_categories', () => [])
   const blogRootIdState = useState<number | null>('blog_root_id', () => null)
@@ -186,18 +196,56 @@ export function useBlogConfig() {
   }
 
   
-  const author = computed(() => blogCfg.value?.author ?? { name: '', url: '/' })
 
-  const publisher = computed(() => blogCfg.value?.publisher ?? {
-    name: author.value.name,
-    url: author.value.url,
-  })
+  const hasCategoryTree = computed(() => (categoriesState.value?.length ?? 0) > 0)
 
   
-  const siteUrl = computed(() => {
-    const d = (dbConfig.value as any)?.domain
-    const hostname = d ? (Array.isArray(d) ? d[0] : d) : 'localhost'
-    return `https://${hostname}`
+  
+  
+
+  function findPillarKeyByFr(frKey: string): string | null {
+    const cat = (categoriesState.value || []).find(c => c.keyFr === frKey)
+    return cat && cat.key !== frKey ? cat.key : null
+  }
+
+  
+  function findSubcatKeyByFr(pillarKey: string, frKey: string): string | null {
+    const cat = (categoriesState.value || []).find(c => c.key === pillarKey)
+    const sub = cat?.subcategories?.find(s => s.keyFr === frKey)
+    return sub && sub.key !== frKey ? sub.key : null
+  }
+
+  
+  const author = computed(() => blogCfg.value?.author ?? { name: '', url: '/' })
+
+  
+  
+  
+  
+  
+  
+  const siteUrl = computed(() =>
+    resolveSiteUrl((dbConfig.value as any)?.domain, psFrontUrl),
+  )
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const pub = useRuntimeConfig().public as Record<string, unknown>
+  const brandName = String(pub.brandName ?? '')
+  const logoPath  = String(pub.logoPath ?? '')
+
+  const publisher = computed(() => blogCfg.value?.publisher ?? {
+    name: brandName,
+    url: siteUrl.value,
+    ...(logoPath ? { logo: logoPath } : {}),
   })
 
   
@@ -217,6 +265,9 @@ export function useBlogConfig() {
     getSubcatMeta,
     getPillarId,
     getSubcatId,
+    hasCategoryTree,
+    findPillarKeyByFr,
+    findSubcatKeyByFr,
     blogRootId,
     author,
     publisher,

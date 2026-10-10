@@ -3,6 +3,7 @@
 import { analyzeVisitor } from '~/server/tasks/analyze-visitor'
 import type { VisitorSignals } from '~/types/avatar'
 import { randomUUID } from 'node:crypto'
+import { resolveClientId } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const config  = useRuntimeConfig()
@@ -21,7 +22,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const clientId = config.aiClientId ?? 'ac-hub'
+  const clientId = String(config.aiClientId || resolveClientId())
 
   
   const avatar = await analyzeVisitor(visitorId, clientId, signals)

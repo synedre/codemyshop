@@ -70,6 +70,14 @@ export default {
         background: 'var(--color-background)',
         foreground: 'var(--color-foreground)',
         muted:      'var(--color-muted)',
+
+        
+        
+        
+        'surface-muted': 'var(--cs-surface-muted)',
+        'stock-ok':      'var(--cs-stock-ok)',
+        'rating-star':   'var(--cs-rating-star)',
+
         'header-bg': 'var(--color-header-bg)',
         'footer-bg': 'var(--color-footer-bg)',
 
@@ -110,4 +118,8 @@ export default {
       },
     },
   },
+  
+  
+  
+  plugins: [require('@tailwindcss/typography')],
 } satisfies Config

@@ -1,8 +1,25 @@
 
 
 import { rateLimit } from '../utils/redis'
+import { loadCategoryRootSlugs } from '../utils/category-roots'
 
 const BUCKETS: Array<{ name: string; match: RegExp; max: number; windowSec: number }> = [
+  
+  
+  
+  
+  
+  
+  
+  { name: 'auth',      match: /^\/api\/auth\/(login|register|password-reset|forgot-password)$/, max: 10, windowSec: 60 },
+  
+  
+  
+  
+  { name: 'contact',   match: /^\/api\/(contact|blog\/contact|email-verify|siret-verify)$/, max: 20, windowSec: 60 },
+  
+  
+  { name: 'forum-write', match: /^\/api\/forum\/(topic|post)$/, max: 10, windowSec: 60 },
   
   { name: 'catalogue', match: /^\/api\/catalogue\//,    max: 60,  windowSec: 60 },  
   
@@ -12,22 +29,30 @@ const BUCKETS: Array<{ name: string; match: RegExp; max: number; windowSec: numb
   
   { name: 'api',       match: /^\/api\//,                max: 120, windowSec: 60 },  
   
-  { name: 'page',      match: /^\/(produit|grossiste|marque|skateboard|marques)\//, max: 90, windowSec: 60 },
+  
+  
+  { name: 'page',      match: /^\/produit\//, max: 90, windowSec: 60 },
 ]
+const PAGE_BUCKET = BUCKETS.find((b) => b.name === 'page')!
+
+async function isCategoryPage(path: string): Promise<boolean> {
+  const m = /^\/([^/]+)\/./.exec(path)
+  if (!m) return false
+  return (await loadCategoryRootSlugs()).has(m[1])
+}
 
 const WHITELIST_UA = /(Googlebot|Bingbot|DuckDuckBot|YandexBot|Applebot|Slurp|Twitterbot|facebookexternalhit|LinkedInBot|WhatsApp|TelegramBot|PinterestBot|SemrushBot|AhrefsBot)/i
 
 const BLACKLIST_UA = /(scrapy|httrack|nikto|nuclei|sqlmap|gobuster|dirbuster)/i
 
-const SKIP_PATHS = /^\/(_nuxt|_ipx|_fonts|__sitemap|favicon|robots\.txt|sitemap|img\/|fonts\/)/
+const SKIP_PATHS = /^\/(_nuxt|_ipx|_fonts|__sitemap|favicon|robots\.txt|sitemap|img\/|fonts\/|api\/translations|api\/hub\/translations|api\/category|api\/catalogue\/|api\/product-|api\/footer-config)/
 
 function getClientIp(event: any): string {
-  const xff = getHeader(event, 'x-forwarded-for')
-  if (xff) return String(xff).split(',')[0].trim()
   const xreal = getHeader(event, 'x-real-ip')
-  if (xreal) return String(xreal).trim()
-  
-  return event.node?.req?.socket?.remoteAddress || 'unknown'
+  if (xreal) return String(xreal).trim()          
+  const xff = getHeader(event, 'x-forwarded-for')
+  if (xff) return String(xff).split(',')[0].trim() 
+  return 'loopback'                                
 }
 
 export default defineEventHandler(async (event) => {
@@ -42,6 +67,7 @@ export default defineEventHandler(async (event) => {
 
   
   const bucket = BUCKETS.find((b) => b.match.test(path))
+    ?? (await isCategoryPage(path) ? PAGE_BUCKET : undefined)
   if (!bucket) return  
 
   
@@ -57,7 +83,12 @@ export default defineEventHandler(async (event) => {
   }
 
   
+  
+  
+  
+  
   const ip = getClientIp(event)
+  if (ip === 'loopback') return
   const key = `${bucket.name}:${ip}`
   const allowed = await rateLimit(key, bucket.max, bucket.windowSec)
 

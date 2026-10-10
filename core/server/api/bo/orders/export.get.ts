@@ -2,8 +2,10 @@
 
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const { clientId } = getQuery(event) as { clientId?: string }
   const d = usePocPg()
 

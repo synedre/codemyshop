@@ -1,4 +1,4 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 import {
   replacePlaybookRoles,
@@ -18,6 +18,7 @@ interface PlaybookBody {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<PlaybookBody>(event)
   if (!body.title?.trim()) throw createError({ statusCode: 400, message: 'Titre requis' })
   if (!body.slug?.trim()) throw createError({ statusCode: 400, message: 'Slug requis' })

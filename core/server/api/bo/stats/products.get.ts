@@ -2,7 +2,9 @@
 
 import { useClientDb, useClientDbById } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const { clientId, limit } = getQuery(event) as Record<string, string>
   const lim = Math.min(Math.max(Number(limit) || 10, 1), 100)
   const db = clientId ? useClientDbById(String(clientId)) : useClientDb(event)

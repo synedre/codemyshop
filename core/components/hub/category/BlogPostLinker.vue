@@ -2,20 +2,20 @@
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Articles de blog liés</h2>
+        <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.category_blog_post_linker.title', 'Articles de blog liés') }}</h2>
         <p class="text-[11px] text-gray-400 mt-0.5">
-          Articles affichés dans le carrousel « lecture associée » sur la page catégorie publique. Pivot
+          {{ t('hub.ui.category_blog_post_linker.subtitle', 'Articles affichés dans le carrousel « lecture associée » sur la page catégorie publique.') }} {{ t('hub.ui.category_blog_post_linker.pivot', 'Pivot') }}
           <span class="font-mono">cs_category_cms</span>.
         </p>
       </div>
-      <span class="text-[10px] uppercase tracking-wide text-gray-400 font-mono">{{ model.length }} liés</span>
+      <span class="text-[10px] uppercase tracking-wide text-gray-400 font-mono">{{ t('hub.ui.category_blog_post_linker.linked_count', '{count} liés', { count: model.length }) }}</span>
     </div>
 
     <div class="relative">
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Rechercher un article par titre ou slug…"
+        :placeholder="t('hub.ui.category_blog_post_linker.search_ph', 'Rechercher un article par titre ou slug…')"
         @focus="open = true"
         @input="onSearch"
         class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
@@ -28,7 +28,7 @@
         v-if="open && (results.length || searching)"
         class="absolute z-20 mt-1 w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-h-80 overflow-auto"
       >
-        <div v-if="searching" class="px-3 py-2 text-xs text-gray-400">Recherche…</div>
+        <div v-if="searching" class="px-3 py-2 text-xs text-gray-400">{{ t('hub.ui.category_blog_post_linker.searching', 'Recherche…') }}</div>
         <ul v-else>
           <li
             v-for="r in results"
@@ -41,15 +41,15 @@
               <p class="text-gray-800 dark:text-slate-100 truncate font-medium">{{ r.title }}</p>
               <p class="text-[10px] text-gray-400 truncate font-mono">/{{ r.slug }}</p>
             </div>
-            <span v-if="isLinked(r.id)" class="text-[10px] uppercase text-emerald-600">Déjà lié</span>
-            <span v-else class="text-[10px] text-primary-600">+ Lier</span>
+            <span v-if="isLinked(r.id)" class="text-[10px] uppercase text-emerald-600">{{ t('hub.ui.category_blog_post_linker.already_linked', 'Déjà lié') }}</span>
+            <span v-else class="text-[10px] text-primary-600">{{ t('hub.ui.category_blog_post_linker.link', '+ Lier') }}</span>
           </li>
         </ul>
       </div>
     </div>
 
     <div v-if="!model.length" class="text-center py-10 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
-      <p class="text-xs text-gray-400">Aucun article lié. Tapez une recherche pour ajouter des articles existants.</p>
+      <p class="text-xs text-gray-400">{{ t('hub.ui.category_blog_post_linker.empty', 'Aucun article lié. Tapez une recherche pour ajouter des articles existants.') }}</p>
     </div>
 
     <ul v-else class="space-y-2">
@@ -70,7 +70,7 @@
           type="button"
           @click="move(idx, -1)"
           :disabled="idx === 0"
-          title="Monter"
+          :title="t('hub.ui.category_blog_post_linker.move_up', 'Monter')"
           class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>
@@ -79,7 +79,7 @@
           type="button"
           @click="move(idx, 1)"
           :disabled="idx === model.length - 1"
-          title="Descendre"
+          :title="t('hub.ui.category_blog_post_linker.move_down', 'Descendre')"
           class="text-gray-400 hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
@@ -87,7 +87,7 @@
         <button
           type="button"
           @click="unlink(idx)"
-          title="Délier"
+          :title="t('hub.ui.category_blog_post_linker.unlink', 'Délier')"
           class="text-gray-400 hover:text-red-600 transition-colors ml-1"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -100,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 import { onMounted, onUnmounted, ref } from 'vue'
 import type { LinkedBlogPost, CmsSearchResult } from '~/types/hub/category-silo'
 

@@ -1,8 +1,9 @@
 
 
 import { timingSafeEqual } from 'node:crypto'
-import { verifyToken } from '~/server/utils/session-crypto'
+import { readHubSessionToken } from '~/server/utils/session'
 import { generateCover } from '~/server/utils/cover-render'
+import { resolveClientId } from '~/server/utils/db'
 
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false
@@ -12,7 +13,7 @@ function safeEqual(a: string, b: string): boolean {
 function isAuthorized(event: any): boolean {
   const cookie = getCookie(event, 'hub_session')
   if (cookie) {
-    const session = verifyToken<any>(cookie)
+    const session = readHubSessionToken<any>(cookie)
     if (session?.isAdmin) return true
   }
   const auth = getRequestHeader(event, 'authorization') || ''
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
   const t0 = Date.now()
   const png = await generateCover({
     title: title.trim(),
-    tenant: typeof tenant === 'string' ? tenant : 'ac-hub',
+    tenant: typeof tenant === 'string' ? tenant : resolveClientId(event),
     usePhotoBg: typeof usePhotoBg === 'boolean' ? usePhotoBg : false,
     withAvatar: typeof withAvatar === 'boolean' ? withAvatar : true,
     forcePerso: typeof forcePerso === 'string' ? forcePerso : undefined,

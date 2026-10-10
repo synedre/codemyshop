@@ -1,5 +1,11 @@
 <script setup lang="ts">
 
+import { resolvePrivacyPolicyHref, stripPolicyAnchor } from '~/utils/privacy-notice'
+
+import { useDisplayTimeZone } from '../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
+
 const { t } = useT()
 
 const props = defineProps<{
@@ -8,6 +14,7 @@ const props = defineProps<{
 }>()
 
 const { public: publicConfig } = useRuntimeConfig()
+const privacyHref = resolvePrivacyPolicyHref(publicConfig.privacyPolicyPath)
 const responderName = (publicConfig.ownerName as string) || (publicConfig.brandName as string) || 'L\'auteur'
 const responderAvatar = (publicConfig.ownerAvatar as string) || ''
 
@@ -31,7 +38,7 @@ const errorMsg = ref('')
 
 function formatDate(raw: string): string {
   if (!raw) return ''
-  return new Date(raw).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(raw).toLocaleDateString('fr-FR', { timeZone: displayTz, day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 async function submit() {
@@ -171,10 +178,10 @@ async function submit() {
         >
           {{ submitting ? t('blogcomments.comments_submit_button_loading') : t('blogcomments.comments_submit_button_default') }}
         </button>
-        <p
-          class="text-[10px] text-gray-400 dark:text-slate-600 leading-relaxed mt-3"
-          v-html="t('blogcomments.comments_privacy_notice')"
-        />
+        <p class="text-[10px] text-gray-400 dark:text-slate-600 leading-relaxed mt-3">
+          {{ stripPolicyAnchor(t('blogcomments.comments_privacy_notice')) }}
+          <NuxtLink v-if="privacyHref" :to="privacyHref" class="underline">{{ t('privacy.policy_link_label', 'Politique de confidentialité') }}</NuxtLink>
+        </p>
       </form>
     </div>
   </section>

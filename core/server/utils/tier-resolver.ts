@@ -13,10 +13,31 @@ interface TenantInfo {
 const cache = new Map<string, { value: TenantInfo, expiresAt: number }>()
 const CACHE_TTL_MS = 60_000  
 
+const VALID_TIERS: readonly Tier[] = ['community', 'starter', 'growth', 'pro', 'custom']
+
 export async function resolveTenantInfo(clientId: string): Promise<TenantInfo> {
   const now = Date.now()
   const cached = cache.get(clientId)
   if (cached && cached.expiresAt > now) return cached.value
+
+  
+  
+  
+  
+  
+  
+  
+  
+  const overrideTier = (useRuntimeConfig() as any)?.tenantTier
+  if (overrideTier && VALID_TIERS.includes(String(overrideTier) as Tier)) {
+    const info: TenantInfo = {
+      tier: String(overrideTier) as Tier,
+      marketplaceAddons: [],
+      isInternalTenant: clientId === 'ac-hub',
+    }
+    cache.set(clientId, { value: info, expiresAt: now + CACHE_TTL_MS })
+    return info
+  }
 
   
   

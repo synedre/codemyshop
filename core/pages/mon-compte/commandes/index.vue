@@ -2,20 +2,26 @@
 <script setup lang="ts">
 import type { OrderData } from '~/server/connectors/base'
 
+import { useDisplayTimeZone } from '../../../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
+
 definePageMeta({ layout: false, ssr: false })
+const { localePath } = useLocalePath()
 
 const { t } = useHubT()
 const _cfg = useRuntimeConfig()
 const clientId = String((_cfg.public as any).clientId ?? '')
 const brand = String((_cfg.public as any).brandName ?? '')
 const { customer, checkSession } = useCustomerAuth()
+const { isSidebarAccount } = useAccountLayout()
 const orders = ref<OrderData[]>([])
 const loading = ref(true)
 const selectedIds = ref<Set<number>>(new Set())
 const downloading = ref(false)
 
 const formatPrice = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n)
-const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : ''
+const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', { timeZone: displayTz, day: '2-digit', month: 'long', year: 'numeric' }) : ''
 
 const invoiceOrders = computed(() => orders.value.filter(o => o.invoiceNumber))
 const allSelected = computed(() => invoiceOrders.value.length > 0 && invoiceOrders.value.every(o => selectedIds.value.has(o.id)))
@@ -75,7 +81,7 @@ async function downloadAllInvoices() {
 async function loadOrders() {
   if (!customer.value) {
     await checkSession()
-    if (!customer.value) return navigateTo('/connexion')
+    if (!customer.value) return navigateTo(localePath('/connexion'))
   }
   loading.value = true
   try {
@@ -87,23 +93,16 @@ async function loadOrders() {
 }
 
 onMounted(loadOrders)
-useHead({ title: brand ? `Mes commandes — ${brand}` : 'Mes commandes' })
+useHead({ title: brand ? `${t('account.orders_head_title', 'Mes commandes')} — ${brand}` : t('account.orders_head_title', 'Mes commandes') })
 </script>
 
 <template>
   <NuxtLayout name="white-label">
-    <div class="min-h-screen bg-gray-50">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <div class="flex items-center justify-between mb-8">
-          <div class="flex items-center gap-3">
-            <NuxtLink to="/mon-compte" class="text-gray-400 hover:text-gray-600">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-            </NuxtLink>
-            <h1 class="text-2xl font-bold text-gray-900">{{ t('account.orders_title') }}</h1>
-          </div>
+    <AccountShell :title="t('account.orders_title', 'Vos commandes')" legacy-width="max-w-4xl">
 
-          
-          <div v-if="!loading && invoiceOrders.length" class="flex items-center gap-2">
+      
+      <template #actions>
+        <div v-if="!loading && invoiceOrders.length" class="flex items-center gap-2">
             <button
               v-if="selectedIds.size > 0"
               :disabled="downloading"
@@ -111,7 +110,7 @@ useHead({ title: brand ? `Mes commandes — ${brand}` : 'Mes commandes' })
               @click="downloadInvoices"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" /></svg>
-              {{ downloading ? t('account.orders_downloading') : `${selectedIds.size} facture${selectedIds.size > 1 ? 's' : ''} (ZIP)` }}
+              {{ downloading ? t('account.orders_downloading', 'Préparation…') : `${selectedIds.size} facture${selectedIds.size > 1 ? 's' : ''} (ZIP)` }}
             </button>
             <button
               v-else
@@ -120,12 +119,13 @@ useHead({ title: brand ? `Mes commandes — ${brand}` : 'Mes commandes' })
               @click="downloadAllInvoices"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3" /></svg>
-              {{ downloading ? t('account.orders_downloading') : t('account.orders_all_invoices') }}
+              {{ downloading ? t('account.orders_downloading', 'Préparation…') : t('account.orders_all_invoices', 'Toutes mes factures (ZIP)') }}
             </button>
-          </div>
         </div>
+      </template>
 
-        <div v-if="loading" class="text-center py-12 text-gray-400 text-sm">{{ t('account.account_loading') }}</div>
+      <div class="max-w-3xl">
+        <div v-if="loading" class="text-center py-12 text-gray-400 text-sm">{{ t('account.account_loading', 'Chargement…') }}</div>
 
         <div v-else-if="orders.length" class="space-y-3">
 
@@ -137,7 +137,7 @@ useHead({ title: brand ? `Mes commandes — ${brand}` : 'Mes commandes' })
               class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-600 cursor-pointer"
               @change="toggleAll"
             />
-            <span class="text-xs text-gray-400">{{ t('account.orders_select_all') }} ({{ invoiceOrders.length }})</span>
+            <span class="text-xs text-gray-400">{{ t('account.orders_select_all', 'Tout sélectionner') }} ({{ invoiceOrders.length }})</span>
           </div>
 
           
@@ -157,7 +157,9 @@ useHead({ title: brand ? `Mes commandes — ${brand}` : 'Mes commandes' })
               />
             </div>
 
+            
             <NuxtLink
+              v-if="!isSidebarAccount"
               :to="`/mon-compte/commandes/${order.id}`"
               class="flex-1 bg-white rounded-xl p-5 border border-gray-100 hover:border-primary-600 transition-colors"
             >
@@ -172,17 +174,72 @@ useHead({ title: brand ? `Mes commandes — ${brand}` : 'Mes commandes' })
                 <span class="text-xs text-gray-500">{{ order.status }}</span>
                 <span class="text-xs text-gray-400">{{ order.items.length }} article{{ order.items.length > 1 ? 's' : '' }}</span>
                 <span class="text-xs text-gray-400">{{ order.payment }}</span>
-                <span v-if="order.invoiceNumber" class="text-[10px] text-primary-600 font-medium">{{ t('account.orders_invoice_number') }}{{ order.invoiceNumber }}</span>
+                <span v-if="order.invoiceNumber" class="text-[10px] text-primary-600 font-medium">{{ t('account.orders_invoice_number', 'Facture n°') }}{{ order.invoiceNumber }}</span>
               </div>
             </NuxtLink>
+
+            
+            <div v-else class="flex-1 py-4">
+              <div
+                v-for="item in order.items"
+                :key="`${item.productId}-${item.combinationId || 0}`"
+                class="flex gap-5 mb-4 last:mb-0"
+              >
+                <div class="w-28 h-28 shrink-0 bg-gray-50 rounded overflow-hidden">
+                  <img
+                    v-if="item.image"
+                    :src="item.image"
+                    :alt="item.name"
+                    class="w-full h-full object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex justify-between gap-4">
+                    <p class="text-base text-gray-900">{{ item.name }}</p>
+                    <p class="shrink-0 text-sm">
+                      <span class="text-primary-600 font-medium">{{ formatPrice(item.priceTTC) }}</span>
+                      <span
+                        v-if="item.priceHTBeforeDiscount"
+                        class="text-gray-400 line-through ml-2"
+                      >{{ formatPrice(item.priceHTBeforeDiscount) }}</span>
+                    </p>
+                  </div>
+                  <p v-for="attr in item.attributes" :key="attr" class="text-sm text-gray-600 mt-1">{{ attr }}</p>
+                </div>
+              </div>
+
+              <div class="flex items-end justify-between gap-4">
+                <div>
+                  <p class="text-base text-gray-900">
+                    {{ t('account.orders_placed_on', 'Commande passée le') }} {{ formatDate(order.dateAdd) }}
+                  </p>
+                  <p class="text-base text-gray-900 mt-1">
+                    {{ t('account.orders_status_label', 'Statut :') }} {{ order.status }}
+                  </p>
+                </div>
+                <NuxtLink
+                  :to="`/mon-compte/commandes/${order.id}`"
+                  class="shrink-0 px-6 py-2.5 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition-colors"
+                >
+                  {{ t('account.orders_details_cta', 'Détails') }}
+                </NuxtLink>
+              </div>
+
+              <p class="text-xs text-gray-400 mt-2">
+                #{{ order.reference }} — {{ formatDate(order.dateAdd) }}
+                <span v-if="order.invoiceNumber" class="text-primary-600 font-medium ml-1">{{ t('account.orders_invoice_number', 'Facture n°') }}{{ order.invoiceNumber }}</span>
+              </p>
+            </div>
           </div>
         </div>
 
-        <div v-else class="text-center py-16">
-          <p class="text-gray-500 text-sm mb-4">{{ t('account.orders_empty') }}</p>
-          <NuxtLink to="/" class="inline-flex px-6 py-3 bg-primary-600 text-white font-semibold rounded-xl text-sm">{{ t('account.orders_discover') }}</NuxtLink>
+        <div v-else class="py-16">
+          <p class="text-gray-500 text-sm mb-4">{{ t('account.orders_empty', 'Vous n\'avez encore passé aucune commande.') }}</p>
+          
+          <NuxtLink to="/" :class="isSidebarAccount ? 'inline-flex items-center justify-center px-5 h-[31px] rounded-[5px] bg-primary-600 text-white text-[13px] font-bold uppercase hover:opacity-90 transition-opacity' : 'inline-flex px-6 py-3 bg-primary-600 text-white font-semibold rounded-xl text-sm'">{{ t('account.orders_discover', 'Découvrir la boutique') }}</NuxtLink>
         </div>
       </div>
-    </div>
+    </AccountShell>
   </NuxtLayout>
 </template>

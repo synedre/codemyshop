@@ -2,6 +2,7 @@
 
 import { sendEmailViaQueue } from '~/server/utils/email-queue'
 import { crmCreateLeadProject } from '~/server/utils/crm-direct'
+import { getShopConfig } from '~/server/utils/shop-config'
 
 interface QualifyBody {
   company: string
@@ -50,6 +51,11 @@ export default defineEventHandler(async (event) => {
   }
 
   
+  const shop = await getShopConfig(event).catch(() => null)
+  const shopName  = shop?.shopName  || 'CodeMyShop'
+  const shopEmail = shop?.shopEmail || ''
+
+  
   const adminHtml = `
     <div style="font-family: Inter, system-ui, sans-serif; max-width: 600px; margin: 0 auto; background: #0F0F1A; color: #e2e8f0; padding: 32px; border-radius: 16px;">
       <h1 style="font-size: 20px; color: #fff; margin-bottom: 24px;">🎯 Nouveau lead CodeMyShop Premium</h1>
@@ -67,11 +73,13 @@ export default defineEventHandler(async (event) => {
     </div>
   `
 
-  await sendEmailViaQueue({
-    to: 'contact@codemyshop.com',
-    subject: `🎯 Lead CMS Premium — ${company} (${revenue})`,
-    html: adminHtml,
-  })
+  if (shopEmail) {
+    await sendEmailViaQueue({
+      to: shopEmail,
+      subject: `🎯 Lead CMS Premium — ${company} (${revenue})`,
+      html: adminHtml,
+    })
+  }
 
   
   const prospectHtml = `
@@ -79,7 +87,7 @@ export default defineEventHandler(async (event) => {
       <h1 style="font-size: 20px; color: #fff; margin-bottom: 16px;">Votre demande a bien été enregistrée</h1>
       <p style="color: #94a3b8; line-height: 1.8;">
         Bonjour,<br><br>
-        Merci pour votre intérêt pour CodeMyShop. CodeMyShop vous contactera dans les 24 heures
+        Merci pour votre intérêt pour CodeMyShop. Notre équipe vous contactera dans les 24 heures
         pour votre audit d'architecture personnalisé.<br><br>
         En attendant, vous pouvez consulter notre approche sur
         <a href="https://codemyshop.com/souverainete-numerique" style="color: #7C3AED;">la souveraineté numérique</a>.
@@ -87,7 +95,7 @@ export default defineEventHandler(async (event) => {
       <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 24px 0;">
       <p style="font-size: 12px; color: #64748b;">
         CodeMyShop — Infrastructure e-commerce souveraine<br>
-        CodeMyShop | contact@codemyshop.com
+        ${shopName}${shopEmail ? ` | ${shopEmail}` : ''}
       </p>
     </div>
   `
@@ -96,7 +104,7 @@ export default defineEventHandler(async (event) => {
     to: email,
     subject: 'CodeMyShop — Votre audit d\'architecture est programmé',
     html: prospectHtml,
-    replyTo: 'contact@codemyshop.com',
+    replyTo: shopEmail || undefined,
   })
 
   return {

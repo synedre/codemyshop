@@ -5,8 +5,8 @@
     <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 dark:border-slate-800 shrink-0">
       <div class="flex items-center justify-between mb-3">
         <div>
-          <h2 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">Suivi d'activité équipe</h2>
-          <p class="text-xs text-gray-400 mt-0.5">{{ doneTasks }} / {{ tasks.length }} tâches terminées aujourd'hui</p>
+          <h2 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">{{ t('hub.ui.team_tasks.title', 'Suivi d\'activité équipe') }}</h2>
+          <p class="text-xs text-gray-400 mt-0.5">{{ t('hub.ui.team_tasks.done_today', '{done} / {total} tâches terminées aujourd\'hui', { done: doneTasks, total: tasks.length }) }}</p>
         </div>
         <button
           @click="showTaskModal = true"
@@ -15,7 +15,7 @@
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Assigner une tâche
+          {{ t('hub.ui.team_tasks.assign_task', 'Assigner une tâche') }}
         </button>
       </div>
 
@@ -61,7 +61,7 @@
           <div class="flex items-center gap-2 mt-0.5">
             
             <span :class="priorityDot(task.priority)" class="w-1.5 h-1.5 rounded-full inline-block shrink-0" />
-            <span class="text-xs text-gray-400 capitalize">{{ task.priority }}</span>
+            <span class="text-xs text-gray-400 capitalize">{{ priorityLabel(task.priority) }}</span>
           </div>
         </div>
 
@@ -88,7 +88,7 @@
         <svg class="w-8 h-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <p class="text-sm">Aucune tâche pour aujourd'hui</p>
+        <p class="text-sm">{{ t('hub.ui.team_tasks.empty', 'Aucune tâche pour aujourd\'hui') }}</p>
       </div>
     </div>
 
@@ -118,7 +118,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
                 </svg>
               </div>
-              <h3 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">Assigner une tâche</h3>
+              <h3 class="text-sm font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100">{{ t('hub.ui.team_tasks.assign_task', 'Assigner une tâche') }}</h3>
             </div>
             <button @click="showTaskModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -130,27 +130,27 @@
           
           <div class="px-6 py-5 space-y-4">
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Titre de la tâche <span class="text-red-400">*</span></label>
-              <input v-model="newTask.title" type="text" placeholder="ex: Préparer devis client Dupont" class="field" />
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.team_tasks.task_title', 'Titre de la tâche') }} <span class="text-red-400">*</span></label>
+              <input v-model="newTask.title" type="text" :placeholder="t('hub.ui.team_tasks.task_title_ph', 'ex: Préparer devis client Dupont')" class="field" />
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Assigner à</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.team_tasks.assign_to', 'Assigner à') }}</label>
                 <select v-model="newTask.assigneeIdx" class="field">
                   <option v-for="(m, i) in TEAM" :key="i" :value="i">{{ m.name }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Priorité</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.team_tasks.priority', 'Priorité') }}</label>
                 <select v-model="newTask.priority" class="field">
-                  <option value="low">Basse</option>
-                  <option value="medium">Moyenne</option>
-                  <option value="high">Haute</option>
+                  <option value="low">{{ t('hub.ui.team_tasks.prio_low', 'Basse') }}</option>
+                  <option value="medium">{{ t('hub.ui.team_tasks.prio_medium', 'Moyenne') }}</option>
+                  <option value="high">{{ t('hub.ui.team_tasks.prio_high', 'Haute') }}</option>
                 </select>
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Statut initial</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ t('hub.ui.team_tasks.initial_status', 'Statut initial') }}</label>
               <div class="flex gap-2">
                 <button
                   v-for="s in (['todo', 'in_progress'] as const)"
@@ -159,7 +159,7 @@
                   :class="newTask.status === s ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-slate-900 dark:bg-slate-900 text-gray-600 border-gray-200 dark:border-slate-700 dark:border-slate-700 hover:border-primary-300'"
                   class="flex-1 py-1.5 text-xs font-medium border rounded-lg transition-colors"
                 >
-                  {{ s === 'todo' ? 'À faire' : 'En cours' }}
+                  {{ s === 'todo' ? t('hub.ui.team_tasks.status_todo', 'À faire') : t('hub.ui.team_tasks.status_in_progress', 'En cours') }}
                 </button>
               </div>
             </div>
@@ -168,14 +168,14 @@
           
           <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-slate-800 dark:border-slate-800">
             <button @click="showTaskModal = false" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 dark:text-slate-200 transition-colors">
-              Annuler
+              {{ t('hub.ui.team_tasks.cancel', 'Annuler') }}
             </button>
             <button
               @click="submitTask"
               :disabled="!newTask.title"
               class="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-40"
             >
-              Créer la tâche
+              {{ t('hub.ui.team_tasks.create_task', 'Créer la tâche') }}
             </button>
           </div>
         </div>
@@ -185,6 +185,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
 export interface TeamMember { name: string; initials: string; color: string }
 export interface Task {
   id:       number
@@ -240,7 +241,18 @@ function taskStatusBadge(s: Task['status']) {
   }[s]
 }
 function taskStatusLabel(s: Task['status']) {
-  return { todo: 'À faire', in_progress: 'En cours', done: 'Terminé' }[s]
+  return {
+    todo: t('hub.ui.team_tasks.status_todo', 'À faire'),
+    in_progress: t('hub.ui.team_tasks.status_in_progress', 'En cours'),
+    done: t('hub.ui.team_tasks.status_done', 'Terminé'),
+  }[s]
+}
+function priorityLabel(p: Task['priority']) {
+  return {
+    low: t('hub.ui.team_tasks.prio_low', 'Basse'),
+    medium: t('hub.ui.team_tasks.prio_medium', 'Moyenne'),
+    high: t('hub.ui.team_tasks.prio_high', 'Haute'),
+  }[p]
 }
 function priorityDot(p: Task['priority']) {
   return { low: 'bg-gray-300', medium: 'bg-amber-400', high: 'bg-red-400' }[p]

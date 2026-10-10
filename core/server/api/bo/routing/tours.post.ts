@@ -2,7 +2,10 @@
 
 import { createTour } from '~/modules/routing/server/utils/routing'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     label: string
     tourDate: string

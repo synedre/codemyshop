@@ -1,5 +1,7 @@
 
 
+import { resolveClientId } from './db'
+
 export interface AcademyLesson {
   title: string
   content: string
@@ -8,6 +10,8 @@ export interface AcademyLesson {
   mentorQuote?: string
   mentorSource?: string
   dictionaryTerms?: string[]
+  
+  indexable?: boolean
 }
 
 export interface AcademyLessonWithMeta extends AcademyLesson {
@@ -25,6 +29,8 @@ export interface AcademyModule {
   difficulty: string
   duration: string
   mentor?: string
+  
+  indexable?: boolean
   lessons: AcademyLesson[]
 }
 
@@ -78,7 +84,7 @@ const DB_CACHE_TTL = 300_000
 
 async function loadFromDb(): Promise<AcademyData | null> {
   const config = useRuntimeConfig()
-  const clientId = (config.clientId as string) || 'ac-hub'
+  const clientId = (config.clientId as string) || resolveClientId()
   const cached = _dbCacheMap.get(clientId)
   if (cached && Date.now() - cached.ts < DB_CACHE_TTL) return cached.data
   try {
@@ -106,6 +112,7 @@ async function loadFromDb(): Promise<AcademyData | null> {
           mentorQuote: l.mentor_quote || '',
           mentorSource: l.mentor_source || '',
           dictionaryTerms: safeJson(l.dictionary_terms),
+          indexable: isIndexable(l.indexation),
         }))
       return {
         id: m.id_module,
@@ -117,6 +124,7 @@ async function loadFromDb(): Promise<AcademyData | null> {
         difficulty: m.difficulty || 'debutant',
         duration: m.duration || '',
         mentor: m.mentor || '',
+        indexable: isIndexable(m.indexation),
         lessons,
       }
     })
@@ -142,6 +150,10 @@ async function loadFromDb(): Promise<AcademyData | null> {
   }
 }
 
+export function isIndexable(indexation: unknown): boolean {
+  return indexation === null || indexation === undefined || Number(indexation) !== 0
+}
+
 function safeJson(str: string | null): string[] {
   if (!str) return []
   try { return JSON.parse(str) } catch { return [] }
@@ -155,7 +167,7 @@ export async function getAllModulesAsync(): Promise<AcademyData> {
 
 export function getAllModules(): AcademyData {
   const config = useRuntimeConfig()
-  const clientId = (config.clientId as string) || 'ac-hub'
+  const clientId = (config.clientId as string) || resolveClientId()
   return _dbCacheMap.get(clientId)?.data ?? _emptyData
 }
 
@@ -166,14 +178,14 @@ export async function getModuleBySlugAsync(slug: string): Promise<AcademyModuleW
 
 export function getModuleBySlug(slug: string): AcademyModuleWithMeta | null {
   const config = useRuntimeConfig()
-  const clientId = (config.clientId as string) || 'ac-hub'
+  const clientId = (config.clientId as string) || resolveClientId()
   const data = _dbCacheMap.get(clientId)?.data ?? _emptyData
   return _resolveModule(data, slug)
 }
 
 export function findModuleByPartialSlug(slug: string): AcademyModuleWithMeta | null {
   const config = useRuntimeConfig()
-  const clientId = (config.clientId as string) || 'ac-hub'
+  const clientId = (config.clientId as string) || resolveClientId()
   const data = _dbCacheMap.get(clientId)?.data ?? _emptyData
   
   const exact = data.modules.find(m => m.slug === slug)

@@ -9,9 +9,13 @@ interface DictionaryTerm {
 export function useDictionaryLinks() {
   const terms = ref<DictionaryTerm[]>([])
   const loaded = ref(false)
+  
+  
+  const glossaireActif = (useRuntimeConfig().public as any)?.dictionnaire === true
 
   async function fetchTerms() {
     if (loaded.value) return
+    if (!glossaireActif) { loaded.value = true; return }
     try {
       const data = await $fetch<{ entries: DictionaryTerm[] } | DictionaryTerm[]>('/api/dictionary')
       const entries = Array.isArray(data) ? data : (data?.entries ?? [])

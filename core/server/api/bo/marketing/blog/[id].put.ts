@@ -4,6 +4,27 @@ import { useClientDb } from '~/server/utils/db'
 import { requireRoleOrSaas } from '~/server/utils/session'
 import { replaceFaqsForParent, upsertFaqTranslations } from '~/modules/faq/server/utils/faq'
 import { upsertCmsExtra as upsertCmsExtraFacade } from '~/modules/cms-extra/server/utils/cms-extra'
+import { slugifyBlog as slugify, buildBlogFullSlug, buildBlogSlugPrefix, isValidArticleSlugPrefix, upsertBlogRedirect, blogPurgePathsFromSlug } from '~/server/utils/blog-slug'
+import { purgeSwrCache } from '~/server/utils/purge-swr-cache'
+
+async function assertArticleCategoryDepth(db: any, categoryId: number): Promise<void> {
+  const prefix = await buildBlogSlugPrefix(db, categoryId)
+  if (isValidArticleSlugPrefix(prefix)) return
+  const children = await db.query<any>(
+    `SELECT l.name FROM ps_cms_category c
+       JOIN ps_cms_category_lang l ON l.id_cms_category = c.id_cms_category AND l.id_lang = 1
+      WHERE c.id_parent = ? AND c.active = 1
+      ORDER BY c.position ASC, c.id_cms_category ASC`,
+    [categoryId],
+  )
+  const names = (children as any[]).map((r) => String(r.name || '')).filter(Boolean)
+  throw createError({
+    statusCode: 422,
+    message: names.length
+      ? `Un article se range sous une sous-catégorie, pas sous un pilier — sinon son URL ne mène nulle part. Sous-catégories disponibles : ${names.join(', ')}.`
+      : 'Un article se range sous une sous-catégorie, pas sous un pilier — sinon son URL ne mène nulle part. Cette catégorie n\'a aucune sous-catégorie : en créer une d\'abord.',
+  })
+}
 
 export default defineEventHandler(async (event) => {
   requireRoleOrSaas(event, ['root', 'founder', 'market'])
@@ -20,11 +41,13 @@ export default defineEventHandler(async (event) => {
 
   const isNew = rawId === 'new' || Number(rawId) === 0
 
+  
+  
+  
   const langFields = {
     meta_title: body.title !== undefined ? String(body.title || '') : undefined,
     head_seo_title: body.headSeoTitle !== undefined ? String(body.headSeoTitle || '') : undefined,
     meta_description: body.metaDescription !== undefined ? String(body.metaDescription || '') : undefined,
-    link_rewrite: body.linkRewrite !== undefined ? slugify(String(body.linkRewrite || '')) : undefined,
     content: body.content !== undefined ? String(body.content || '') : undefined,
   }
 
@@ -34,8 +57,17 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: 'Création autorisée uniquement en langue master (id_lang=1)' })
     }
     const title = langFields.meta_title || ''
-    const linkRewrite = langFields.link_rewrite || slugify(title)
     if (!title) throw createError({ statusCode: 422, message: 'Titre obligatoire' })
+
+    const categoryId = Number(body.categoryId) || 0
+    if (categoryId <= 0 || categoryId === 1) {
+      throw createError({ statusCode: 422, message: 'Catégorie de blog obligatoire (≠ racine)' })
+    }
+    await assertArticleCategoryDepth(db, categoryId)
+
+    
+    
+    const linkRewrite = await buildBlogFullSlug(db, categoryId, body.linkRewrite || title)
     if (!linkRewrite) throw createError({ statusCode: 422, message: 'URL obligatoire' })
 
     
@@ -44,11 +76,6 @@ export default defineEventHandler(async (event) => {
        WHERE c.active = 1 AND cl.link_rewrite = ?`, [linkRewrite])
     if (dupCheck) {
       throw createError({ statusCode: 422, message: `Slug déjà utilisé par l'article #${dupCheck.id_cms}` })
-    }
-
-    const categoryId = Number(body.categoryId) || 0
-    if (categoryId <= 0 || categoryId === 1) {
-      throw createError({ statusCode: 422, message: 'Catégorie de blog obligatoire (≠ racine)' })
     }
 
     const active = body.active ? 1 : 0
@@ -86,12 +113,16 @@ export default defineEventHandler(async (event) => {
       await upsertCmsExtraFacade(newId, body, { event })
     } catch {  }
 
+    
+    
+    await purgeSwrCache(blogPurgePathsFromSlug(linkRewrite))
+
     return { success: true, id: newId, langId, isMaster, created: true }
   }
 
   
   const id = Number(rawId)
-  const exists = await db.get<any>(`SELECT id_cms, id_cms_category FROM ps_cms WHERE id_cms = ?`, [id])
+  const exists = await db.get<any>(`SELECT id_cms, id_cms_category, active FROM ps_cms WHERE id_cms = ?`, [id])
   if (!exists) throw createError({ statusCode: 404, message: 'Article introuvable' })
 
   
@@ -99,21 +130,55 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Article introuvable (landing page)' })
   }
 
+  
+  
+  const prevMasterRow = await db.get<any>(
+    `SELECT link_rewrite FROM ps_cms_lang WHERE id_cms = ? AND id_lang = 1 AND id_shop = 1`, [id])
+  const prevMasterSlug: string = prevMasterRow?.link_rewrite || ''
+  let authoritativeSlug = prevMasterSlug
+  let isActiveAfter = Number(exists.active) === 1
+
   if (isMaster) {
     const cf: string[] = []
     const cp: any[] = []
+    let effectiveCat = Number(exists.id_cms_category)
     if (body.categoryId !== undefined) {
       const newCat = Number(body.categoryId) || 0
       if (newCat <= 0 || newCat === 1) {
         throw createError({ statusCode: 422, message: 'Catégorie de blog obligatoire (≠ racine)' })
       }
+      await assertArticleCategoryDepth(db, newCat)
       cf.push('id_cms_category = ?'); cp.push(newCat)
+      effectiveCat = newCat
     }
-    if (body.active !== undefined) { cf.push('active = ?'); cp.push(body.active ? 1 : 0) }
+    if (body.active !== undefined) { cf.push('active = ?'); cp.push(body.active ? 1 : 0); isActiveAfter = !!body.active }
     if (body.indexation !== undefined) { cf.push('indexation = ?'); cp.push(body.indexation ? 1 : 0) }
     if (cf.length) {
       
       await db.run(`UPDATE ps_cms SET ${cf.join(', ')} WHERE id_cms = ?`, [...cp, id])
+    }
+
+    
+    
+    const finalInput = body.linkRewrite !== undefined ? body.linkRewrite : prevMasterSlug
+    const recomputed = await buildBlogFullSlug(db, effectiveCat, finalInput)
+    if (recomputed) authoritativeSlug = recomputed
+  }
+
+  
+  
+  if (isMaster && authoritativeSlug && authoritativeSlug !== prevMasterSlug) {
+    const dupCheck = await db.get<any>(
+      `SELECT c.id_cms FROM ps_cms c JOIN ps_cms_lang cl ON c.id_cms = cl.id_cms AND cl.id_lang = 1
+       WHERE c.active = 1 AND cl.link_rewrite = ? AND c.id_cms <> ?`, [authoritativeSlug, id])
+    if (dupCheck) {
+      throw createError({ statusCode: 422, message: `Slug déjà utilisé par l'article #${dupCheck.id_cms}` })
+    }
+    
+    await db.run(`UPDATE ps_cms_lang SET link_rewrite = ? WHERE id_cms = ?`, [authoritativeSlug, id])
+    
+    if (isActiveAfter && prevMasterSlug) {
+      await upsertBlogRedirect(db, prevMasterSlug, authoritativeSlug, id)
     }
   }
 
@@ -124,23 +189,13 @@ export default defineEventHandler(async (event) => {
         FROM ps_cms_lang WHERE id_cms = ? AND id_lang = ? AND id_shop = 1
     `, [id, langId])
 
-    
-    const newSlug = langFields.link_rewrite ?? existingLang?.link_rewrite
-    if (newSlug && langFields.link_rewrite && langFields.link_rewrite !== existingLang?.link_rewrite) {
-      const dupCheck = await db.get<any>(
-        `SELECT c.id_cms FROM ps_cms c JOIN ps_cms_lang cl ON c.id_cms = cl.id_cms AND cl.id_lang = 1
-         WHERE c.active = 1 AND cl.link_rewrite = ? AND c.id_cms <> ?`, [langFields.link_rewrite, id])
-      if (dupCheck) {
-        throw createError({ statusCode: 422, message: `Slug déjà utilisé par l'article #${dupCheck.id_cms}` })
-      }
-    }
-
     const row = {
       meta_title: langFields.meta_title ?? existingLang?.meta_title ?? '',
       head_seo_title: langFields.head_seo_title ?? existingLang?.head_seo_title ?? '',
       meta_description: langFields.meta_description ?? existingLang?.meta_description ?? '',
       content: langFields.content ?? existingLang?.content ?? '',
-      link_rewrite: langFields.link_rewrite ?? existingLang?.link_rewrite ?? slugify(langFields.meta_title || existingLang?.meta_title || ''),
+      
+      link_rewrite: authoritativeSlug || existingLang?.link_rewrite || slugify(langFields.meta_title || existingLang?.meta_title || ''),
     }
 
     await db.run(`
@@ -206,17 +261,13 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  
+  
+  const purgePaths = blogPurgePathsFromSlug(authoritativeSlug)
+  if (prevMasterSlug && prevMasterSlug !== authoritativeSlug) {
+    purgePaths.push(...blogPurgePathsFromSlug(prevMasterSlug))
+  }
+  await purgeSwrCache(purgePaths)
+
   return { success: true, id, langId, isMaster, created: false }
 })
-
-function slugify(input: string): string {
-  
-  
-  const raw = String(input || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-  return raw
-    .split('--')
-    .map(seg => seg.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''))
-    .filter(Boolean)
-    .join('--')
-    .slice(0, 255)
-}

@@ -2,34 +2,34 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Codes promo</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ total }} code{{ total > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.marketing_promos.title', 'Codes promo') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ total > 1 ? t('hub.ui.marketing_promos.count_other', '{count} codes', { count: total }) : t('hub.ui.marketing_promos.count_one', '{count} code', { count: total }) }}</p>
       </div>
       <div class="flex items-center gap-2">
         <div class="flex border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <button @click="setFilter('')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="filter === '' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">Tous</button>
-          <button @click="setFilter('active')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="filter === 'active' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-50'">Actifs</button>
-          <button @click="setFilter('expired')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="filter === 'expired' ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-50'">Expirés</button>
+          <button @click="setFilter('')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="filter === '' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_promos.all', 'Tous') }}</button>
+          <button @click="setFilter('active')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="filter === 'active' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_promos.active', 'Actifs') }}</button>
+          <button @click="setFilter('expired')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="filter === 'expired' ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_promos.expired', 'Expirés') }}</button>
         </div>
-        <HubLangSelector aria-label="Langue d'affichage des codes promo" />
+        <HubLangSelector :aria-label="t('hub.ui.marketing_promos.display_lang', 'Langue d\'affichage des codes promo')" />
         <input
           v-model="search"
           type="text"
-          placeholder="Code, nom…"
+          :placeholder="t('hub.ui.marketing_promos.search_ph', 'Code, nom…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-40"
           @keyup.enter="goPage(1)"
         />
-        <button @click="goPage(1)" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors">Rechercher</button>
+        <button @click="goPage(1)" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors">{{ t('hub.ui.marketing_promos.search', 'Rechercher') }}</button>
         <NuxtLink
           to="/hub/marketing/promos/new"
           class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
         >
-          + Nouveau code
+          {{ t('hub.ui.marketing_promos.new_code', '+ Nouveau code') }}
         </NuxtLink>
       </div>
     </header>
 
-    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" label="codes"
+    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.marketing_promos.codes_label', 'codes')"
       :per-page="perPage" :per-page-options="perPageOptions"
       @go="goPage" @update:per-page="setPerPage"
       class="border-b border-gray-100 dark:border-slate-800" />
@@ -40,19 +40,19 @@
       </div>
 
       <div v-else-if="!rules.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucun code promo</p>
+        <p class="text-sm">{{ t('hub.ui.marketing_promos.none', 'Aucun code promo') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-            <th class="px-4 py-2.5 font-medium">Code</th>
-            <th class="px-4 py-2.5 font-medium">Nom</th>
-            <th class="px-4 py-2.5 font-medium">Réduction</th>
-            <th class="px-4 py-2.5 font-medium text-right">Min. commande</th>
-            <th class="px-4 py-2.5 font-medium text-center">Utilisations</th>
-            <th class="px-4 py-2.5 font-medium">Validité</th>
-            <th class="px-4 py-2.5 font-medium">Statut</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_promos.th_code', 'Code') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_promos.th_name', 'Nom') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_promos.th_discount', 'Réduction') }}</th>
+            <th class="px-4 py-2.5 font-medium text-right">{{ t('hub.ui.marketing_promos.th_min_order', 'Min. commande') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center">{{ t('hub.ui.marketing_promos.th_uses', 'Utilisations') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_promos.th_validity', 'Validité') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_promos.th_status', 'Statut') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -67,13 +67,13 @@
             <td class="px-4 py-2.5">
               <span v-if="Number(r.reductionPercent) > 0" class="text-sm font-bold text-emerald-600">-{{ Number(r.reductionPercent) }}%</span>
               <span v-else-if="Number(r.reductionAmount) > 0" class="text-sm font-bold text-emerald-600">-{{ formatEur(r.reductionAmount) }}</span>
-              <span v-else-if="r.freeShipping" class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">Port offert</span>
+              <span v-else-if="r.freeShipping" class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">{{ t('hub.ui.marketing_promos.free_shipping', 'Port offert') }}</span>
               <span v-else class="text-xs text-gray-400">—</span>
             </td>
             <td class="px-4 py-2.5 text-right text-xs text-gray-500">{{ Number(r.minimumAmount) > 0 ? formatEur(r.minimumAmount) : '—' }}</td>
             <td class="px-4 py-2.5 text-center">
               <span class="text-xs text-gray-600">{{ r.quantity }}</span>
-              <span v-if="r.quantityPerUser" class="text-[10px] text-gray-400 ml-1">({{ r.quantityPerUser }}/pers)</span>
+              <span v-if="r.quantityPerUser" class="text-[10px] text-gray-400 ml-1">({{ t('hub.ui.marketing_promos.per_person', '{count}/pers', { count: r.quantityPerUser }) }})</span>
             </td>
             <td class="px-4 py-2.5 text-xs text-gray-500">
               {{ formatDate(r.dateFrom) }} → {{ formatDate(r.dateTo) }}
@@ -93,7 +93,7 @@
       </table>
     </div>
 
-    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" label="codes" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
+    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.marketing_promos.codes_label', 'codes')" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
   </div>
 </template>
 
@@ -101,6 +101,7 @@
 
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 
+const { t } = useHubT()
 const router = useRouter()
 const { currentLangId } = useHubLang()
 
@@ -157,10 +158,10 @@ async function load() {
 
 function statusLabel(s: string) {
   switch (s) {
-    case 'active': return 'Actif'
-    case 'expired': return 'Expiré'
-    case 'exhausted': return 'Épuisé'
-    case 'inactive': return 'Inactif'
+    case 'active': return t('hub.ui.marketing_promos.st_active', 'Actif')
+    case 'expired': return t('hub.ui.marketing_promos.st_expired', 'Expiré')
+    case 'exhausted': return t('hub.ui.marketing_promos.st_exhausted', 'Épuisé')
+    case 'inactive': return t('hub.ui.marketing_promos.st_inactive', 'Inactif')
     default: return s
   }
 }

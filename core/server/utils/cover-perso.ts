@@ -1,6 +1,6 @@
 import sharp from 'sharp'
 
-const STATIC_BASE_URL = process.env.AC_STATIC_BASE_URL ?? 'http://ac_nginx/cover-assets'
+const STATIC_BASE_URL = process.env.AC_STATIC_BASE_URL ?? ''
 
 const LOCAL_PERSOS = ['alexandre-standing.png']
 

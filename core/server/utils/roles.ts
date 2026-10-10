@@ -23,6 +23,8 @@ const PROFILE_TO_ROLE: Record<number, string> = Object.fromEntries(
   Object.values(ROLE_MAP).map(r => [r.psProfileId, r.frontRole]),
 )
 
+export const HUB_PROFILE_IDS: number[] = Object.values(ROLE_MAP).map(r => r.psProfileId)
+
 export function getPsProfileId(frontRole: string): number {
   return ROLE_MAP[frontRole]?.psProfileId ?? 9
 }

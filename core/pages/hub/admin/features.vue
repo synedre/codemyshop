@@ -5,8 +5,8 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Config Système</h1>
-          <p class="text-xs text-gray-400 mt-0.5">Clés API, état des modules et raccourcis</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.admin_features.title', 'Config Système') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.admin_features.subtitle', 'Clés API, état des modules et raccourcis') }}</p>
         </div>
         <button
           @click="reload"
@@ -28,11 +28,11 @@
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50 flex items-center justify-between">
           <div>
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Clés API</h2>
-            <p class="text-xs text-gray-400 mt-0.5">PrestaShop Webservice &amp; Intelligence Artificielle</p>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.admin_features.api_keys', 'Clés API') }}</h2>
+            <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.admin_features.api_keys_sub', 'PrestaShop Webservice & Intelligence Artificielle') }}</p>
           </div>
           <span v-if="apiKeys.updatedAt" class="text-[10px] text-gray-400">
-            Modifié le {{ new Date(apiKeys.updatedAt).toLocaleDateString('fr-FR') }}
+            {{ tHub('hub.ui.admin_features.modified_on', 'Modifié le {date}', { date: new Date(apiKeys.updatedAt).toLocaleDateString('fr-FR') }) }}
           </span>
         </div>
 
@@ -46,26 +46,26 @@
               </svg>
               PrestaShop Webservice
               <span v-if="apiKeys.envPsKeySet" class="text-[10px] font-normal text-success-600 bg-success-50 px-1.5 py-0.5 rounded-full normal-case">
-                .env configuré
+                {{ tHub('hub.ui.admin_features.env_configured', '.env configuré') }}
               </span>
             </legend>
 
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">URL de l'API Webservice</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.admin_features.ws_url', 'URL de l\'API Webservice') }}</label>
               <input
                 v-model="keyForm.prestashopUrl"
                 type="url"
-                placeholder="https://votre-boutique.com/api"
+                :placeholder="tHub('hub.ui.admin_features.ws_url_ph', 'https://votre-boutique.com/api')"
                 class="input-field font-mono text-xs"
               />
               <p class="text-[10px] text-gray-400 mt-1">
-                Votre BO PrestaShop &rarr; Paramètres avancés &rarr; Webservice. Format : https://domaine.com/api
+                {{ tHub('hub.ui.admin_features.ws_url_hint', 'Votre BO PrestaShop → Paramètres avancés → Webservice. Format : https://domaine.com/api') }}
               </p>
             </div>
 
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1">
-                Clé Webservice
+                {{ tHub('hub.ui.admin_features.ws_key', 'Clé Webservice') }}
                 <span v-if="psKeyExists" class="ml-2 text-[10px] font-semibold text-success-600 bg-success-50 px-1.5 py-0.5 rounded-full">
                   {{ apiKeys.prestashopKey }}
                 </span>
@@ -75,7 +75,7 @@
                   v-model="keyForm.prestashopKey"
                   type="password"
                   :type="showPsKey ? 'text' : 'password'"
-                  :placeholder="psKeyExists ? 'Laisser vide pour conserver la clé actuelle' : 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
+                  :placeholder="psKeyExists ? tHub('hub.ui.admin_features.keep_current_key_ph', 'Laisser vide pour conserver la clé actuelle') : 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
                   class="input-field font-mono text-xs pr-10"
                 />
                 <button
@@ -93,7 +93,7 @@
                 </button>
               </div>
               <p class="text-[10px] text-gray-400 mt-1">
-                Permissions requises : products (GET), categories (GET), images (GET), combinations (GET)
+                {{ tHub('hub.ui.admin_features.ws_permissions', 'Permissions requises : products (GET), categories (GET), images (GET), combinations (GET)') }}
               </p>
             </div>
           </fieldset>
@@ -106,14 +106,14 @@
               <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
               </svg>
-              Intelligence Artificielle
+              {{ tHub('hub.ui.admin_features.ai_title', 'Intelligence Artificielle') }}
               <span v-if="apiKeys.envAiKeySet" class="text-[10px] font-normal text-success-600 bg-success-50 px-1.5 py-0.5 rounded-full normal-case">
-                .env configuré
+                {{ tHub('hub.ui.admin_features.env_configured', '.env configuré') }}
               </span>
             </legend>
 
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Provider</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.admin_features.provider', 'Provider') }}</label>
               <div class="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -146,7 +146,7 @@
 
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1">
-                Clé API {{ keyForm.aiProvider === 'openai' ? 'OpenAI' : 'Anthropic' }}
+                {{ tHub('hub.ui.admin_features.ai_api_key', 'Clé API {provider}', { provider: keyForm.aiProvider === 'openai' ? 'OpenAI' : 'Anthropic' }) }}
                 <span v-if="aiKeyExists" class="ml-2 text-[10px] font-semibold text-success-600 bg-success-50 px-1.5 py-0.5 rounded-full">
                   {{ apiKeys.aiApiKey }}
                 </span>
@@ -156,7 +156,7 @@
                   v-model="keyForm.aiApiKey"
                   type="password"
                   :type="showAiKey ? 'text' : 'password'"
-                  :placeholder="aiKeyExists ? 'Laisser vide pour conserver la clé actuelle' : (keyForm.aiProvider === 'openai' ? 'sk-proj-...' : 'sk-ant-api03-...')"
+                  :placeholder="aiKeyExists ? tHub('hub.ui.admin_features.keep_current_key_ph', 'Laisser vide pour conserver la clé actuelle') : (keyForm.aiProvider === 'openai' ? 'sk-proj-...' : 'sk-ant-api03-...')"
                   class="input-field font-mono text-xs pr-10"
                 />
                 <button
@@ -176,16 +176,16 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Modèle</label>
+              <label class="block text-xs font-medium text-gray-600 mb-1">{{ tHub('hub.ui.admin_features.model', 'Modèle') }}</label>
               <select v-model="keyForm.aiModel" class="input-field text-xs">
                 <optgroup label="Anthropic">
-                  <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (recommandé)</option>
-                  <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (rapide, économique)</option>
-                  <option value="claude-opus-4-6">Claude Opus 4.6 (premium)</option>
+                  <option value="claude-sonnet-4-6">{{ tHub('hub.ui.admin_features.m_sonnet', 'Claude Sonnet 4.6 (recommandé)') }}</option>
+                  <option value="claude-haiku-4-5-20251001">{{ tHub('hub.ui.admin_features.m_haiku', 'Claude Haiku 4.5 (rapide, économique)') }}</option>
+                  <option value="claude-opus-4-6">{{ tHub('hub.ui.admin_features.m_opus', 'Claude Opus 4.6 (premium)') }}</option>
                 </optgroup>
                 <optgroup label="OpenAI">
                   <option value="gpt-4o">GPT-4o</option>
-                  <option value="gpt-4o-mini">GPT-4o Mini (économique)</option>
+                  <option value="gpt-4o-mini">{{ tHub('hub.ui.admin_features.m_mini', 'GPT-4o Mini (économique)') }}</option>
                 </optgroup>
               </select>
             </div>
@@ -203,7 +203,7 @@
             
             <div>
               <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
-                URL du site dans GSC
+                {{ tHub('hub.ui.admin_features.gsc_url', 'URL du site dans GSC') }}
                 <span v-if="gscSiteUrl" class="ml-2 text-[10px] font-semibold text-success-600 bg-success-50 dark:bg-success-500/15 px-1.5 py-0.5 rounded-full">
                   {{ gscSiteUrl }}
                 </span>
@@ -211,40 +211,39 @@
               <input
                 v-model="keyForm.gscSiteUrl"
                 type="text"
-                placeholder="https://example-shop.com/   ou   sc-domain:example-shop.com"
+                placeholder="https://ma-boutique.fr/   |   sc-domain:ma-boutique.fr"
                 class="input-field font-mono text-xs"
               />
               <p class="text-[10px] text-gray-500 dark:text-slate-500 mt-1">
-                Format exact tel qu'enregistré dans Search Console (avec le slash final pour les URL preneuses, ou préfixe <code>sc-domain:</code>).
+                {{ tHub('hub.ui.admin_features.gsc_format_a', 'Format exact tel qu\'enregistré dans Search Console (avec le slash final pour les URL preneuses, ou préfixe') }} <code>sc-domain:</code>{{ tHub('hub.ui.admin_features.gsc_format_b', ').') }}
               </p>
             </div>
 
             
             <div v-if="isSuperAdmin" class="border-t border-gray-100 dark:border-slate-800 pt-4">
               <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
-                JSON Service Account (global AC)
+                {{ tHub('hub.ui.admin_features.sa_label', 'JSON Service Account (global AC)') }}
                 <span v-if="gscSaExists" class="ml-2 text-[10px] font-semibold text-success-600 bg-success-50 dark:bg-success-500/15 px-1.5 py-0.5 rounded-full">
-                  {{ gscSaEmail || 'Configuré' }}
+                  {{ gscSaEmail || tHub('hub.ui.admin_features.configured', 'Configuré') }}
                 </span>
                 <span v-else class="ml-2 text-[10px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-500/15 px-1.5 py-0.5 rounded-full">
-                  Non configuré
+                  {{ tHub('hub.ui.admin_features.not_configured', 'Non configuré') }}
                 </span>
               </label>
               <textarea
                 v-model="keyForm.gscServiceAccountJson"
                 rows="4"
-                :placeholder="gscSaExists ? 'Laisser vide pour conserver le JSON actuel' : 'Collez le JSON complet du Service Account (1 seul pour tout AC)'"
+                :placeholder="gscSaExists ? tHub('hub.ui.admin_features.sa_json_ph', 'Laisser vide pour conserver le JSON actuel') : tHub('hub.ui.admin_features.sa_json_new_ph', 'Collez le JSON complet du Service Account (1 seul pour tout AC)')"
                 class="input-field font-mono text-[11px]"
               />
               <p class="text-[10px] text-gray-500 dark:text-slate-500 mt-1">
-                <strong>Une seule clé pour tous les tenants AC.</strong> Stockée chiffrée AES-256-GCM dans <code>cs_client_config[_global]</code>.
-                Propagée automatiquement dans toutes les DBs tenants.
-                Ajoutez l'email de service comme utilisateur de chaque property GSC tenant.
+                <strong>{{ tHub('hub.ui.admin_features.sa_one_key', 'Une seule clé pour tous les tenants AC.') }}</strong> {{ tHub('hub.ui.admin_features.sa_stored', 'Stockée chiffrée AES-256-GCM dans') }} <code>cs_client_config[_global]</code>.
+                {{ tHub('hub.ui.admin_features.sa_propagation', 'Propagée automatiquement dans toutes les DBs tenants. Ajoutez l\'email de service comme utilisateur de chaque property GSC tenant.') }}
               </p>
 
               
               <div v-if="gscPropagation" class="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 space-y-1">
-                <p class="text-[10px] font-semibold text-gray-600 dark:text-slate-300">Propagation cross-DB :</p>
+                <p class="text-[10px] font-semibold text-gray-600 dark:text-slate-300">{{ tHub('hub.ui.admin_features.propagation_title', 'Propagation cross-DB :') }}</p>
                 <ul class="text-[10px] font-mono space-y-0.5">
                   <li v-for="db in gscPropagation.written" :key="'ok-' + db" class="text-success-600">✓ {{ db }}</li>
                   <li v-for="f in gscPropagation.failed" :key="'ko-' + f.db" class="text-danger-600">✗ {{ f.db }} — {{ f.error }}</li>
@@ -257,9 +256,9 @@
           <div class="flex items-center justify-between pt-2">
             <p v-if="keySaveStatus === 'ok'" class="text-xs text-success-600 font-semibold flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>
-              Clés sauvegardées
+              {{ tHub('hub.ui.admin_features.keys_saved', 'Clés sauvegardées') }}
             </p>
-            <p v-else-if="keySaveStatus === 'error'" class="text-xs text-danger-500 font-semibold">Erreur lors de la sauvegarde</p>
+            <p v-else-if="keySaveStatus === 'error'" class="text-xs text-danger-500 font-semibold">{{ tHub('hub.ui.admin_features.save_error', 'Erreur lors de la sauvegarde') }}</p>
             <span v-else />
             <button
               type="submit"
@@ -270,7 +269,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
               </svg>
-              Sauvegarder les clés
+              {{ tHub('hub.ui.admin_features.save_keys', 'Sauvegarder les clés') }}
             </button>
           </div>
         </form>
@@ -305,18 +304,18 @@
               <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
                     :class="status.ai.hasApiKey ? 'bg-violet-100 text-violet-700' : 'bg-amber-100 text-amber-700'">
                 <span class="w-1.5 h-1.5 rounded-full" :class="status.ai.hasApiKey ? 'bg-violet-500 animate-pulse' : 'bg-amber-400'" />
-                {{ status.ai.hasApiKey ? 'Actif' : 'Stub' }}
+                {{ status.ai.hasApiKey ? tHub('hub.ui.admin_features.active', 'Actif') : tHub('hub.ui.admin_features.stub', 'Stub') }}
               </span>
             </div>
-            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">Module IA</h3>
+            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">{{ tHub('hub.ui.admin_features.ai_module', 'Module IA') }}</h3>
             <p class="text-xs text-gray-400 mb-3">{{ status.ai.model }}</p>
             <dl class="space-y-1.5 text-xs">
               <div class="flex justify-between">
-                <dt class="text-gray-400">Mode</dt>
+                <dt class="text-gray-400">{{ tHub('hub.ui.admin_features.mode', 'Mode') }}</dt>
                 <dd class="font-semibold text-gray-700 dark:text-slate-200 capitalize">{{ status.ai.mode }}</dd>
               </div>
               <div class="flex justify-between">
-                <dt class="text-gray-400">Source</dt>
+                <dt class="text-gray-400">{{ tHub('hub.ui.admin_features.source', 'Source') }}</dt>
                 <dd class="font-mono text-gray-500">{{ status.ai.sourceType }}</dd>
               </div>
             </dl>
@@ -333,11 +332,11 @@
               </div>
               <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
                 <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                Actif
+                {{ tHub('hub.ui.admin_features.active', 'Actif') }}
               </span>
             </div>
-            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">Module Avatars</h3>
-            <p class="text-xs text-gray-400 mb-3">{{ status.avatars.total }} profils en cache</p>
+            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">{{ tHub('hub.ui.admin_features.avatars_module', 'Module Avatars') }}</h3>
+            <p class="text-xs text-gray-400 mb-3">{{ tHub('hub.ui.admin_features.profiles_cached', '{n} profils en cache', { n: status.avatars.total }) }}</p>
             <div v-if="status.avatars.total > 0" class="space-y-1.5">
               <div v-for="(count, type) in status.avatars.distribution" :key="type" class="flex items-center gap-2">
                 <span class="text-[11px] text-gray-500 w-28 truncate">{{ AVATAR_META[type as AvatarType]?.icon ?? '' }} {{ AVATAR_META[type as AvatarType]?.label ?? type }}</span>
@@ -359,15 +358,15 @@
               </div>
               <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700">
                 <span class="w-1.5 h-1.5 rounded-full bg-green-500" />
-                3 canaux
+                {{ tHub('hub.ui.admin_features.channels_3', '3 canaux') }}
               </span>
             </div>
-            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">Broadcast Center</h3>
-            <p class="text-xs text-gray-400 mb-3">Email + WhatsApp + SMS</p>
+            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-1">{{ tHub('hub.ui.admin_features.broadcast_center', 'Broadcast Center') }}</h3>
+            <p class="text-xs text-gray-400 mb-3">{{ tHub('hub.ui.admin_features.channels_list', 'Email + WhatsApp + SMS') }}</p>
             <dl class="space-y-1.5 text-xs">
-              <div class="flex justify-between"><dt class="text-gray-400">Email</dt><dd class="text-success-600 font-semibold">Actif</dd></div>
-              <div class="flex justify-between"><dt class="text-gray-400">WhatsApp</dt><dd class="text-success-600 font-semibold">Actif</dd></div>
-              <div class="flex justify-between"><dt class="text-gray-400">SMS</dt><dd class="text-success-600 font-semibold">Actif</dd></div>
+              <div class="flex justify-between"><dt class="text-gray-400">{{ tHub('hub.ui.admin_features.email', 'Email') }}</dt><dd class="text-success-600 font-semibold">{{ tHub('hub.ui.admin_features.active', 'Actif') }}</dd></div>
+              <div class="flex justify-between"><dt class="text-gray-400">WhatsApp</dt><dd class="text-success-600 font-semibold">{{ tHub('hub.ui.admin_features.active', 'Actif') }}</dd></div>
+              <div class="flex justify-between"><dt class="text-gray-400">SMS</dt><dd class="text-success-600 font-semibold">{{ tHub('hub.ui.admin_features.active', 'Actif') }}</dd></div>
             </dl>
           </div>
 
@@ -379,9 +378,9 @@
       </template>
 
       <div v-else-if="error" class="bg-danger-50 border border-danger-200 rounded-xl p-6 text-center">
-        <p class="text-sm font-semibold text-danger-600 mb-1">Impossible de charger le statut</p>
+        <p class="text-sm font-semibold text-danger-600 mb-1">{{ tHub('hub.ui.admin_features.status_load_failed', 'Impossible de charger le statut') }}</p>
         <p class="text-xs text-danger-400">{{ error }}</p>
-        <button @click="reload" class="mt-3 text-xs text-danger-600 hover:underline">Réessayer</button>
+        <button @click="reload" class="mt-3 text-xs text-danger-600 hover:underline">{{ tHub('hub.ui.admin_features.retry', 'Réessayer') }}</button>
       </div>
 
     </div>
@@ -391,6 +390,8 @@
 <script setup lang="ts">
 import { AVATAR_META } from '~/utils/avatar'
 import type { AvatarType } from '~/types/avatar'
+
+const { t: tHub } = useHubT()
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
@@ -413,7 +414,7 @@ async function load() {
   try {
     status.value = await $fetch<SystemStatus>('/api/hub/system-status')
   } catch (e: any) {
-    error.value = e?.message ?? 'Erreur inconnue'
+    error.value = e?.message ?? tHub('hub.ui.admin_features.err_unknown', 'Erreur inconnue')
   } finally {
     loading.value = false
   }

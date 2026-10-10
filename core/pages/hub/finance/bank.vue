@@ -4,10 +4,10 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Relevé bancaire</h1>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.finance_bank.title', 'Relevé bancaire') }}</h1>
           <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">
-            Lignes de compte — sync quotidienne via <span class="font-mono">ac_bank_sync</span> ·
-            <NuxtLink to="/hub/finance/ae" class="text-primary-600 hover:underline">jauge AE →</NuxtLink>
+            {{ t('hub.ui.finance_bank.subtitle', 'Lignes de compte — sync quotidienne via') }} <span class="font-mono">ac_bank_sync</span> ·
+            <NuxtLink to="/hub/finance/ae" class="text-primary-600 hover:underline">{{ t('hub.ui.finance_bank.ae_gauge', 'jauge AE →') }}</NuxtLink>
           </p>
         </div>
         <div class="flex items-center gap-2">
@@ -15,7 +15,7 @@
             <button v-for="p in [30, 90, 365]" :key="p" @click="period = p; load()"
               class="text-xs font-semibold px-3 py-1.5 rounded-md transition-colors"
               :class="period === p ? 'bg-white dark:bg-slate-700 text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
-              {{ p === 365 ? '1 an' : `${p} j` }}
+              {{ p === 365 ? t('hub.ui.finance_bank.period_year', '1 an') : t('hub.ui.finance_bank.period_days', '{n} j', { n: p }) }}
             </button>
           </div>
           <div class="flex items-center gap-1.5 bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
@@ -33,19 +33,19 @@
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Lignes</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ t('hub.ui.finance_bank.kpi_lines', 'Lignes') }}</p>
           <p class="text-2xl font-extrabold">{{ data?.totals.total ?? 0 }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Crédits</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ t('hub.ui.finance_bank.kpi_credits', 'Crédits') }}</p>
           <p class="text-2xl font-extrabold text-emerald-600">{{ fmtEur(data?.totals.credits ?? 0) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Débits</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ t('hub.ui.finance_bank.kpi_debits', 'Débits') }}</p>
           <p class="text-2xl font-extrabold text-rose-600">{{ fmtEur(data?.totals.debits ?? 0) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Non rapprochées</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ t('hub.ui.finance_bank.kpi_unreconciled', 'Non rapprochées') }}</p>
           <p class="text-2xl font-extrabold" :class="(data?.totals.unreconciledCount ?? 0) > 0 ? 'text-amber-600' : ''">
             {{ data?.totals.unreconciledCount ?? 0 }}
           </p>
@@ -54,14 +54,14 @@
 
       <div v-if="data?.accounts.length" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm">
         <div class="flex items-center flex-wrap gap-3">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Comptes :</p>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ t('hub.ui.finance_bank.accounts', 'Comptes :') }}</p>
           <div v-for="a in data.accounts" :key="a.id" class="flex items-center gap-2 text-xs">
             <span class="font-semibold">{{ a.label }}</span>
             <span class="text-gray-400">({{ a.provider }})</span>
             <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded"
               :class="a.lastStatus === 'ok' ? 'bg-emerald-50 text-emerald-700' : a.lastStatus === 'error' ? 'bg-rose-50 text-rose-700' : 'bg-gray-100 text-gray-500'">
               {{ a.lastStatus === 'ok' ? '✓' : a.lastStatus === 'error' ? '✗' : '·' }}
-              {{ a.lastSync ? fmtDate(a.lastSync) : 'jamais' }}
+              {{ a.lastSync ? fmtDate(a.lastSync) : t('hub.ui.finance_bank.never', 'jamais') }}
             </span>
           </div>
         </div>
@@ -72,12 +72,12 @@
           <table class="min-w-full text-xs">
             <thead class="bg-gray-50 dark:bg-slate-800/50">
               <tr>
-                <th class="px-4 py-2 text-left font-semibold text-gray-500">Date</th>
-                <th class="px-4 py-2 text-left font-semibold text-gray-500">Contrepartie</th>
-                <th class="px-4 py-2 text-left font-semibold text-gray-500">Description</th>
-                <th class="px-4 py-2 text-right font-semibold text-gray-500">Montant</th>
-                <th class="px-4 py-2 text-left font-semibold text-gray-500">Catégorie</th>
-                <th class="px-4 py-2 text-center font-semibold text-gray-500">OK</th>
+                <th class="px-4 py-2 text-left font-semibold text-gray-500">{{ t('hub.ui.finance_bank.col_date', 'Date') }}</th>
+                <th class="px-4 py-2 text-left font-semibold text-gray-500">{{ t('hub.ui.finance_bank.col_counterparty', 'Contrepartie') }}</th>
+                <th class="px-4 py-2 text-left font-semibold text-gray-500">{{ t('hub.ui.finance_bank.col_description', 'Description') }}</th>
+                <th class="px-4 py-2 text-right font-semibold text-gray-500">{{ t('hub.ui.finance_bank.col_amount', 'Montant') }}</th>
+                <th class="px-4 py-2 text-left font-semibold text-gray-500">{{ t('hub.ui.finance_bank.col_category', 'Catégorie') }}</th>
+                <th class="px-4 py-2 text-center font-semibold text-gray-500">{{ t('hub.ui.finance_bank.col_ok', 'OK') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
@@ -86,7 +86,7 @@
               </tr>
               <tr v-else-if="!data?.rows.length">
                 <td colspan="6" class="px-4 py-12 text-center text-gray-400">
-                  Aucune ligne sur la période. Le cron <span class="font-mono">ac_bank_sync</span> tourne 1×/jour à 06:00 UTC.
+                  {{ t('hub.ui.finance_bank.empty_before', 'Aucune ligne sur la période. Le cron') }} <span class="font-mono">ac_bank_sync</span> {{ t('hub.ui.finance_bank.empty_after', 'tourne 1×/jour à 06:00 UTC.') }}
                 </td>
               </tr>
               <tr v-else v-for="r in data.rows" :key="r.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/30">
@@ -101,7 +101,7 @@
                   <select :value="r.category" @change="e => setCategory(r, (e.target as HTMLSelectElement).value)"
                     class="text-xs bg-transparent border border-gray-200 dark:border-slate-700 rounded px-1.5 py-0.5">
                     <option value="">—</option>
-                    <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+                    <option v-for="c in categories" :key="c" :value="c">{{ categoryLabels[c] ?? c }}</option>
                   </select>
                 </td>
                 <td class="px-4 py-2 text-center">
@@ -126,18 +126,31 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 
+const { t } = useHubT()
+
 const period = ref(90)
 const status = ref<'all' | 'unreconciled' | 'reconciled'>('unreconciled')
 const data = ref<any>(null)
 const loading = ref(true)
 
-const statusOptions = [
-  { value: 'unreconciled', label: 'À rapprocher' },
-  { value: 'reconciled',   label: 'Rapprochées' },
-  { value: 'all',          label: 'Toutes' },
-]
+const statusOptions = computed(() => [
+  { value: 'unreconciled', label: t('hub.ui.finance_bank.status_to_reconcile', 'À rapprocher') },
+  { value: 'reconciled',   label: t('hub.ui.finance_bank.status_reconciled', 'Rapprochées') },
+  { value: 'all',          label: t('hub.ui.finance_bank.status_all', 'Toutes') },
+])
 
 const categories = ['charges', 'ventes', 'tjm', 'urssaf', 'tva', 'impots', 'banque', 'perso', 'autre']
+const categoryLabels = computed<Record<string, string>>(() => ({
+  charges: t('hub.ui.finance_bank.cat_charges', 'charges'),
+  ventes: t('hub.ui.finance_bank.cat_sales', 'ventes'),
+  tjm: t('hub.ui.finance_bank.cat_daily_rate', 'tjm'),
+  urssaf: t('hub.ui.finance_bank.cat_urssaf', 'urssaf'),
+  tva: t('hub.ui.finance_bank.cat_vat', 'tva'),
+  impots: t('hub.ui.finance_bank.cat_taxes', 'impôts'),
+  banque: t('hub.ui.finance_bank.cat_bank', 'banque'),
+  perso: t('hub.ui.finance_bank.cat_personal', 'perso'),
+  autre: t('hub.ui.finance_bank.cat_other', 'autre'),
+}))
 
 const fmtEur = (v: number) => (v || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
 const fmtSigned = (v: number) => `${v > 0 ? '+' : ''}${(v || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })}`

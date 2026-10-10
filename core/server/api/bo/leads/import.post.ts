@@ -1,4 +1,4 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 import {
   type SmartLeadUpdateSet,
@@ -27,6 +27,7 @@ interface ImportBody {
 const ALLOWED_TYPES = new Set(['Prospect', 'Client', 'Partenaire', 'Fournisseur'])
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<ImportBody>(event)
   if (!body || !Array.isArray(body.rows)) {
     throw createError({ statusCode: 400, message: 'Body invalide : rows manquant' })

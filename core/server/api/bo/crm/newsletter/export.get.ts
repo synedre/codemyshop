@@ -3,6 +3,7 @@
 import { resolveClientId } from '~/server/utils/db'
 import { listSubscribers, type SubscriberStatus } from '~/server/utils/newsletter-subscriber'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 function csvCell(v: unknown): string {
   const s = v == null ? '' : String(v)
   
@@ -13,6 +14,7 @@ function csvCell(v: unknown): string {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   const clientId = resolveClientId(event)
   const status = (q.status ? String(q.status) : 'all') as SubscriberStatus | 'all'

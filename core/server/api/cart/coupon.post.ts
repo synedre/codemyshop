@@ -3,11 +3,14 @@
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
 import { getCartFromDb, applyCouponToCart } from '~/server/utils/cart-db'
+import { assertCartAccess } from '~/server/utils/cart-proof'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<any>(event)
   const { cartId, code, clientId } = body || {}
   if (!cartId || !code) throw createError({ statusCode: 400, message: 'cartId et code requis' })
+
+  await assertCartAccess(event, cartId)
 
   const ctx = clientId ? { clientId: String(clientId) } : { event }
 

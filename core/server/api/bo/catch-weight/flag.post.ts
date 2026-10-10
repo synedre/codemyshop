@@ -2,7 +2,10 @@
 
 import { upsertProductCatchWeight, type PriceUnit } from '~/enterprise/vertical-food/catchweight/server/utils/catchweight'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     idProduct: number
     isActive?: number

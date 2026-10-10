@@ -2,7 +2,10 @@
 
 import { enqueueEmail } from '~/server/utils/email-queue'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody(event) as {
     to?:           string
     subject?:      string

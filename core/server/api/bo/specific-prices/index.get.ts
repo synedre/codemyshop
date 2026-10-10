@@ -2,9 +2,7 @@
 
 import { useClientDb } from '~/server/utils/db'
 import { requireEmployeeSession } from '~/server/utils/session'
-
-const FROM_SENTINEL = '1970-01-01 00:00:00'
-const TO_SENTINEL   = '9999-12-31 23:59:59'
+import { buildListWhere } from '~/server/utils/promotion-scope'
 
 interface Row {
   id_specific_price: number
@@ -33,24 +31,9 @@ export default defineEventHandler(async (event) => {
 
   const db = useClientDb(event)
 
-  const where: string[] = ['sp.reduction > 0']
-  const params: any[] = []
-
-  if (status === 'active') {
-    where.push(`sp.\`from\` <= NOW()`)
-    where.push(`sp.\`to\`   >= NOW()`)
-  } else if (status === 'future') {
-    where.push(`sp.\`from\` > NOW()`)
-  } else if (status === 'expired') {
-    where.push(`sp.\`to\` < NOW()`)
-  }
-
-  if (search) {
-    where.push(`(pl.name LIKE ? OR p.reference LIKE ?)`)
-    params.push(`%${search}%`, `%${search}%`)
-  }
-
-  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
+  
+  
+  const { sql: whereSql, params } = buildListWhere({ status, search })
 
   try {
     const totalRows = await db.query<{ total: number }>(
@@ -123,5 +106,3 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: err?.message || 'DB error' })
   }
 })
-
-export { FROM_SENTINEL, TO_SENTINEL }

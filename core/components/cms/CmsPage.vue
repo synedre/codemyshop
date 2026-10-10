@@ -2,9 +2,15 @@
 <script setup lang="ts">
 interface CmsPageData {
   id?: number
+  
   title?: string
+  
+  h1?: string
   content?: string
   meta_description?: string
+  
+
+  trail?: { name: string; href: string | null }[]
 }
 interface FooterContact {
   email?: string
@@ -16,16 +22,83 @@ const props = defineProps<{
   contact: FooterContact | null
   canonicalUrl: string
   activeLang: string
+  
+
+  sections?: any[]
 }>()
+
+const pageH1 = computed(() => props.page?.h1 || props.page?.title || '')
 
 const { t } = useT()
 const _cfg = useRuntimeConfig()
 const brand = String((_cfg.public as any).brandName ?? '')
-const psFrontUrl = String((_cfg.public as any).psFrontUrl ?? '')
+const psFrontUrl = String((_cfg.public as any).psFrontUrl ?? '').replace(/\/+$/, '')
 const { localePath } = useLocalePath()
 
 const cleanContent = computed(() => cleanLegacyCmsHtml(props.page?.content ?? ''))
 const lede = computed(() => props.page?.meta_description?.trim() || '')
+
+const heroSection = computed(() => {
+  const first = (props.sections ?? [])[0]
+  if (first?.type === 'hero-cta' && first?.payload?.image) return first
+  
+  
+  
+  if (first?.type === 'store-detail' && first?.payload?.store_slug) return first
+  return null
+})
+
+const heroIsFullBleed = computed(() =>
+  heroSection.value?.payload?.layout === 'editorial'
+  || (heroSection.value?.type === 'store-detail' && Boolean(heroSection.value?.payload?.image)))
+
+const fullBleedHero = computed(() => {
+  const first = (props.sections ?? [])[0]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  return first?.type === 'hero-slider' || first?.type === 'store-locator'
+    || first?.type === 'product-finder' ? first : null
+})
+
+const contactCtaLegacyOnly = String((_cfg.public as any)?.cmsContactCta ?? '') === 'legacy-only'
+const showContactCta = computed(() => {
+  if (!(props.contact?.email || props.contact?.phone)) return false
+  if (contactCtaLegacyOnly && (props.sections?.length ?? 0) > 0) return false
+  return !fullBleedHero.value && !heroIsFullBleed.value
+})
+
+const breadcrumbIsUppercase = computed(() =>
+  String((_cfg.public as any)?.breadcrumbStyle ?? '') === 'uppercase')
+const breadcrumbToneClass = computed(() => (breadcrumbIsUppercase.value
+  ? 'text-xs uppercase tracking-wide text-gray-500'
+  : 'text-xs text-gray-400'))
+const breadcrumbCurrentClass = computed(() => (breadcrumbIsUppercase.value
+  ? 'text-black font-bold'
+  : 'text-gray-700 font-medium'))
+
+const breadcrumbWidthClass = computed(() => (breadcrumbIsUppercase.value
+  ? 'max-w-5xl'
+  : 'max-w-4xl'))
+
+const breadcrumb = computed(() => {
+  const levels: { label: string; to: string | null }[] = [
+    { label: t('silo.breadcrumb_home'), to: '/' },
+  ]
+  for (const step of props.page?.trail ?? []) {
+    if (step?.name) levels.push({ label: step.name, to: step.href || null })
+  }
+  levels.push({ label: pageH1.value, to: null })
+  return levels
+})
 
 useListingBodyId('cms', () => props.page?.id ?? null)
 
@@ -52,6 +125,21 @@ useHead({
       url: props.canonicalUrl,
       isPartOf: { '@type': 'WebSite', name: brand, url: psFrontUrl },
       inLanguage: props.activeLang,
+      
+      
+      
+      
+      breadcrumb: {
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumb.value.map((level, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: level.label,
+          ...(i === breadcrumb.value.length - 1
+            ? { item: props.canonicalUrl }
+            : level.to ? { item: `${psFrontUrl}${level.to === '/' ? '' : level.to}` } : {}),
+        })),
+      },
     })),
   }],
 })
@@ -61,18 +149,42 @@ useHead({
   <article class="bg-white">
 
     
-    <header class="border-b border-gray-100">
+    <nav
+      v-if="heroSection && !heroIsFullBleed"
+      :class="['mx-auto px-4 sm:px-6 pt-6 pb-4', breadcrumbWidthClass, breadcrumbToneClass]"
+      :aria-label="t('silo.breadcrumb_aria')"
+    >
+      <template v-for="(level, i) in breadcrumb" :key="i">
+        <span v-if="i" class="mx-1.5">/</span>
+        <NuxtLink
+          v-if="level.to"
+          :to="localePath(level.to)"
+          class="hover:text-primary-600 transition-colors"
+        >{{ level.label }}</NuxtLink>
+        <span v-else :class="breadcrumbCurrentClass">{{ level.label }}</span>
+      </template>
+    </nav>
+
+    
+    <h1 v-else-if="fullBleedHero" class="sr-only">{{ pageH1 }}</h1>
+
+    
+    <header v-else-if="!heroSection" class="border-b border-gray-100">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-12 sm:pt-12 sm:pb-16">
-        <nav class="text-xs text-gray-400 mb-6" :aria-label="t('silo.breadcrumb_aria')">
-          <NuxtLink :to="localePath('/')" class="hover:text-primary-600 transition-colors">
-            {{ t('silo.breadcrumb_home') }}
-          </NuxtLink>
-          <span class="mx-1.5">/</span>
-          <span class="text-gray-700 font-medium">{{ page?.title }}</span>
+        <nav :class="['mb-6', breadcrumbToneClass]" :aria-label="t('silo.breadcrumb_aria')">
+          <template v-for="(level, i) in breadcrumb" :key="i">
+            <span v-if="i" class="mx-1.5">/</span>
+            <NuxtLink
+              v-if="level.to"
+              :to="localePath(level.to)"
+              class="hover:text-primary-600 transition-colors"
+            >{{ level.label }}</NuxtLink>
+            <span v-else :class="breadcrumbCurrentClass">{{ level.label }}</span>
+          </template>
         </nav>
 
         <h1 class="text-3xl sm:text-4xl font-light text-gray-900 tracking-tight mb-4">
-          {{ page?.title }}
+          {{ pageH1 }}
         </h1>
         <p v-if="lede" class="text-lg text-gray-500 leading-relaxed max-w-2xl">
           {{ lede }}
@@ -81,7 +193,15 @@ useHead({
     </header>
 
     
-    <section class="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <PageSections
+      v-if="sections && sections.length"
+      :sections="sections"
+      context="cms"
+      :hero-as-h1="!!heroSection"
+    />
+
+    
+    <section v-else class="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div
         class="prose prose-lg max-w-none
                prose-headings:font-semibold prose-headings:text-gray-900 prose-headings:tracking-tight
@@ -96,7 +216,10 @@ useHead({
     </section>
 
     
-    <section v-if="contact?.email || contact?.phone" class="border-t border-gray-100 bg-gray-50">
+    <section
+      v-if="showContactCta"
+      class="border-t border-gray-100 bg-gray-50"
+    >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <div class="text-center">
           <h2 class="text-2xl font-light text-gray-900 tracking-tight mb-2">

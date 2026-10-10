@@ -1,6 +1,8 @@
 
 
 import type { VisitorAvatar } from '~/types/avatar'
+import { resolveFsStorageBase } from '~/server/utils/fs-storage-base'
+import { resolveClientId } from '~/server/utils/db'
 
 export default defineEventHandler(async () => {
   const config  = useRuntimeConfig()
@@ -10,7 +12,7 @@ export default defineEventHandler(async () => {
   const hasApiKey    = !!config.anthropicApiKey
   const aiMode       = hasApiKey ? 'active' : 'stub'
   const aiSourceType = config.aiSourceType ?? 'contact_form'
-  const aiClientId   = config.aiClientId   ?? 'ac-hub'
+  const aiClientId   = String(config.aiClientId || resolveClientId())
 
   
   let avatarTotal  = 0
@@ -47,7 +49,11 @@ export default defineEventHandler(async () => {
       total:        avatarTotal,
       distribution,
       storageDriver: 'fs',
-      storagePath:   './server/data/avatars',
+      
+      
+      
+      
+      storagePath:   resolveFsStorageBase('avatars'),
     },
     newsletter: {
       provider: newsletterProvider,

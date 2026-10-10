@@ -2,7 +2,11 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+import { tenantHasUnitPricing } from '~/server/utils/tenant-vertical'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: 'id requis' })
   const q = getQuery(event)
@@ -50,10 +54,24 @@ export default defineEventHandler(async (event) => {
   `, [langId, langId, Number(id)])
 
   
-  const images = await db.query<any>(`
+  let images = await db.query<any>(`
     SELECT id_image AS id, cover, position
     FROM ps_image WHERE id_product = ? ORDER BY position
   `, [Number(id)])
+
+  
+  
+  
+  
+  if (!images.length) {
+    const { getCdnGallery } = await import('~/server/utils/cover-cdn')
+    const { resolveClientId } = await import('~/server/utils/db')
+    const tenant = resolveClientId(event) || null
+    const urls = await getCdnGallery(db as any, Number(id), String(product?.slug || id), { tenant })
+    if (urls.length) {
+      images = urls.map((url: string, i: number) => ({ id: i + 1, cover: i === 0, position: i + 1, url }))
+    }
+  }
 
   
   const categories = await db.query<any>(`
@@ -142,5 +160,19 @@ export default defineEventHandler(async (event) => {
   `, [Number(id)])
   const carrierRefs = carrierRows.map((r: any) => Number(r.ref)).filter((n: number) => n > 0)
 
-  return { product, features, images, categories, specificPrices, combinations, carrierRefs, taxRules, langId }
+  
+  
+  let priceDisplayMode: 'unit' | 'kg' | null = null
+  if (tenantHasUnitPricing(event)) {
+    try {
+      const foodRow = await db.get<any>(`
+        SELECT price_display_mode FROM cs_main.cs_product_food
+        WHERE id_product = ? LIMIT 1
+      `, [Number(id)])
+      const raw = foodRow?.price_display_mode
+      priceDisplayMode = (raw === 'unit' || raw === 'kg') ? raw : null
+    } catch {  }
+  }
+
+  return { product, features, images, categories, specificPrices, combinations, carrierRefs, taxRules, langId, priceDisplayMode }
 })

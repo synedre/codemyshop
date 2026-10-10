@@ -2,18 +2,18 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Cron</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ filtered.length }} automate{{ filtered.length > 1 ? 's' : '' }} récurrent{{ filtered.length > 1 ? 's' : '' }} · lecture seule</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.system_cron.title', 'Cron') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ filtered.length > 1 ? t('hub.ui.system_cron.count_other', '{n} automates récurrents · lecture seule', { n: filtered.length }) : t('hub.ui.system_cron.count_one', '{n} automate récurrent · lecture seule', { n: filtered.length }) }}</p>
       </div>
       <div class="flex items-center gap-2">
         <input
           v-model="search"
           type="text"
-          placeholder="Nom, schedule, agent…"
+          :placeholder="t('hub.ui.system_cron.search_ph', 'Nom, schedule, agent…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-64 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
         <button @click="load" :disabled="loading" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors">
-          {{ loading ? '…' : 'Rafraîchir' }}
+          {{ loading ? '…' : t('hub.ui.system_cron.refresh', 'Rafraîchir') }}
         </button>
       </div>
     </header>
@@ -24,20 +24,20 @@
       </div>
 
       <div v-else-if="!filtered.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucun cron récurrent</p>
-        <p class="text-xs mt-1">La table cs_automates n'est pas peuplée sur ce tenant.</p>
+        <p class="text-sm">{{ t('hub.ui.system_cron.none', 'Aucun cron récurrent') }}</p>
+        <p class="text-xs mt-1">{{ t('hub.ui.system_cron.none_hint', 'La table cs_automates n\'est pas peuplée sur ce tenant.') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-            <th class="px-4 py-2.5 font-medium">Automate</th>
-            <th class="px-4 py-2.5 font-medium w-32">Caste</th>
-            <th class="px-4 py-2.5 font-medium w-36">Schedule</th>
-            <th class="px-4 py-2.5 font-medium w-40">Dernière exécution</th>
-            <th class="px-4 py-2.5 font-medium w-20 text-center">Durée</th>
-            <th class="px-4 py-2.5 font-medium w-24 text-center">Statut</th>
-            <th class="px-4 py-2.5 font-medium w-20 text-center">Actif</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.system_cron.col_automate', 'Automate') }}</th>
+            <th class="px-4 py-2.5 font-medium w-32">{{ t('hub.ui.system_cron.col_caste', 'Caste') }}</th>
+            <th class="px-4 py-2.5 font-medium w-36">{{ t('hub.ui.system_cron.col_schedule', 'Schedule') }}</th>
+            <th class="px-4 py-2.5 font-medium w-40">{{ t('hub.ui.system_cron.col_last_run', 'Dernière exécution') }}</th>
+            <th class="px-4 py-2.5 font-medium w-20 text-center">{{ t('hub.ui.system_cron.col_duration', 'Durée') }}</th>
+            <th class="px-4 py-2.5 font-medium w-24 text-center">{{ t('hub.ui.system_cron.col_status', 'Statut') }}</th>
+            <th class="px-4 py-2.5 font-medium w-20 text-center">{{ t('hub.ui.system_cron.col_active', 'Actif') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -54,7 +54,7 @@
             <td class="px-4 py-2.5 font-mono text-[11px] text-gray-600 dark:text-slate-300">{{ c.schedule || '—' }}</td>
             <td class="px-4 py-2.5 text-xs text-gray-600 dark:text-slate-300">
               <span v-if="c.lastRunAt">{{ formatDate(c.lastRunAt) }}</span>
-              <span v-else class="text-gray-300 italic">jamais</span>
+              <span v-else class="text-gray-300 italic">{{ t('hub.ui.system_cron.never', 'jamais') }}</span>
             </td>
             <td class="px-4 py-2.5 text-center text-xs text-gray-500">
               {{ c.lastDurationS != null ? `${Number(c.lastDurationS).toFixed(1)}s` : '—' }}
@@ -68,7 +68,7 @@
             <td class="px-4 py-2.5 text-center">
               <span class="text-[10px] px-2 py-0.5 rounded-full font-medium"
                 :class="c.active ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'">
-                {{ c.active ? 'on' : 'off' }}
+                {{ c.active ? t('hub.ui.system_cron.on', 'on') : t('hub.ui.system_cron.off', 'off') }}
               </span>
             </td>
           </tr>
@@ -82,6 +82,7 @@
 
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 
+const { t } = useHubT()
 const { isOwner } = useRoles()
 if (!isOwner.value) navigateTo('/hub/dashboard')
 
@@ -119,7 +120,7 @@ function formatDate(d: string) {
 
 function resultLabel(r: string | null, errors: number | null): string {
   if (!r) return '—'
-  if (Number(errors) > 0) return 'erreur'
+  if (Number(errors) > 0) return t('hub.ui.system_cron.error_lbl', 'erreur')
   return r
 }
 

@@ -3,7 +3,10 @@
 import { useClientDb } from '~/server/utils/db'
 import { resolveCustomerPrice } from '~/enterprise/misc/pricing/server/utils/pricing'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     items: { sku: string; qty: number }[]
     idCustomer?: number

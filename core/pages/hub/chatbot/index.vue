@@ -19,6 +19,9 @@
     <ChatbotScenarioEditor v-if="activeMode === 'scenario'" />
 
     
+    <ChatbotAiAuditPanel v-if="activeMode === 'ia'" />
+
+    
   
   <div v-show="activeMode === 'chat'" class="flex min-h-0 overflow-hidden flex-1">
     
@@ -27,13 +30,13 @@
         <div class="flex items-center justify-between mb-2">
           <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Chatbot</h1>
           <span v-if="counts.unread > 0" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 font-semibold">
-            {{ counts.unread }} non lu{{ counts.unread > 1 ? 's' : '' }}
+            {{ counts.unread > 1 ? tHub('hub.ui.chatbot.unread_other', '{n} non lus', { n: counts.unread }) : tHub('hub.ui.chatbot.unread_one', '{n} non lu', { n: counts.unread }) }}
           </span>
         </div>
         <input
           v-model="search"
           type="text"
-          placeholder="Email, nom, société, token…"
+          :placeholder="tHub('hub.ui.chatbot.search_ph', 'Email, nom, société, token…')"
           class="w-full text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-800 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-300"
           @keyup.enter="reload(true)"
         />
@@ -59,8 +62,8 @@
 
       
       <div class="flex-1 overflow-y-auto">
-        <p v-if="loadingList && items.length === 0" class="text-xs text-gray-400 px-4 py-8 text-center">Chargement…</p>
-        <p v-else-if="items.length === 0" class="text-xs text-gray-400 px-4 py-8 text-center">Aucune conversation.</p>
+        <p v-if="loadingList && items.length === 0" class="text-xs text-gray-400 px-4 py-8 text-center">{{ tHub('hub.ui.chatbot.loading', 'Chargement…') }}</p>
+        <p v-else-if="items.length === 0" class="text-xs text-gray-400 px-4 py-8 text-center">{{ tHub('hub.ui.chatbot.no_conversation', 'Aucune conversation.') }}</p>
         <ul v-else class="divide-y divide-gray-100 dark:divide-slate-800">
           <li v-for="c in items" :key="c.idConversation">
             <button
@@ -88,19 +91,22 @@
                   <span v-else-if="c.lastMessageRole === 'agent'" class="text-emerald-700 dark:text-emerald-300">↩ {{ c.lastMessageSnippet }}</span>
                   <span v-else class="text-gray-400 italic">{{ c.lastMessageSnippet }}</span>
                 </p>
-                <div class="flex items-center gap-1 mt-1.5">
+                <div class="flex items-center gap-1 mt-1.5 flex-wrap">
                   <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold"
                     :class="scenarioBadgeClass(c.scenario)">
                     {{ scenarioLabel(c.scenario) }}
                   </span>
+                  <span v-if="c.productName" class="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 font-medium truncate max-w-[140px]" :title="c.productName">
+                    🛒 {{ c.productName }}
+                  </span>
                   <span v-if="c.humanTakeover" class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 font-semibold">
-                    Takeover
+                    {{ tHub('hub.ui.chatbot.takeover', 'Takeover') }}
                   </span>
                   <span v-if="c.unreadForAdmin" class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 font-semibold">
                     ●
                   </span>
                   <span v-if="c.status === 'closed'" class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400 font-semibold">
-                    Clos
+                    {{ tHub('hub.ui.chatbot.closed', 'Clos') }}
                   </span>
                 </div>
               </div>
@@ -117,7 +123,7 @@
           <svg class="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
           </svg>
-          <p>Sélectionnez une conversation</p>
+          <p>{{ tHub('hub.ui.chatbot.select_conversation', 'Sélectionnez une conversation') }}</p>
         </div>
       </div>
 
@@ -138,13 +144,13 @@
                 🛒 {{ detail.productContext.name }}
               </a>
               <a v-if="detail.conversation.idSmartlead" :href="`/hub/leads`" class="text-primary-600 hover:underline">
-                Lead #{{ detail.conversation.idSmartlead }}
+                {{ tHub('hub.ui.chatbot.lead_n', 'Lead #{id}', { id: detail.conversation.idSmartlead }) }}
               </a>
             </p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span v-if="detail.conversation.humanTakeover" class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 font-semibold">
-              👤 Vous parlez · {{ detail.employee?.firstname || 'agent' }}
+              👤 {{ tHub('hub.ui.chatbot.you_speak', 'Vous parlez · {name}', { name: detail.employee?.firstname || tHub('hub.ui.chatbot.agent_fallback', 'agent') }) }}
             </span>
             <button
               v-else-if="detail.conversation.status !== 'closed'"
@@ -153,7 +159,7 @@
               class="text-xs px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-1"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
-              Reprendre la main
+              {{ tHub('hub.ui.chatbot.take_over', 'Reprendre la main') }}
             </button>
             
             <NuxtLink
@@ -161,26 +167,26 @@
               :to="`/hub/projects/${detail.linkedProject.idSmartproject}`"
               target="_blank"
               class="text-xs px-3 py-1.5 bg-violet-100 text-violet-700 hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-300 dark:hover:bg-violet-900/60 rounded-lg transition-colors flex items-center gap-1"
-              :title="`Ouvrir l'item pipeline #${detail.linkedProject.idSmartproject}`"
+              :title="tHub('hub.ui.chatbot.open_item_title', 'Ouvrir l\'item pipeline #{id}', { id: detail.linkedProject.idSmartproject })"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>
-              Item #{{ detail.linkedProject.idSmartproject }}
+              {{ tHub('hub.ui.chatbot.item_n', 'Item #{id}', { id: detail.linkedProject.idSmartproject }) }}
             </NuxtLink>
             <button
               v-else
               @click="openProjectModal()"
               class="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-1"
-              title="Créer un item de pipeline depuis cette conversation"
+              :title="tHub('hub.ui.chatbot.create_item_title', 'Créer un item de pipeline depuis cette conversation')"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-              Item pipeline
+              {{ tHub('hub.ui.chatbot.item_pipeline', 'Item pipeline') }}
             </button>
             <button
               v-if="detail.conversation.status !== 'closed'"
               @click="closeIt()"
               :disabled="closeLoading"
               class="text-xs px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
-            >Clôturer</button>
+            >{{ tHub('hub.ui.chatbot.close_btn', 'Clôturer') }}</button>
           </div>
         </header>
 
@@ -200,8 +206,8 @@
                   class="max-w-[75%] rounded-lg px-3 py-2 text-[13px] whitespace-pre-wrap"
                   :class="bubbleClass(m.role)"
                 >
-                  <p v-if="m.role === 'bot'" class="text-[9px] uppercase tracking-wider text-gray-400 mb-1">Bot</p>
-                  <p v-if="m.role === 'agent'" class="text-[9px] uppercase tracking-wider text-emerald-200 mb-1">Vous</p>
+                  <p v-if="m.role === 'bot'" class="text-[9px] uppercase tracking-wider text-gray-400 mb-1">{{ tHub('hub.ui.chatbot.role_bot', 'Bot') }}</p>
+                  <p v-if="m.role === 'agent'" class="text-[9px] uppercase tracking-wider text-emerald-200 mb-1">{{ tHub('hub.ui.chatbot.role_you', 'Vous') }}</p>
                   {{ m.content }}
                   <p class="text-[9px] mt-1 opacity-60 text-right">{{ relTime(m.dateAdd) }}</p>
                 </div>
@@ -215,43 +221,43 @@
                 <textarea
                   v-model="replyMessage"
                   rows="2"
-                  placeholder="Tapez votre réponse… (Entrée pour envoyer, Maj+Entrée pour nouvelle ligne)"
+                  :placeholder="tHub('hub.ui.chatbot.reply_ph', 'Tapez votre réponse… (Entrée pour envoyer, Maj+Entrée pour nouvelle ligne)')"
                   class="flex-1 text-xs border border-gray-200 dark:border-slate-700 dark:bg-slate-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300 resize-none"
                   @keydown.enter.exact.prevent="sendReply"
                 />
                 <button type="submit" :disabled="!replyMessage.trim() || sending"
                   class="text-xs px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors self-end">
-                  Envoyer
+                  {{ tHub('hub.ui.chatbot.send', 'Envoyer') }}
                 </button>
               </form>
             </div>
             <div v-else-if="!detail.conversation.humanTakeover && detail.conversation.status !== 'closed'"
               class="border-t border-gray-100 dark:border-slate-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-[11px] text-amber-800 dark:text-amber-300 shrink-0">
-              💡 Le bot pilote actuellement la conversation. Cliquez « Reprendre la main » pour répondre à la place du bot.
+              💡 {{ tHub('hub.ui.chatbot.bot_driving', 'Le bot pilote actuellement la conversation. Cliquez « Reprendre la main » pour répondre à la place du bot.') }}
             </div>
             <div v-else class="border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-4 py-3 text-[11px] text-gray-500 dark:text-slate-400 shrink-0">
-              Conversation clôturée.
+              {{ tHub('hub.ui.chatbot.conversation_closed', 'Conversation clôturée.') }}
             </div>
           </div>
 
           
           <aside class="w-72 shrink-0 bg-white dark:bg-slate-900 border-l border-gray-100 dark:border-slate-800 overflow-y-auto p-4 space-y-4 text-xs">
             <div v-if="detail.products.length > 0">
-              <h3 class="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-slate-400 mb-2">Produits négociés ({{ detail.products.length }})</h3>
+              <h3 class="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-slate-400 mb-2">{{ tHub('hub.ui.chatbot.products_negotiated', 'Produits négociés ({n})', { n: detail.products.length }) }}</h3>
               <ul class="space-y-2">
                 <li v-for="p in detail.products" :key="p.idLink" class="border border-gray-100 dark:border-slate-800 rounded-lg p-2">
-                  <p class="font-medium text-gray-800 dark:text-slate-100 text-[11px] truncate">{{ p.productName || `Produit #${p.idProduct}` }}</p>
+                  <p class="font-medium text-gray-800 dark:text-slate-100 text-[11px] truncate">{{ p.productName || tHub('hub.ui.chatbot.product_n', 'Produit #{id}', { id: p.idProduct }) }}</p>
                   <dl class="mt-1 space-y-0.5 text-[10px] text-gray-600 dark:text-slate-400">
-                    <div v-if="p.qty"><span class="font-medium">Qté :</span> {{ p.qty }}</div>
-                    <div v-if="p.freq"><span class="font-medium">Fréquence :</span> {{ p.freq }}</div>
-                    <div v-if="p.targetPrice"><span class="font-medium">Prix cible :</span> {{ p.targetPrice }}</div>
+                    <div v-if="p.qty"><span class="font-medium">{{ tHub('hub.ui.chatbot.qty_label', 'Qté :') }}</span> {{ p.qty }}</div>
+                    <div v-if="p.freq"><span class="font-medium">{{ tHub('hub.ui.chatbot.freq_label', 'Fréquence :') }}</span> {{ p.freq }}</div>
+                    <div v-if="p.targetPrice"><span class="font-medium">{{ tHub('hub.ui.chatbot.target_price_label', 'Prix cible :') }}</span> {{ p.targetPrice }}</div>
                   </dl>
                 </li>
               </ul>
             </div>
 
             <div v-if="detail.answers.length > 0">
-              <h3 class="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-slate-400 mb-2">Qualif chatbot</h3>
+              <h3 class="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-slate-400 mb-2">{{ tHub('hub.ui.chatbot.qualif', 'Qualif chatbot') }}</h3>
               <dl class="space-y-2">
                 <div v-for="a in detail.answers" :key="a.idAnswer">
                   <dt class="font-medium text-gray-700 dark:text-slate-200 text-[11px]">{{ a.recapLabel || a.nodeKey }}</dt>
@@ -261,12 +267,12 @@
             </div>
 
             <div>
-              <h3 class="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-slate-400 mb-2">Métadonnées</h3>
+              <h3 class="text-[10px] uppercase tracking-wider font-semibold text-gray-500 dark:text-slate-400 mb-2">{{ tHub('hub.ui.chatbot.metadata', 'Métadonnées') }}</h3>
               <dl class="space-y-1 text-[10px]">
-                <div><dt class="inline font-medium text-gray-500">Tunnel :</dt> <dd class="inline text-gray-700 dark:text-slate-300">{{ scenarioLabel(detail.conversation.scenario) }}</dd></div>
-                <div><dt class="inline font-medium text-gray-500">Démarré :</dt> <dd class="inline text-gray-700 dark:text-slate-300">{{ formatDate(detail.conversation.dateAdd) }}</dd></div>
-                <div v-if="detail.conversation.humanTakeoverAt"><dt class="inline font-medium text-gray-500">Takeover :</dt> <dd class="inline text-gray-700 dark:text-slate-300">{{ formatDate(detail.conversation.humanTakeoverAt) }}</dd></div>
-                <div><dt class="inline font-medium text-gray-500">Token :</dt> <dd class="inline text-gray-400 font-mono break-all">{{ detail.conversation.token.slice(0, 16) }}…</dd></div>
+                <div><dt class="inline font-medium text-gray-500">{{ tHub('hub.ui.chatbot.funnel_label', 'Tunnel :') }}</dt> <dd class="inline text-gray-700 dark:text-slate-300">{{ scenarioLabel(detail.conversation.scenario) }}</dd></div>
+                <div><dt class="inline font-medium text-gray-500">{{ tHub('hub.ui.chatbot.started_label', 'Démarré :') }}</dt> <dd class="inline text-gray-700 dark:text-slate-300">{{ formatDate(detail.conversation.dateAdd) }}</dd></div>
+                <div v-if="detail.conversation.humanTakeoverAt"><dt class="inline font-medium text-gray-500">{{ tHub('hub.ui.chatbot.takeover_label', 'Takeover :') }}</dt> <dd class="inline text-gray-700 dark:text-slate-300">{{ formatDate(detail.conversation.humanTakeoverAt) }}</dd></div>
+                <div><dt class="inline font-medium text-gray-500">{{ tHub('hub.ui.chatbot.token_label', 'Token :') }}</dt> <dd class="inline text-gray-400 font-mono break-all">{{ detail.conversation.token.slice(0, 16) }}…</dd></div>
               </dl>
             </div>
           </aside>
@@ -280,30 +286,30 @@
         <div v-if="projectModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="projectModalOpen = false">
           <form @submit.prevent="submitProjectModal" class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <header class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-              <h2 class="font-bold text-gray-800 dark:text-slate-100">Créer un item pipeline</h2>
+              <h2 class="font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.chatbot.modal_title', 'Créer un item pipeline') }}</h2>
               <button type="button" @click="projectModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
             </header>
 
             <div class="px-6 py-5 space-y-4">
               <p class="text-[11px] text-gray-500 dark:text-slate-400">
-                Si un lead avec cet email existe déjà, il sera réutilisé. Sinon il sera créé.
+                {{ tHub('hub.ui.chatbot.modal_note', 'Si un lead avec cet email existe déjà, il sera réutilisé. Sinon il sera créé.') }}
               </p>
 
               <div>
                 <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
-                  Email <span class="text-rose-500">*</span>
+                  {{ tHub('hub.ui.chatbot.email', 'Email') }} <span class="text-rose-500">*</span>
                 </label>
                 <input
                   v-model="projectForm.email"
                   type="email"
                   required
-                  placeholder="contact@société.fr"
+                  :placeholder="tHub('hub.ui.chatbot.email_ph', 'contact@société.fr')"
                   class="w-full text-sm border border-gray-200 dark:border-slate-700 dark:bg-slate-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
                 />
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">SIRET (14 chiffres)</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{{ tHub('hub.ui.chatbot.siret_label', 'SIRET (14 chiffres)') }}</label>
                 <input
                   v-model="projectForm.siret"
                   type="text"
@@ -317,26 +323,26 @@
 
               <div>
                 <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
-                  Titre du projet <span class="text-rose-500">*</span>
+                  {{ tHub('hub.ui.chatbot.project_title', 'Titre du projet') }} <span class="text-rose-500">*</span>
                 </label>
                 <input
                   v-model="projectForm.project_title"
                   type="text"
                   required
-                  placeholder="Ex. Demande échantillons amandes 25t"
+                  :placeholder="tHub('hub.ui.chatbot.project_title_ph', 'Ex. Demande échantillons amandes 25t')"
                   class="w-full text-sm border border-gray-200 dark:border-slate-700 dark:bg-slate-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
                 />
               </div>
 
               <div>
                 <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
-                  Description
-                  <span class="text-gray-400 font-normal">(récap pré-rempli depuis la conversation)</span>
+                  {{ tHub('hub.ui.chatbot.description', 'Description') }}
+                  <span class="text-gray-400 font-normal">{{ tHub('hub.ui.chatbot.description_hint', '(récap pré-rempli depuis la conversation)') }}</span>
                 </label>
                 <textarea
                   v-model="projectForm.needs"
                   rows="6"
-                  placeholder="Besoins, contexte, niveau d'urgence…"
+                  :placeholder="tHub('hub.ui.chatbot.needs_ph', 'Besoins, contexte, niveau d\'urgence…')"
                   class="w-full text-sm border border-gray-200 dark:border-slate-700 dark:bg-slate-800 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300 font-mono"
                 />
               </div>
@@ -345,9 +351,9 @@
             </div>
 
             <footer class="flex items-center justify-end gap-2 px-6 py-3 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
-              <button type="button" @click="projectModalOpen = false" class="text-xs px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700">Annuler</button>
+              <button type="button" @click="projectModalOpen = false" class="text-xs px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700">{{ tHub('hub.ui.chatbot.cancel', 'Annuler') }}</button>
               <button type="submit" :disabled="createProjectLoading" class="text-xs px-4 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 transition-colors">
-                {{ createProjectLoading ? 'Envoi…' : 'Envoyer' }}
+                {{ createProjectLoading ? tHub('hub.ui.chatbot.sending', 'Envoi…') : tHub('hub.ui.chatbot.send', 'Envoyer') }}
               </button>
             </footer>
           </form>
@@ -361,12 +367,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import ChatbotScenarioEditor from '~/components/chatbot/ScenarioEditor.vue'
+import ChatbotAiAuditPanel from '~/components/chatbot/AiAuditPanel.vue'
 
-type Mode = 'chat' | 'scenario'
-const modes: { key: Mode; label: string }[] = [
-  { key: 'chat',     label: '💬 Conversations' },
-  { key: 'scenario', label: '🧩 Scénario' },
-]
+const { t: tHub } = useHubT()
+
+type Mode = 'chat' | 'scenario' | 'ia'
+const assistantIa = !!(useRuntimeConfig().public as any)?.chatbotAi?.enabled
+const modes = computed<{ key: Mode; label: string }[]>(() => [
+  { key: 'chat',     label: `💬 ${tHub('hub.ui.chatbot.mode_conversations', 'Conversations')}` },
+  { key: 'scenario', label: `🧩 ${tHub('hub.ui.chatbot.mode_scenario', 'Scénario')}` },
+  ...(assistantIa ? [{ key: 'ia' as Mode, label: `🤖 ${tHub('hub.chatbot_ia_audit.tab', 'Assistant IA')}` }] : []),
+])
 const activeMode = ref<Mode>('chat')
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
@@ -384,6 +395,7 @@ interface ConversationItem {
   capturedCompany:   string
   capturedPhone:     string
   productIdContext:  number | null
+  productName:       string | null
   idEmployee:        number | null
   idSmartlead:       number | null
   lastMessageAt:     string | null
@@ -401,9 +413,9 @@ type TabKey = 'open' | 'takeover' | 'closed'
 const activeTab = ref<TabKey>('open')
 
 const tabs = computed<Array<{ key: TabKey; label: string; count: number }>>(() => [
-  { key: 'open',     label: 'Bot actif', count: counts.value.botOpen },
-  { key: 'takeover', label: 'Takeover',  count: counts.value.takeoverOpen },
-  { key: 'closed',   label: 'Clos',      count: counts.value.closed },
+  { key: 'open',     label: tHub('hub.ui.chatbot.tab_bot_active', 'Bot actif'), count: counts.value.botOpen },
+  { key: 'takeover', label: tHub('hub.ui.chatbot.takeover', 'Takeover'),  count: counts.value.takeoverOpen },
+  { key: 'closed',   label: tHub('hub.ui.chatbot.closed', 'Clos'),      count: counts.value.closed },
 ])
 
 function setTab(key: TabKey) {
@@ -485,7 +497,7 @@ async function takeover() {
     await loadDetail(detail.value.conversation.token)
     reload()
   } catch (e: any) {
-    alert(e?.data?.statusMessage || e?.message || 'Erreur takeover')
+    alert(e?.data?.statusMessage || e?.message || tHub('hub.ui.chatbot.err_takeover', 'Erreur takeover'))
   } finally {
     takeoverLoading.value = false
   }
@@ -496,30 +508,30 @@ function openProjectModal() {
   const c = detail.value.conversation
   
   const scenarioPrefix = ({
-    product: 'Demande produit',
-    order:   'SAV commande',
-    human:   'Contact direct',
-  } as any)[c.scenario] || 'Nouveau client B2B'
+    product: tHub('hub.ui.chatbot.prefix_product', 'Demande produit'),
+    order:   tHub('hub.ui.chatbot.prefix_order', 'SAV commande'),
+    human:   tHub('hub.ui.chatbot.prefix_human', 'Contact direct'),
+  } as any)[c.scenario] || tHub('hub.ui.chatbot.prefix_default', 'Nouveau client B2B')
   const fallbackName = c.capturedCompany
     || `${c.capturedFirstname || ''} ${c.capturedLastname || ''}`.trim()
     || c.capturedEmail
-    || 'prospect'
+    || tHub('hub.ui.chatbot.prospect', 'prospect')
 
   
   const lines: string[] = []
   if (detail.value.products?.length) {
-    lines.push(`🛒 Produits négociés (${detail.value.products.length}) :`)
+    lines.push('🛒 ' + tHub('hub.ui.chatbot.products_negotiated_recap', 'Produits négociés ({n}) :', { n: detail.value.products.length }))
     for (const p of detail.value.products) {
-      const parts = [p.productName || `Produit #${p.idProduct}`]
-      if (p.qty)         parts.push(`qté ${p.qty}`)
-      if (p.freq)        parts.push(`fréquence ${p.freq}`)
-      if (p.targetPrice) parts.push(`prix cible ${p.targetPrice}`)
+      const parts = [p.productName || tHub('hub.ui.chatbot.product_n', 'Produit #{id}', { id: p.idProduct })]
+      if (p.qty)         parts.push(tHub('hub.ui.chatbot.recap_qty', 'qté {v}', { v: p.qty }))
+      if (p.freq)        parts.push(tHub('hub.ui.chatbot.recap_freq', 'fréquence {v}', { v: p.freq }))
+      if (p.targetPrice) parts.push(tHub('hub.ui.chatbot.recap_target_price', 'prix cible {v}', { v: p.targetPrice }))
       lines.push('• ' + parts.join(' · '))
     }
   }
   if (detail.value.answers?.length) {
     if (lines.length) lines.push('')
-    lines.push('📋 Qualif chatbot :')
+    lines.push('📋 ' + tHub('hub.ui.chatbot.qualif_recap', 'Qualif chatbot :'))
     for (const a of detail.value.answers) {
       if (a.recapLabel && a.answer) lines.push(`• ${a.recapLabel} : ${a.answer}`)
     }
@@ -556,7 +568,7 @@ async function submitProjectModal() {
       window.open(`/hub/projects/${r.idSmartproject}`, '_blank')
     }
   } catch (e: any) {
-    projectModalError.value = e?.data?.statusMessage || e?.message || 'Erreur création item pipeline'
+    projectModalError.value = e?.data?.statusMessage || e?.message || tHub('hub.ui.chatbot.err_create_item', 'Erreur création item pipeline')
   } finally {
     createProjectLoading.value = false
   }
@@ -564,14 +576,14 @@ async function submitProjectModal() {
 
 async function closeIt() {
   if (!detail.value?.conversation?.token) return
-  if (!confirm('Clôturer cette conversation ?')) return
+  if (!confirm(tHub('hub.ui.chatbot.confirm_close', 'Clôturer cette conversation ?'))) return
   closeLoading.value = true
   try {
     await $fetch(`/api/bo/chatbot/${detail.value.conversation.token}/close`, { method: 'POST' })
     await loadDetail(detail.value.conversation.token)
     reload()
   } catch (e: any) {
-    alert(e?.data?.statusMessage || e?.message || 'Erreur clôture')
+    alert(e?.data?.statusMessage || e?.message || tHub('hub.ui.chatbot.err_close', 'Erreur clôture'))
   } finally {
     closeLoading.value = false
   }
@@ -589,7 +601,7 @@ async function sendReply() {
     await loadDetail(detail.value.conversation.token)
     reload()
   } catch (e: any) {
-    alert(e?.data?.statusMessage || e?.message || 'Erreur envoi')
+    alert(e?.data?.statusMessage || e?.message || tHub('hub.ui.chatbot.err_send', 'Erreur envoi'))
   } finally {
     sending.value = false
   }
@@ -619,7 +631,7 @@ function displayName(c: any): string {
   if (n) return n
   if (c.capturedEmail) return c.capturedEmail
   if (c.capturedCompany) return c.capturedCompany
-  return `Visiteur #${c.idConversation}`
+  return tHub('hub.ui.chatbot.visitor_n', 'Visiteur #{id}', { id: c.idConversation })
 }
 function initials(c: any): string {
   const f = (c.capturedFirstname || '').charAt(0).toUpperCase()
@@ -629,7 +641,7 @@ function initials(c: any): string {
   return '?'
 }
 function scenarioLabel(s: string): string {
-  return ({ global: 'B2B', product: 'Produit', order: 'SAV', human: 'Contact' } as any)[s] || s
+  return ({ global: 'B2B', product: tHub('hub.ui.chatbot.scenario_product', 'Produit'), order: tHub('hub.ui.chatbot.scenario_order', 'SAV'), human: tHub('hub.ui.chatbot.scenario_human', 'Contact') } as any)[s] || s
 }
 function scenarioBadgeClass(s: string): string {
   return ({
@@ -653,7 +665,7 @@ function relTime(d: string | null): string {
   if (s < 60)    return `${s}s`
   if (s < 3600)  return `${Math.floor(s / 60)}min`
   if (s < 86400) return `${Math.floor(s / 3600)}h`
-  return `${Math.floor(s / 86400)}j`
+  return tHub('hub.ui.chatbot.unit_days', '{n}j', { n: Math.floor(s / 86400) })
 }
 function formatDate(d: string | null): string {
   if (!d) return '—'

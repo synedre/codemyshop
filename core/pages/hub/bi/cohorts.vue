@@ -6,9 +6,9 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Cohortes Clients</h1>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_cohorts.title', 'Cohortes Clients') }}</h1>
           <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">
-            Rétention mensuelle, LTV par cohorte d'acquisition, segmentation RFM
+            {{ t('hub.ui.bi_cohorts.subtitle', 'Rétention mensuelle, LTV par cohorte d\'acquisition, segmentation RFM') }}
           </p>
         </div>
       </div>
@@ -19,9 +19,9 @@
       
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Segmentation RFM</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_cohorts.rfm_title', 'Segmentation RFM') }}</h2>
           <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">
-            Récence / Fréquence / Montant — {{ data?.rfm.total ?? 0 }} client{{ (data?.rfm.total ?? 0) > 1 ? 's' : '' }} classifié{{ (data?.rfm.total ?? 0) > 1 ? 's' : '' }}
+            {{ (data?.rfm.total ?? 0) > 1 ? t('hub.ui.bi_cohorts.rfm_sub_other', 'Récence / Fréquence / Montant — {n} clients classifiés', { n: data?.rfm.total ?? 0 }) : t('hub.ui.bi_cohorts.rfm_sub_one', 'Récence / Fréquence / Montant — {n} client classifié', { n: data?.rfm.total ?? 0 }) }}
           </p>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-x divide-y md:divide-y-0 divide-gray-100 dark:divide-slate-800">
@@ -42,30 +42,30 @@
       
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">LTV par cohorte</h2>
-          <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">Revenu cumulé moyen par client (depuis acquisition)</p>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_cohorts.ltv_title', 'LTV par cohorte') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ t('hub.ui.bi_cohorts.ltv_sub', 'Revenu cumulé moyen par client (depuis acquisition)') }}</p>
         </div>
         <div class="px-6 py-5">
           <div v-if="loading" class="h-44 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
           <HubSimpleChart v-else-if="ltvChart.length" :data="ltvChart" unit="€" />
-          <div v-else class="h-44 flex items-center justify-center text-sm text-gray-400">Pas encore assez de cohortes pour mesurer la LTV.</div>
+          <div v-else class="h-44 flex items-center justify-center text-sm text-gray-400">{{ t('hub.ui.bi_cohorts.ltv_empty', 'Pas encore assez de cohortes pour mesurer la LTV.') }}</div>
         </div>
       </div>
 
       
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Matrice de rétention</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.bi_cohorts.ret_title', 'Matrice de rétention') }}</h2>
           <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">
-            Pourcentage de clients de la cohorte ayant racheté N mois après l'acquisition
+            {{ t('hub.ui.bi_cohorts.ret_sub', 'Pourcentage de clients de la cohorte ayant racheté N mois après l\'acquisition') }}
           </p>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full text-xs">
             <thead class="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
               <tr>
-                <th class="px-4 py-3 text-left font-semibold text-gray-500 dark:text-slate-400 sticky left-0 bg-gray-50 dark:bg-slate-800/50">Cohorte</th>
-                <th class="px-3 py-3 text-right font-semibold text-gray-500 dark:text-slate-400">Size</th>
+                <th class="px-4 py-3 text-left font-semibold text-gray-500 dark:text-slate-400 sticky left-0 bg-gray-50 dark:bg-slate-800/50">{{ t('hub.ui.bi_cohorts.col_cohort', 'Cohorte') }}</th>
+                <th class="px-3 py-3 text-right font-semibold text-gray-500 dark:text-slate-400">{{ t('hub.ui.bi_cohorts.col_size', 'Taille') }}</th>
                 <th v-for="m in maxMonths" :key="m" class="px-2 py-3 text-center font-semibold text-gray-500 dark:text-slate-400 min-w-[52px]">M+{{ m }}</th>
               </tr>
             </thead>
@@ -92,7 +92,7 @@
               </template>
               <tr v-else>
                 <td :colspan="maxMonths + 2" class="px-6 py-12 text-center text-sm text-gray-400">
-                  Pas encore assez de commandes pour construire les cohortes.
+                  {{ t('hub.ui.bi_cohorts.ret_empty', 'Pas encore assez de commandes pour construire les cohortes.') }}
                 </td>
               </tr>
             </tbody>
@@ -107,6 +107,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 
+const { t } = useHubT()
+
 interface CohortCell { monthDelta: number; active: number; retention: number; revenue: number }
 interface CohortRow  { cohort: string; size: number; cells: CohortCell[] }
 interface LtvRow     { cohort: string; size: number; totalRevenue: number; ltv: number }
@@ -118,10 +120,12 @@ const loading = ref(true)
 
 const fmtEur = (v: number) => v.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
 
-const MONTHS_FR = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
+const monthsShort = computed(() => [
+  t('hub.ui.bi_cohorts.m_jan', 'janv.'), t('hub.ui.bi_cohorts.m_feb', 'févr.'), t('hub.ui.bi_cohorts.m_mar', 'mars'), t('hub.ui.bi_cohorts.m_apr', 'avr.'), t('hub.ui.bi_cohorts.m_may', 'mai'), t('hub.ui.bi_cohorts.m_jun', 'juin'), t('hub.ui.bi_cohorts.m_jul', 'juil.'), t('hub.ui.bi_cohorts.m_aug', 'août'), t('hub.ui.bi_cohorts.m_sep', 'sept.'), t('hub.ui.bi_cohorts.m_oct', 'oct.'), t('hub.ui.bi_cohorts.m_nov', 'nov.'), t('hub.ui.bi_cohorts.m_dec', 'déc.'),
+])
 const formatCohort = (ym: string) => {
   const [y, m] = ym.split('-')
-  return `${MONTHS_FR[Number(m) - 1] ?? m} ${y.slice(2)}`
+  return `${monthsShort.value[Number(m) - 1] ?? m} ${y.slice(2)}`
 }
 
 const maxMonths = computed(() => {
@@ -154,12 +158,12 @@ const ltvChart = computed(() =>
 const rfmSegments = computed(() => {
   const r = data.value?.rfm
   return [
-    { key: 'champions', label: 'Champions',  value: r?.champions ?? 0, hint: 'R≤30j · F≥3 · M≥200€',  dotClass: 'bg-success-500' },
-    { key: 'loyal',     label: 'Loyaux',     value: r?.loyal     ?? 0, hint: 'R≤90j · F≥2',            dotClass: 'bg-primary-500' },
-    { key: 'newbies',   label: 'Nouveaux',   value: r?.newbies   ?? 0, hint: 'R≤30j · F=1',            dotClass: 'bg-sky-500' },
-    { key: 'atRisk',    label: 'À risque',   value: r?.atRisk    ?? 0, hint: '91-180j · F≥2',          dotClass: 'bg-amber-500' },
-    { key: 'dormant',   label: 'Dormants',   value: r?.dormant   ?? 0, hint: '31-90j · F=1',           dotClass: 'bg-gray-400' },
-    { key: 'lost',      label: 'Perdus',     value: r?.lost      ?? 0, hint: 'R>180j',                 dotClass: 'bg-danger-500' },
+    { key: 'champions', label: t('hub.ui.bi_cohorts.seg_champions', 'Champions'), value: r?.champions ?? 0, hint: t('hub.ui.bi_cohorts.hint_champions', 'R≤30j · F≥3 · M≥200€'), dotClass: 'bg-success-500' },
+    { key: 'loyal',     label: t('hub.ui.bi_cohorts.seg_loyal', 'Loyaux'), value: r?.loyal ?? 0, hint: t('hub.ui.bi_cohorts.hint_loyal', 'R≤90j · F≥2'), dotClass: 'bg-primary-500' },
+    { key: 'newbies',   label: t('hub.ui.bi_cohorts.seg_new', 'Nouveaux'), value: r?.newbies ?? 0, hint: t('hub.ui.bi_cohorts.hint_new', 'R≤30j · F=1'), dotClass: 'bg-sky-500' },
+    { key: 'atRisk',    label: t('hub.ui.bi_cohorts.seg_at_risk', 'À risque'), value: r?.atRisk ?? 0, hint: t('hub.ui.bi_cohorts.hint_at_risk', '91-180j · F≥2'), dotClass: 'bg-amber-500' },
+    { key: 'dormant',   label: t('hub.ui.bi_cohorts.seg_dormant', 'Dormants'), value: r?.dormant ?? 0, hint: t('hub.ui.bi_cohorts.hint_dormant', '31-90j · F=1'), dotClass: 'bg-gray-400' },
+    { key: 'lost',      label: t('hub.ui.bi_cohorts.seg_lost', 'Perdus'), value: r?.lost ?? 0, hint: t('hub.ui.bi_cohorts.hint_lost', 'R>180j'), dotClass: 'bg-danger-500' },
   ]
 })
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex transition-colors duration-200" :class="isDark ? 'bg-gray-900' : 'bg-gray-100 dark:bg-slate-800'">
+  <div class="hub-layout min-h-screen flex transition-colors duration-200" :class="isDark ? 'bg-gray-900' : 'bg-gray-100 dark:bg-slate-800'">
 
     
     <aside class="border-r shadow-sm flex flex-col shrink-0 transition-all duration-200"
@@ -14,12 +14,14 @@
           isDark ? 'border-gray-700' : 'border-gray-100 dark:border-slate-800',
           sidebarCollapsed ? 'justify-center' : '',
         ]">
-        <NuxtLink to="/" class="flex items-center gap-2 group min-w-0">
-          <div class="w-7 h-7 rounded-lg bg-primary-600 flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-            </svg>
-          </div>
+        <NuxtLink to="/hub/dashboard" class="flex items-center gap-2 group min-w-0">
+          <img
+            src="/logo-codemyshop.png"
+            alt="CodeMyShop"
+            width="28"
+            height="28"
+            class="w-7 h-7 shrink-0 object-contain"
+          />
           <div v-if="!sidebarCollapsed" class="min-w-0">
             <p class="text-sm font-bold leading-none group-hover:text-primary-600 transition-colors truncate" :class="isDark ? 'text-gray-100' : 'text-gray-800 dark:text-slate-100'">{{ hubTitle }}</p>
             <p class="text-[10px] text-gray-400 mt-0.5 truncate">{{ t('nav.subtitle') }}</p>
@@ -36,6 +38,19 @@
           </svg>
         </button>
       </div>
+
+      
+      <NuxtLink
+        to="/"
+        :title="t('hub.back_to_shop', 'Retour à la boutique')"
+        class="mx-2 mt-2 flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-md text-gray-500 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-slate-800 dark:text-slate-400 transition-colors"
+        :class="sidebarCollapsed ? 'justify-center' : ''"
+      >
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955a1.5 1.5 0 0 1 2.121 0L22.28 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+        <span v-if="!sidebarCollapsed">{{ t('hub.back_to_shop', 'Retour à la boutique') }}</span>
+      </NuxtLink>
 
       
       <button
@@ -63,6 +78,23 @@
             </NuxtLink>
           </li>
           <li>
+            <NuxtLink to="/hub/suivi-projet" class="nav-link" active-class="nav-link-active">
+              <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
+              </svg>
+              {{ t('nav.suivi_projet', 'Suivi projet') }}
+            </NuxtLink>
+          </li>
+          
+          <li v-if="!isFood">
+            <NuxtLink to="/hub/moodboards" class="nav-link" active-class="nav-link-active">
+              <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
+              {{ t('nav.moodboards', 'Moodboards') }}
+            </NuxtLink>
+          </li>
+          <li>
             <NuxtLink to="/hub/informations" class="nav-link" active-class="nav-link-active">
               <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
@@ -83,7 +115,15 @@
               <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
               </svg>
-              Playbooks
+              {{ t('hub.ui.layout.playbooks', 'Playbooks') }}
+            </NuxtLink>
+          </li>
+          <li v-if="isOwner">
+            <NuxtLink to="/hub/errors" class="nav-link" active-class="nav-link-active">
+              <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
+              {{ t('hub.ui.layout.errors', 'Erreurs') }}
             </NuxtLink>
           </li>
         </ul>
@@ -91,7 +131,7 @@
         
         <div v-if="canAccess('catalogue')">
           <p class="section-title">PIM</p>
-          <p class="section-subtitle">Product Information Management</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_pim', 'Product Information Management') }}</p>
           <ul class="space-y-0.5">
             <li>
               <NuxtLink to="/hub/products" class="nav-link" active-class="nav-link-active">
@@ -106,7 +146,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714a2.25 2.25 0 0 0 .659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
                 </svg>
-                Cross-sell
+                {{ t('hub.ui.layout.cross_sell', 'Cross-sell') }}
               </NuxtLink>
             </li>
             <li>
@@ -122,7 +162,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                 </svg>
-                Merchandising
+                {{ t('hub.ui.layout.merchandising', 'Merchandising') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('pim-promotions')">
@@ -131,7 +171,15 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
                 </svg>
-                Promotions
+                {{ t('hub.ui.layout.promotions', 'Promotions') }}
+              </NuxtLink>
+            </li>
+            <li v-if="!isFeatureDisabled('pim-degressif')">
+              <NuxtLink to="/hub/products/degressif" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                </svg>
+                {{ t('hub.ui.layout.tier_prices', 'Prix dégressifs') }}
               </NuxtLink>
             </li>
             <li>
@@ -139,7 +187,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
-                Caractéristiques
+                {{ t('hub.ui.layout.features', 'Caractéristiques') }}
               </NuxtLink>
             </li>
             <li>
@@ -147,7 +195,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                 </svg>
-                Déclinaisons
+                {{ t('hub.ui.layout.combinations', 'Déclinaisons') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('pim-search-boost')">
@@ -155,7 +203,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
-                Recherche & Tri
+                {{ t('hub.ui.layout.search_sort', 'Recherche & Tri') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('pim-ab-testing')">
@@ -163,7 +211,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3" />
                 </svg>
-                A/B Testing
+                {{ t('hub.ui.layout.ab_testing', 'A/B Testing') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-traceability')">
@@ -171,7 +219,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
                 </svg>
-                Traçabilité & Lots
+                {{ t('hub.ui.layout.traceability', 'Traçabilité & Lots') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-expiry')">
@@ -179,7 +227,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                DLC & Décotes
+                {{ t('hub.ui.layout.dlc_markdowns', 'DLC & Décotes') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-legal-labels')">
@@ -188,7 +236,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
                 </svg>
-                Origines & Calibres
+                {{ t('hub.ui.layout.origins_sizes', 'Origines & Calibres') }}
               </NuxtLink>
             </li>
           </ul>
@@ -197,22 +245,22 @@
         
         <div v-if="canAccess('crm')">
           <p class="section-title">CRM</p>
-          <p class="section-subtitle">Customer Relationship Management</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_crm', 'Customer Relationship Management') }}</p>
           <ul class="space-y-0.5">
             <li v-if="!isFeatureDisabled('avatars')">
               <NuxtLink to="/hub/ai/avatars" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
-                Avatars
+                {{ t('hub.ui.layout.avatars', 'Avatars') }}
               </NuxtLink>
             </li>
-            <li>
+            <li v-if="!hasCrmAccounts">
               <NuxtLink to="/hub/leads" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
                 </svg>
-                Leads
+                {{ t('hub.ui.layout.leads', 'Leads') }}
               </NuxtLink>
             </li>
             <li>
@@ -227,7 +275,7 @@
                 </span>
               </NuxtLink>
             </li>
-            <li>
+            <li v-if="!hasCrmAccounts">
               <NuxtLink to="/hub/projects" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
@@ -236,11 +284,27 @@
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/hub/contacts" class="nav-link" active-class="nav-link-active">
+              <NuxtLink to="/hub/customer" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                 </svg>
                 {{ t('nav.clients') }}
+              </NuxtLink>
+            </li>
+            <li v-if="hasCrmAccounts && !isFeatureDisabled('crm-accounts')">
+              <NuxtLink to="/hub/crm/comptes" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                </svg>
+                {{ t('nav.crm_accounts', 'Pipeline & Comptes') }}
+              </NuxtLink>
+            </li>
+            <li v-if="!isFeatureDisabled('loyalty')">
+              <NuxtLink to="/hub/loyalty" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                </svg>
+                {{ t('nav.loyalty', 'Fidélité') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-impersonate')">
@@ -248,7 +312,15 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                 </svg>
-                Mode Commercial
+                {{ t('hub.ui.layout.sales_mode', 'Mode Commercial') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/hub/forum/moderation" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+                </svg>
+                {{ t('hub.ui.layout.forum_moderation', 'Modération forum') }}
               </NuxtLink>
             </li>
             <li>
@@ -256,7 +328,15 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
                 </svg>
-                Rendez-vous
+                {{ t('hub.ui.layout.appointments', 'Rendez-vous') }}
+              </NuxtLink>
+            </li>
+            <li v-if="hasCrmAccounts && !isFeatureDisabled('crm-accounts')">
+              <NuxtLink to="/hub/crm/mailing" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                {{ t('hub.ui.layout.email_campaigns', 'Campagnes e-mail') }}
               </NuxtLink>
             </li>
             <li>
@@ -264,7 +344,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                 </svg>
-                E-mail
+                {{ t('hub.ui.layout.email', 'E-mail') }}
               </NuxtLink>
             </li>
           </ul>
@@ -273,7 +353,7 @@
         
         <div v-if="canAccess('orders')">
           <p class="section-title">OMS</p>
-          <p class="section-subtitle">Order Management System</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_oms', 'Order Management System') }}</p>
           <ul class="space-y-0.5">
             <li>
               <NuxtLink to="/hub/carts" class="nav-link" active-class="nav-link-active">
@@ -288,7 +368,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
-                Relance paniers
+                {{ t('hub.ui.layout.cart_reminders', 'Relance paniers') }}
               </NuxtLink>
             </li>
             <li>
@@ -328,7 +408,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
                 </svg>
-                Encours B2B
+                {{ t('hub.ui.layout.b2b_outstanding', 'Encours B2B') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-b2b-pricing')">
@@ -336,7 +416,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.5h19.5m-19.5 4.5h19.5M2.25 16.5h19.5M12 3.75v16.5" />
                 </svg>
-                Grilles Tarifaires B2B
+                {{ t('hub.ui.layout.b2b_price_grids', 'Grilles Tarifaires B2B') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-quick-order')">
@@ -344,7 +424,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
                 </svg>
-                Commande Rapide
+                {{ t('hub.ui.layout.quick_order', 'Commande Rapide') }}
               </NuxtLink>
             </li>
           </ul>
@@ -353,14 +433,14 @@
         
         <div v-if="canAccess('logistique')">
           <p class="section-title">WMS</p>
-          <p class="section-subtitle">Warehouse Management System</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_wms', 'Warehouse Management System') }}</p>
           <ul class="space-y-0.5">
             <li>
               <NuxtLink to="/hub/logistique/preparation" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
                 </svg>
-                Préparation
+                {{ t('hub.ui.layout.picking', 'Préparation') }}
               </NuxtLink>
             </li>
             <li>
@@ -368,7 +448,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                 </svg>
-                Expéditions
+                {{ t('hub.ui.layout.shipments', 'Expéditions') }}
               </NuxtLink>
             </li>
             <li>
@@ -376,7 +456,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
                 </svg>
-                Transporteurs
+                {{ t('hub.ui.layout.carriers', 'Transporteurs') }}
               </NuxtLink>
             </li>
             <li>
@@ -392,7 +472,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
                 </svg>
-                Entrepôts
+                {{ t('hub.ui.layout.warehouses', 'Entrepôts') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('wms-store-locator')">
@@ -400,7 +480,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21M3 3h18M3 21h18M12 3v3m-3 0h6m-6 0v15m6-15v15m-9-9h12" />
                 </svg>
-                Boutiques
+                {{ t('hub.ui.layout.shops', 'Boutiques') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-freight-free')">
@@ -408,7 +488,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-4.5" />
                 </svg>
-                Franco de Port
+                {{ t('hub.ui.layout.free_shipping', 'Franco de Port') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-catch-weight')">
@@ -416,7 +496,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
                 </svg>
-                Poids Variable
+                {{ t('hub.ui.layout.variable_weight', 'Poids Variable') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('food-routing')">
@@ -425,7 +505,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                 </svg>
-                Tournées de Livraison
+                {{ t('hub.ui.layout.delivery_rounds', 'Tournées de Livraison') }}
               </NuxtLink>
             </li>
           </ul>
@@ -434,7 +514,7 @@
         
         <div v-if="canAccess('intelligence')">
           <p class="section-title">CMS</p>
-          <p class="section-subtitle">Content Management System</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_cms', 'Content Management System') }}</p>
           <ul class="space-y-0.5">
             <li>
               
@@ -442,7 +522,16 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                 </svg>
-                Landing pages
+                {{ t('hub.ui.layout.landing_pages', 'Landing pages') }}
+              </NuxtLink>
+            </li>
+            <li>
+              
+              <NuxtLink to="/hub/marketing/special-pages" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+                {{ t('hub.ui.layout.special_pages', 'Pages spéciales') }}
               </NuxtLink>
             </li>
             <li>
@@ -450,7 +539,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.549 2.799a2.1 2.1 0 1 1 2.97 2.97L9.42 17.868a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897l11.094-11.13Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                 </svg>
-                Articles de blog
+                {{ t('hub.ui.layout.blog_posts', 'Articles de blog') }}
               </NuxtLink>
             </li>
             <li>
@@ -458,7 +547,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
                 </svg>
-                Catégories blog
+                {{ t('hub.ui.layout.blog_categories', 'Catégories blog') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('blog-ia')">
@@ -466,7 +555,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                 </svg>
-                Blog IA
+                {{ t('hub.ui.layout.blog_ai', 'Blog IA') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('hub-translations')">
@@ -474,7 +563,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
                 </svg>
-                Traductions IA
+                {{ t('hub.ui.layout.ai_translations', 'Traductions IA') }}
               </NuxtLink>
             </li>
           </ul>
@@ -483,14 +572,14 @@
         
         <div v-if="canAccess('intelligence')">
           <p class="section-title">MAP</p>
-          <p class="section-subtitle">Marketing Automation Platform</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_map', 'Marketing Automation Platform') }}</p>
           <ul class="space-y-0.5">
             <li v-if="!isFeatureDisabled('nurturing')">
               <NuxtLink to="/hub/marketing/nurturing" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
                 </svg>
-                Nurturing
+                {{ t('hub.ui.layout.nurturing', 'Nurturing') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('broadcast')">
@@ -498,7 +587,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 0 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 1 8.835-2.535m0 0A23.74 23.74 0 0 1 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m-14.456 0c.045.597.068 1.198.068 1.8 0 1.194-.083 2.369-.24 3.519" />
                 </svg>
-                Broadcast
+                {{ t('hub.ui.layout.broadcast', 'Broadcast') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('social-studio')">
@@ -506,7 +595,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
                 </svg>
-                Studio Social
+                {{ t('hub.ui.layout.social_studio', 'Studio Social') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('youtube-studio')">
@@ -522,7 +611,16 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
                 </svg>
-                Transcréation
+                {{ t('hub.ui.layout.transcreation', 'Transcréation') }}
+              </NuxtLink>
+            </li>
+            <li>
+              
+              <NuxtLink to="/hub/marketing/homepage-featured" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                </svg>
+                {{ t('hub.ui.layout.favourites', 'Coups de coeur') }}
               </NuxtLink>
             </li>
             <li>
@@ -531,7 +629,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
                 </svg>
-                Codes promo
+                {{ t('hub.ui.layout.promo_codes', 'Codes promo') }}
               </NuxtLink>
             </li>
           </ul>
@@ -540,14 +638,14 @@
         
         <div v-if="canAccess('intelligence')">
           <p class="section-title">BI</p>
-          <p class="section-subtitle">Business Intelligence</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_bi', 'Business Intelligence') }}</p>
           <ul class="space-y-0.5">
             <li v-if="!isFeatureDisabled('growth-simulator')">
               <NuxtLink to="/hub/growth/simulator" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                 </svg>
-                Simulateur Croissance
+                {{ t('hub.ui.layout.growth_simulator', 'Simulateur Croissance') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('seo-console')">
@@ -563,7 +661,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                 </svg>
-                Ventes & CA
+                {{ t('hub.ui.layout.sales_revenue', 'Ventes & CA') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('bi-cohorts')">
@@ -571,15 +669,15 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72M18 18.72a9.094 9.094 0 0 1-3.741-.479 3 3 0 0 1 4.682-2.72M18 18.72v-.558c0-.34-.059-.668-.168-.977M18 18.72a9.094 9.094 0 0 1-3.741-.479 3 3 0 0 0-4.682-2.72M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
                 </svg>
-                Cohortes
+                {{ t('hub.ui.layout.cohorts', 'Cohortes') }}
               </NuxtLink>
             </li>
-            <li v-if="!isFeatureDisabled('bi-matomo')">
-              <NuxtLink to="/hub/bi/matomo" class="nav-link" active-class="nav-link-active">
+            <li v-if="!isFeatureDisabled('bi-session-replay')">
+              <NuxtLink to="/hub/bi/session-replay" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5 21 4.5M21 4.5h-4.5M21 4.5V9M3 20.25l5.25-5.25M3 20.25h4.5M3 20.25v-4.5M14.121 9.879 9.879 14.12M19.5 19.5v-2.625a3.375 3.375 0 0 0-3.375-3.375h-2.625M4.5 4.5v2.625a3.375 3.375 0 0 0 3.375 3.375H10.5" />
                 </svg>
-                Matomo
+                {{ t('hub.ui.layout.session_replays', 'Session Replays') }}
               </NuxtLink>
             </li>
           </ul>
@@ -588,14 +686,22 @@
         
         <div v-if="canAccess('fin') && hasAnyFeature('fin-payments','fin-tva-fec','fin-refunds','fin-treasury','fin-bank')">
           <p class="section-title">FIN</p>
-          <p class="section-subtitle">Finance & Accounting</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_fin', 'Finance & Accounting') }}</p>
           <ul class="space-y-0.5">
             <li v-if="isPlaceDesArmes && !isFeatureDisabled('fin-bank')">
               <NuxtLink to="/hub/finance/bank" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11m16-11v11M8 14v3m4-3v3m4-3v3" />
                 </svg>
-                Relevé banque
+                {{ t('hub.ui.layout.bank_statement', 'Relevé banque') }}
+              </NuxtLink>
+            </li>
+            <li v-if="isPlaceDesArmes && !isFeatureDisabled('fin-ae')">
+              <NuxtLink to="/hub/finance/ae" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                </svg>
+                {{ t('hub.ui.layout.ae_salary', 'AE — Salaire & URSSAF') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('fin-payments')">
@@ -603,7 +709,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
                 </svg>
-                Paiements
+                {{ t('hub.ui.layout.payments', 'Paiements') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('fin-tva-fec')">
@@ -611,7 +717,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
                 </svg>
-                TVA & FEC
+                {{ t('hub.ui.layout.vat_fec', 'TVA & FEC') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('fin-refunds')">
@@ -619,7 +725,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
                 </svg>
-                Remboursements
+                {{ t('hub.ui.layout.refunds', 'Remboursements') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('fin-treasury')">
@@ -627,7 +733,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                Trésorerie
+                {{ t('hub.ui.layout.cash_flow', 'Trésorerie') }}
               </NuxtLink>
             </li>
           </ul>
@@ -636,14 +742,14 @@
         
         <div v-if="canAccess('prm') && hasAnyFeature('prm-suppliers','prm-purchase-orders','prm-restock')">
           <p class="section-title">PRM</p>
-          <p class="section-subtitle">Procurement & Supplier Management</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_prm', 'Procurement & Supplier Management') }}</p>
           <ul class="space-y-0.5">
             <li v-if="!isFeatureDisabled('prm-suppliers')">
               <NuxtLink to="/hub/procurement/suppliers" class="nav-link" active-class="nav-link-active">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                 </svg>
-                Fournisseurs
+                {{ t('hub.ui.layout.suppliers', 'Fournisseurs') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('prm-purchase-orders')">
@@ -651,7 +757,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
                 </svg>
-                Bons de commande
+                {{ t('hub.ui.layout.purchase_orders', 'Bons de commande') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('prm-restock')">
@@ -659,7 +765,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
-                Réassort IA
+                {{ t('hub.ui.layout.ai_restock', 'Réassort IA') }}
               </NuxtLink>
             </li>
           </ul>
@@ -668,7 +774,7 @@
         
         <div v-if="canAccess('crm_sav') && hasAnyFeature('support-sav','support-inbox','support-tickets','support-rma','support-reviews')">
           <p class="section-title">SUP</p>
-          <p class="section-subtitle">Support & Customer Service</p>
+          <p class="section-subtitle">{{ t('hub.ui.layout.sub_sup', 'Support & Customer Service') }}</p>
           <ul class="space-y-0.5">
             <li v-if="!isFeatureDisabled('support-sav')">
               <NuxtLink to="/hub/sav" class="nav-link" active-class="nav-link-active">
@@ -683,7 +789,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z" />
                 </svg>
-                Inbox
+                {{ t('hub.ui.layout.inbox', 'Inbox') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('support-tickets')">
@@ -691,7 +797,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z" />
                 </svg>
-                Tickets
+                {{ t('hub.ui.layout.tickets', 'Tickets') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('support-rma')">
@@ -699,7 +805,7 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
                 </svg>
-                Retours (RMA)
+                {{ t('hub.ui.layout.returns_rma', 'Retours (RMA)') }}
               </NuxtLink>
             </li>
             <li v-if="!isFeatureDisabled('support-reviews')">
@@ -707,7 +813,47 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
                 </svg>
-                Avis & UGC
+                {{ t('hub.ui.layout.reviews_ugc', 'Avis & UGC') }}
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+
+        
+        <div v-if="canAccess('intelligence')">
+          <p class="section-title">{{ t('nav.section_ia_mcp', 'IA & MCP') }}</p>
+          <p class="section-subtitle">{{ t('nav.section_ia_mcp_sub', 'Intelligence Artificielle & connecteurs') }}</p>
+          <ul class="space-y-0.5">
+            <li>
+              <NuxtLink to="/hub/ai" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+                </svg>
+                {{ t('nav.ia_integrations', 'Intégrations') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/hub/ai/mcp" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" />
+                </svg>
+                {{ t('nav.ia_mcp_access', 'Accès MCP') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/hub/ai/llm" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
+                </svg>
+                {{ t('nav.ia_llm_byok', 'Modèle IA (clé)') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/hub/ai/cost-estimator" class="nav-link" active-class="nav-link-active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+                {{ t('nav.ia_cost_estimator', 'Estimateur de coût') }}
               </NuxtLink>
             </li>
           </ul>
@@ -723,7 +869,7 @@
               <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ pickerTitle }}</h3>
               <button @click="pickerOpen = false" class="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
             </div>
-            <p class="text-xs text-gray-500 dark:text-slate-400">Coche pour afficher, glisse <span class="font-mono text-gray-400">⋮⋮</span> pour réordonner.</p>
+            <p class="text-xs text-gray-500 dark:text-slate-400">{{ t('hub.ui.layout.picker_hint_before', 'Coche pour afficher, glisse') }} <span class="font-mono text-gray-400">⋮⋮</span> {{ t('hub.ui.layout.picker_hint_after', 'pour réordonner.') }}</p>
             <ul class="space-y-1 max-h-[60vh] overflow-auto">
               <li
                 v-for="(item, idx) in pickerItems"
@@ -737,7 +883,7 @@
                 @dragend="onPickerDragEnd"
               >
                 <div class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-slate-800 text-sm">
-                  <span class="text-gray-300 dark:text-slate-600 font-mono select-none cursor-move" aria-hidden="true" title="Glisser pour réordonner">⋮⋮</span>
+                  <span class="text-gray-300 dark:text-slate-600 font-mono select-none cursor-move" aria-hidden="true" :title="t('hub.ui.layout.drag_reorder', 'Glisser pour réordonner')">⋮⋮</span>
                   <label class="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
                     <input type="checkbox" :checked="!hiddenSidebarItems.has(item.key)" @change="toggleSidebarItem(item.key)" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                     <span class="text-gray-800 dark:text-slate-200 truncate">{{ item.label }}</span>
@@ -747,8 +893,8 @@
             </ul>
             <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-slate-800 gap-3 flex-wrap">
               <div class="flex items-center gap-3">
-                <button v-if="hiddenSidebarItems.size > 0" @click="resetSidebarVisibility" class="text-xs text-gray-500 hover:text-gray-700 transition-colors">Tout réafficher</button>
-                <button v-if="sidebarOrder[pickerSectionKey]?.length" @click="resetSidebarOrder" class="text-xs text-gray-500 hover:text-gray-700 transition-colors">Ordre par défaut</button>
+                <button v-if="hiddenSidebarItems.size > 0" @click="resetSidebarVisibility" class="text-xs text-gray-500 hover:text-gray-700 transition-colors">{{ t('hub.ui.layout.picker_show_all', 'Tout réafficher') }}</button>
+                <button v-if="sidebarOrder[pickerSectionKey]?.length" @click="resetSidebarOrder" class="text-xs text-gray-500 hover:text-gray-700 transition-colors">{{ t('hub.ui.layout.picker_default_order', 'Ordre par défaut') }}</button>
               </div>
               <button @click="pickerOpen = false" class="text-xs px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-colors">OK</button>
             </div>
@@ -786,7 +932,7 @@
         >
           <div v-if="profileOpen" class="absolute bottom-full left-3 right-3 mb-1 rounded-xl border shadow-lg py-1 z-50"
             :class="isDark ? 'bg-slate-800 border-slate-700' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'">
-            <NuxtLink to="/hub/academy" class="profile-link" @click="profileOpen = false">
+            <NuxtLink v-if="hasAcademyPlaybook" to="/hub/academy" class="profile-link" @click="profileOpen = false">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
               </svg>
@@ -796,13 +942,19 @@
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
-              Ambassadeur
+              {{ t('hub.ui.layout.ambassador', 'Ambassadeur') }}
             </NuxtLink>
             <NuxtLink to="/hub/growth/referral" class="profile-link" @click="profileOpen = false">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
               </svg>
-              Partenariat
+              {{ t('hub.ui.layout.partnership', 'Partenariat') }}
+            </NuxtLink>
+            <NuxtLink to="/hub/settings" class="profile-link" @click="profileOpen = false">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
+              </svg>
+              {{ t('hub.employee_lang.menu', 'Langue') }}
             </NuxtLink>
             <div class="border-t border-gray-100 dark:border-slate-800 my-1" />
             <button @click="handleLogout" class="profile-link text-danger-500 hover:bg-danger-50 hover:text-danger-600 w-full">
@@ -868,8 +1020,8 @@
               ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300'
               : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300'"
           >
-            <option value="">Vue : réelle</option>
-            <option v-for="opt in ROLE_OPTIONS" :key="opt.value" :value="opt.value">Vue : {{ opt.label }}</option>
+            <option value="">{{ t('hub.ui.layout.view_real', 'Vue : réelle') }}</option>
+            <option v-for="opt in ROLE_OPTIONS" :key="opt.value" :value="opt.value">{{ t('hub.ui.layout.view_as', 'Vue : {label}', { label: opt.label }) }}</option>
           </select>
         </div>
 
@@ -891,24 +1043,24 @@
             <div v-if="configOpen" class="absolute top-full right-0 mt-1 w-56 rounded-xl border shadow-lg py-1 z-50" :class="isDark ? 'bg-slate-800 border-slate-700' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'">
 
               
-              <p class="config-section-label">Mon hub</p>
+              <p class="config-section-label">{{ t('hub.ui.layout.my_hub', 'Mon hub') }}</p>
               <NuxtLink v-if="isOwner" to="/hub/monitoring" class="config-link" @click="configOpen = false">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605" />
                 </svg>
-                Monitoring
+                {{ t('hub.ui.layout.monitoring', 'Monitoring') }}
               </NuxtLink>
               <NuxtLink v-if="isOwner" to="/hub/team" class="config-link" @click="configOpen = false">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
-                Équipe
+                {{ t('hub.ui.layout.team', 'Équipe') }}
               </NuxtLink>
               <NuxtLink v-if="isOwner" to="/hub/system/marketplace" class="config-link" @click="configOpen = false">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
                 </svg>
-                Marketplace
+                {{ t('hub.ui.layout.marketplace', 'Marketplace') }}
               </NuxtLink>
               <NuxtLink v-if="isOwner" to="/hub/system/cron" class="config-link" @click="configOpen = false">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
@@ -922,6 +1074,12 @@
                 </svg>
                 FinOps Queue
               </NuxtLink>
+              <NuxtLink v-if="isOwner" to="/hub/system" class="config-link" @click="configOpen = false">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.75-.062l-2.036 2.036 1.146 1.146 2.036-2.036c.15.629.09 1.303-.226 1.888l-1.75.988-1.146-1.146-.988 1.75" />
+                </svg>
+                {{ t('hub.ui.layout.system', 'Système') }}
+              </NuxtLink>
 
               
               <template v-if="isRoot && isPlaceDesArmes">
@@ -931,49 +1089,43 @@
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                   </svg>
-                  Déployer un client
-                </NuxtLink>
-                <NuxtLink to="/hub/system/fleet" class="config-link" @click="configOpen = false">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z" />
-                  </svg>
-                  Fleet Monitor
+                  {{ t('hub.ui.layout.deploy_client', 'Déployer un client') }}
                 </NuxtLink>
                 <NuxtLink to="/hub/system/automates" class="config-link" @click="configOpen = false">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5 13.5 3l-2.25 6h7.5L9 21l2.25-7.5H3.75Z" />
                   </svg>
-                  Automates
+                  {{ t('hub.ui.layout.automata', 'Automates') }}
                 </NuxtLink>
                 <NuxtLink to="/hub/system/backlog" class="config-link" @click="configOpen = false">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
                   </svg>
-                  Auto-Backlog IA
+                  {{ t('hub.ui.layout.auto_backlog', 'Auto-Backlog IA') }}
                 </NuxtLink>
                 <NuxtLink to="/hub/system/learning-curve" class="config-link" @click="configOpen = false">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                   </svg>
-                  Courbe d'apprentissage
+                  {{ t('hub.ui.layout.learning_curve', "Courbe d'apprentissage") }}
                 </NuxtLink>
                 <NuxtLink to="/hub/planning" class="config-link" @click="configOpen = false">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
                   </svg>
-                  Planning
+                  {{ t('hub.ui.layout.planning', 'Planning') }}
                 </NuxtLink>
                 <NuxtLink to="/hub/conduites" class="config-link" @click="configOpen = false">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375-10.5h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM8.25 6.75h12M8.25 12h12m-12 5.25h12" />
                   </svg>
-                  La Conduite
+                  {{ t('hub.ui.layout.conduite', 'La Conduite') }}
                 </NuxtLink>
                 <NuxtLink to="/hub/admin/features" class="config-link" @click="configOpen = false">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
                   </svg>
-                  Config Système
+                  {{ t('hub.ui.layout.system_config', 'Config Système') }}
                 </NuxtLink>
               </template>
             </div>
@@ -1005,12 +1157,16 @@ import { ROLE_OPTIONS } from '~/composables/useRoles'
 const { user, logout } = useAuth()
 const router = useRouter()
 
+const hasCrmAccounts = router.getRoutes().some(r => r.path === '/hub/crm/comptes')
+
 const { resolvedClientId } = useClientDetection()
 const { header } = useHeaderDb()
 const { role, roleColor, roleLabel, canAccess, isOwner, isRoot, actualIsRoot, viewAsRole, setViewAsRole } = useRoles()
 const { features, loaded: featuresLoaded, loadFeatures } = useFeatureFlag()
+const { isFood } = useTenantProfile()
 
 function isFeatureDisabled(id: string): boolean {
+  if (id.startsWith('food-') && !isFood.value) return true
   if (!featuresLoaded.value) return false
   const f = features.value.find(x => x.id === id)
   return !!f && !f.enabled
@@ -1020,8 +1176,16 @@ function hasAnyFeature(...ids: string[]): boolean {
   return ids.some(id => !isFeatureDisabled(id))
 }
 
+const { hasPlaybook: hasAcademyPlaybook } = useAcademy()
+
 const isPlaceDesArmes = computed(() => resolvedClientId.value === 'ac-hub')
-const { t } = useHubT()
+const { t, load: loadHubTranslations, scope: translationsScope } = useHubT()
+
+if (import.meta.client && translationsScope.value !== 'full') loadHubTranslations()
+
+if (import.meta.client) {
+  watch(useState<string>('active_lang', () => 'fr'), () => loadHubTranslations())
+}
 const { isDark } = useDarkMode()
 const hubTitle = computed(() =>
   header.value?.logo?.text
@@ -1046,10 +1210,18 @@ const ORDER_KEY = 'hub_sidebar_order_v1'
 
 const COLLAPSE_KEY = 'hub_sidebar_collapsed_v1'
 const sidebarCollapsed = ref(false)
+let sidebarPreferenceWasSaved = false
 function loadSidebarCollapsed() {
   if (!import.meta.client) return
   try {
-    sidebarCollapsed.value = localStorage.getItem(COLLAPSE_KEY) === '1'
+    const saved = localStorage.getItem(COLLAPSE_KEY)
+    sidebarPreferenceWasSaved = saved !== null
+    
+    
+    
+    sidebarCollapsed.value = saved === null
+      ? window.matchMedia('(max-width: 767px)').matches
+      : saved === '1'
   } catch {  }
 }
 function toggleSidebarCollapsed() {
@@ -1252,7 +1424,11 @@ async function loadPrefsFromDb() {
     const data = await $fetch<{ hidden: string[]; order: Record<string, string[]>; collapsed: boolean }>('/api/hub/employee/sidebar-prefs')
     hiddenSidebarItems.value = new Set(Array.isArray(data?.hidden) ? data.hidden : [])
     sidebarOrder.value = (data?.order && typeof data.order === 'object') ? data.order : {}
-    sidebarCollapsed.value = !!data?.collapsed
+    
+    
+    
+    const preserveMobileDefault = !sidebarPreferenceWasSaved && window.matchMedia('(max-width: 767px)').matches
+    sidebarCollapsed.value = preserveMobileDefault || !!data?.collapsed
     
     saveHiddenSidebar()
     saveSidebarOrder()
@@ -1389,5 +1565,15 @@ const handleLogout = async () => {
 }
 :root.dark .config-link:hover {
   @apply bg-gray-700 text-gray-200;
+}
+
+/* ─── BO admin typo standardisée (2026-05-28) ──────────────────────────────
+   Le BO /hub/* utilise Inter pour TOUS les tenants, indépendamment du
+   --font-family du theme tenant (Montserrat example-shop, Oswald smoke, etc.).
+   Cohérence SaaS admin (Linear/Notion/Vercel/Stripe pattern). Le front du
+   tenant garde sa typo brand. La redéfinition de la CSS var cascade vers
+   tous les descendants (body + headings via dark-overrides.css). */
+.hub-layout {
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 </style>

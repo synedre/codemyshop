@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event)
   
   
@@ -76,7 +79,8 @@ export default defineEventHandler(async (event) => {
       TIMESTAMPDIFF(HOUR, c.date_upd, NOW()) AS age_hours,
       COUNT(cp.id_product) AS items_count,
       COALESCE(SUM(cp.quantity * pp.price), 0) AS total_estimated,
-      (SELECT MAX(sent_at) FROM cs_cart_recovery r WHERE r.id_cart = c.id_cart) AS last_sent_at
+      (SELECT MAX(sent_at) FROM cs_cart_recovery r WHERE r.id_cart = c.id_cart) AS last_sent_at,
+      EXISTS (SELECT 1 FROM ps_orders o2 WHERE o2.id_customer = c.id_customer) AS has_ordered_before
     FROM ps_cart c
     JOIN ps_customer cu ON cu.id_customer = c.id_customer AND cu.active = 1
     LEFT JOIN cs_customer_extra cx ON cx.id_customer = c.id_customer

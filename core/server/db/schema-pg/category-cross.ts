@@ -2,6 +2,7 @@
 
 import {
   integer,
+  smallint,
   timestamp,
   primaryKey,
   pgSchema,
@@ -15,6 +16,7 @@ export const categoryCross = vaisseauMereAcSchema.table(
     idCategory: integer('id_category').notNull(),
     idCrossCategory: integer('id_cross_category').notNull(),
     position: integer('position').notNull().default(0),
+    crossFirst: smallint('cross_first').notNull().default(0),
     dateAdd: timestamp('date_add', { precision: 0, mode: 'date' }).notNull().defaultNow(),
   },
   (t) => ({

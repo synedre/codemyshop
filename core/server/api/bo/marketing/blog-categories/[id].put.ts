@@ -2,6 +2,8 @@
 
 import { useClientDb } from '~/server/utils/db'
 import { requireRoleOrSaas } from '~/server/utils/session'
+import { t } from '~/server/utils/i18n'
+import { slugRecopie } from '~/server/utils/slug-copie'
 
 export default defineEventHandler(async (event) => {
   requireRoleOrSaas(event, ['root', 'founder', 'market'])
@@ -66,21 +68,21 @@ export default defineEventHandler(async (event) => {
     const newId = insert.insertId
     if (!newId) throw createError({ statusCode: 500, message: 'Échec création' })
 
-    const langs = await db.query<any>(`SELECT id_lang FROM ps_lang WHERE active = 1`)
-    for (const l of langs) {
-      await db.run(`
-        INSERT INTO ps_cms_category_lang
-          (id_cms_category, id_lang, id_shop, name, description, link_rewrite, meta_title, meta_description)
-        VALUES (?, ?, 1, ?, ?, ?, ?, ?)
-      `, [
-        newId, Number(l.id_lang),
-        name,
-        langFields.description || '',
-        linkRewrite,
-        langFields.meta_title || '',
-        langFields.meta_description || '',
-      ])
-    }
+    
+    
+    
+    await db.run(`
+      INSERT INTO ps_cms_category_lang
+        (id_cms_category, id_lang, id_shop, name, description, link_rewrite, meta_title, meta_description)
+      VALUES (?, 1, 1, ?, ?, ?, ?, ?)
+    `, [
+      newId,
+      name,
+      langFields.description || '',
+      linkRewrite,
+      langFields.meta_title || '',
+      langFields.meta_description || '',
+    ])
 
     await db.run(`INSERT IGNORE INTO ps_cms_category_shop (id_cms_category, id_shop) VALUES (?, 1)`, [newId])
 
@@ -149,12 +151,36 @@ export default defineEventHandler(async (event) => {
       if (dup) throw createError({ statusCode: 422, message: `Slug déjà utilisé sous ce parent (catégorie #${dup.id_cms_category})` })
     }
 
+    const name = langFields.name ?? existingLang?.name ?? ''
     const row = {
-      name: langFields.name ?? existingLang?.name ?? '',
+      name,
       description: langFields.description ?? existingLang?.description ?? '',
-      link_rewrite: langFields.link_rewrite ?? existingLang?.link_rewrite ?? slugify(langFields.name || existingLang?.name || ''),
+      
+      
+      
+      link_rewrite: langFields.link_rewrite || existingLang?.link_rewrite || slugify(name),
       meta_title: langFields.meta_title ?? existingLang?.meta_title ?? '',
       meta_description: langFields.meta_description ?? existingLang?.meta_description ?? '',
+    }
+
+    if (!row.link_rewrite) {
+      throw createError({ statusCode: 422, message: await t('hub.blog_categories.error_name_required', 1, 'Nom obligatoire') })
+    }
+
+    
+    
+    
+    
+    if (!isMaster && row.link_rewrite !== existingLang?.link_rewrite) {
+      const maitre = await db.get<any>(`
+        SELECT link_rewrite FROM ps_cms_category_lang WHERE id_cms_category = ? AND id_lang = 1 AND id_shop = 1
+      `, [id])
+      if (slugRecopie(String(maitre?.link_rewrite || ''), row.link_rewrite, row.name)) {
+        throw createError({
+          statusCode: 422,
+          message: await t('hub.blog_categories.error_slug_copy', 1, "L'URL de cette langue recopie celle de la langue principale : traduisez-la"),
+        })
+      }
     }
 
     await db.run(`

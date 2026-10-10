@@ -24,12 +24,18 @@ export interface EnqueueEmailOpts {
   
 
   attachmentMeta?: AttachmentMeta
+  
+
+  sourceHost?:  string | null
 }
 
 export type AttachmentMeta =
   | { type: 'quote_pdf'; quoteId: number }
   | { type: 'order_invoice_pdf'; orderId: number }
   
+  | { type: string; [arg: string]: string | number }
+
+type AttachmentGenerator = (meta: any) => Promise<{ filename: string; content: Buffer } | null>
 
 export interface ProcessQueueResult {
   scanned:   number
@@ -68,7 +74,8 @@ export async function enqueueEmail(opts: EnqueueEmailOpts): Promise<number> {
     INSERT INTO ${sql(PG_SCHEMA)}.cs_email_queue (
       to_email, subject, html_body, plain_body,
       from_email, reply_to, template_slug, id_lang,
-      status, priority, attachment_meta, max_attempts, scheduled_at, date_add, date_upd
+      status, priority, attachment_meta, max_attempts, scheduled_at,
+      source_host, date_add, date_upd
     ) VALUES (
       ${opts.to},
       ${opts.subject.slice(0, 500)},
@@ -83,6 +90,7 @@ export async function enqueueEmail(opts: EnqueueEmailOpts): Promise<number> {
       ${attachmentMetaJson},
       ${Math.max(1, Math.min(10, opts.maxAttempts ?? 3))},
       ${opts.scheduledAt ?? null},
+      ${opts.sourceHost ?? null},
       NOW(),
       NOW()
     )
@@ -91,10 +99,7 @@ export async function enqueueEmail(opts: EnqueueEmailOpts): Promise<number> {
   return rows[0]!.id_ac_email_queue
 }
 
-const ATTACHMENT_GENERATORS: Record<
-  string,
-  (meta: any) => Promise<{ filename: string; content: Buffer } | null>
-> = {
+const ATTACHMENT_GENERATORS: Record<string, AttachmentGenerator> = {
   async quote_pdf(meta: { quoteId: number }) {
     const { generateQuoteRequestPdf } = await import('./quote-pdf')
     const buf = await generateQuoteRequestPdf(meta.quoteId)
@@ -106,20 +111,21 @@ const ATTACHMENT_GENERATORS: Record<
     const { generateInvoicePdf } = await import('./invoice-pdf')
     const order = await getOrderFromDb(meta.orderId)
     if (!order) return null
-    
-    const { usePocPg } = await import('../db/drizzle-pg')
-    const { sql } = await import('drizzle-orm')
-    const rows: any[] = await usePocPg().execute(
-      sql`SELECT value FROM cs_main.ps_configuration WHERE name='PS_SHOP_NAME' LIMIT 1`
-    ).catch(() => [] as any[]) as any[]
-    const shopName = rows?.[0]?.value || 'Boutique'
-    const buf = await generateInvoicePdf(order, shopName)
+    const { loadInvoiceContext } = await import('./invoice-context')
+    const { shopName, seller, labels } = await loadInvoiceContext()
+    const buf = await generateInvoicePdf(order, shopName, undefined, seller, labels)
     if (!buf) return null
     return { filename: `commande-${order.reference}.pdf`, content: buf }
   },
 }
 
-async function resolveAttachment(metaJson: string | null): Promise<{ filename: string; content: Buffer } | null> {
+export function registerAttachmentGenerator(type: string, gen: AttachmentGenerator): void {
+  if (BUILTIN_ATTACHMENT_TYPES.has(type)) throw new Error(`[email-queue] type de pièce jointe réservé : ${type}`)
+  ATTACHMENT_GENERATORS[type] = gen
+}
+const BUILTIN_ATTACHMENT_TYPES = new Set(Object.keys(ATTACHMENT_GENERATORS))
+
+export async function resolveAttachment(metaJson: string | null): Promise<{ filename: string; content: Buffer } | null> {
   if (!metaJson) return null
   try {
     const meta = JSON.parse(metaJson) as { type: string }
@@ -250,6 +256,7 @@ export async function sendEmailViaQueue(opts: {
   idLang?:   number
   priority?: number
   attachmentMeta?: AttachmentMeta
+  sourceHost?: string | null
 }): Promise<{ ok: boolean; id?: string; error?: string }> {
   try {
     const queueId = await enqueueEmail({
@@ -262,6 +269,7 @@ export async function sendEmailViaQueue(opts: {
       idLang:       opts.idLang ?? null,
       priority:     opts.priority,
       attachmentMeta: opts.attachmentMeta,
+      sourceHost:   opts.sourceHost ?? null,
     })
     return { ok: true, id: `queued-${queueId}` }
   } catch (err: any) {

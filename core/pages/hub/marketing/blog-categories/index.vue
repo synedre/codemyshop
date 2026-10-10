@@ -2,29 +2,29 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Catégories blog</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.marketing_blog_categories.title', 'Catégories blog') }}</h1>
         <p class="text-xs text-gray-400 mt-0.5">
-          {{ filtered.length }} catégorie{{ filtered.length > 1 ? 's' : '' }}
+          {{ filtered.length > 1 ? t('hub.ui.marketing_blog_categories.count_other', '{n} catégories', { n: filtered.length }) : t('hub.ui.marketing_blog_categories.count_one', '{n} catégorie', { n: filtered.length }) }}
         </p>
       </div>
       <div class="flex items-center gap-2">
         <div class="flex border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <button @click="setStatus('')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === '' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">Toutes</button>
-          <button @click="setStatus('active')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'active' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-50'">Actives</button>
-          <button @click="setStatus('inactive')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'inactive' ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-50'">Inactives</button>
+          <button @click="setStatus('')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === '' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_blog_categories.all', 'Toutes') }}</button>
+          <button @click="setStatus('active')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'active' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_blog_categories.active_f', 'Actives') }}</button>
+          <button @click="setStatus('inactive')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'inactive' ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_blog_categories.inactive_f', 'Inactives') }}</button>
         </div>
-        <HubLangSelector aria-label="Langue d'affichage" />
+        <HubLangSelector :aria-label="t('hub.ui.marketing_blog_categories.lang_aria', 'Langue d\'affichage')" />
         <input
           v-model="search"
           type="text"
-          placeholder="Nom, slug, meta…"
+          :placeholder="t('hub.ui.marketing_blog_categories.search_ph', 'Nom, slug, meta…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
         <NuxtLink
           to="/hub/marketing/blog-categories/new"
           class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
         >
-          + Nouvelle catégorie
+          {{ t('hub.ui.marketing_blog_categories.new_cat', '+ Nouvelle catégorie') }}
         </NuxtLink>
       </div>
     </header>
@@ -35,19 +35,19 @@
       </div>
 
       <div v-else-if="!filtered.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucune catégorie</p>
+        <p class="text-sm">{{ t('hub.ui.marketing_blog_categories.none', 'Aucune catégorie') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
             <th class="px-4 py-2.5 font-medium w-14">#</th>
-            <th class="px-4 py-2.5 font-medium">Nom</th>
-            <th class="px-4 py-2.5 font-medium">Slug</th>
-            <th class="px-4 py-2.5 font-medium">Meta title</th>
-            <th class="px-4 py-2.5 font-medium text-center w-20">Articles</th>
-            <th class="px-4 py-2.5 font-medium text-center w-20">Enfants</th>
-            <th class="px-4 py-2.5 font-medium text-center w-24">Statut</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_blog_categories.col_name', 'Nom') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_blog_categories.col_slug', 'Slug') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_blog_categories.col_meta_title', 'Meta title') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-20">{{ t('hub.ui.marketing_blog_categories.col_articles', 'Articles') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-20">{{ t('hub.ui.marketing_blog_categories.col_children', 'Enfants') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-24">{{ t('hub.ui.marketing_blog_categories.col_status', 'Statut') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -61,7 +61,7 @@
             <td class="px-4 py-2.5 text-gray-800 dark:text-slate-100 font-medium">
               <span :style="`padding-left: ${Math.max(0, (cat.levelDepth - 2)) * 20}px`" class="inline-flex items-center gap-1">
                 <svg v-if="cat.levelDepth > 2" class="w-3 h-3 text-gray-300 -mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
-                {{ cat.name || '— Sans nom —' }}
+                {{ cat.name || t('hub.ui.marketing_blog_categories.unnamed', '— Sans nom —') }}
               </span>
             </td>
             <td class="px-4 py-2.5 text-xs text-gray-500 font-mono">{{ cat.linkRewrite || '—' }}</td>
@@ -72,7 +72,7 @@
               <span class="text-[10px] px-2 py-0.5 rounded-full font-medium"
                 :class="cat.active ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'"
               >
-                {{ cat.active ? 'Active' : 'Inactive' }}
+                {{ cat.active ? t('hub.ui.marketing_blog_categories.active', 'Active') : t('hub.ui.marketing_blog_categories.inactive', 'Inactive') }}
               </span>
             </td>
           </tr>
@@ -91,6 +91,7 @@ if (!canAccess('intelligence')) {
   navigateTo('/hub/dashboard')
 }
 
+const { t } = useHubT()
 const router = useRouter()
 const { currentLangId } = useHubLang()
 

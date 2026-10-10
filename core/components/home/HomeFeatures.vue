@@ -6,7 +6,7 @@
         <div
           v-for="feat in features"
           :key="feat.label"
-          class="flex items-start gap-3 dark:bg-white/[0.03] dark:backdrop-blur-sm dark:rounded-xl dark:p-3 dark:border dark:border-white/[0.06] dark:hover:border-indigo-500/20 dark:hover:bg-white/[0.05] dark:transition-all dark:duration-300"
+          class="flex items-start gap-3 dark:bg-white/[0.03] dark:backdrop-blur-sm dark:rounded-xl dark:p-3 dark:border dark:border-white/[0.06] dark:hover:border-indigo-500/20 dark:hover:bg-slate-800/[0.05] dark:transition-all dark:duration-300"
         >
           
           <div class="w-10 h-10 rounded-card bg-primary-50 text-primary-600 dark:bg-indigo-500/15 dark:text-indigo-400 flex items-center justify-center shrink-0">

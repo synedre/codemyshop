@@ -5,12 +5,12 @@
     <header class="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800">Newsletter IA</h1>
-          <p class="text-xs text-gray-400 mt-0.5">Génération et envoi de newsletters personnalisées par l'IA</p>
+          <h1 class="text-lg font-bold text-gray-800">{{ tHub('hub.ui.marketing_newsletter.title', 'Newsletter IA') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.marketing_newsletter.subtitle', 'Génération et envoi de newsletters personnalisées par l\'IA') }}</p>
         </div>
         <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-100 text-amber-700">
           <span class="w-1.5 h-1.5 rounded-full bg-amber-400" />
-          Provider non configuré
+          {{ tHub('hub.ui.marketing_newsletter.provider_missing', 'Provider non configuré') }}
         </span>
       </div>
     </header>
@@ -19,23 +19,23 @@
 
       
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <h2 class="text-sm font-semibold text-gray-700 mb-4">Générer une newsletter</h2>
+        <h2 class="text-sm font-semibold text-gray-700 mb-4">{{ tHub('hub.ui.marketing_newsletter.generate_title', 'Générer une newsletter') }}</h2>
 
         <div class="space-y-4">
           
           <div>
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Sujet / thème</label>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{{ tHub('hub.ui.marketing_newsletter.subject_theme', 'Sujet / thème') }}</label>
             <input
               v-model="form.subject"
               type="text"
-              placeholder="ex: Nouveautés du mois, soldes PrestaShop, mise à jour module…"
+              :placeholder="tHub('hub.ui.marketing_newsletter.subject_ph', 'ex: Nouveautés du mois, soldes PrestaShop, mise à jour module…')"
               class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white"
             />
           </div>
 
           
           <div>
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Cible avatar</label>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{{ tHub('hub.ui.marketing_newsletter.target_avatar', 'Cible avatar') }}</label>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="type in AC_HUB_AVATARS"
@@ -59,14 +59,14 @@
                     : 'border-gray-200 text-gray-400 hover:border-gray-300',
                 ]"
               >
-                Tous
+                {{ tHub('hub.ui.marketing_newsletter.all', 'Tous') }}
               </button>
             </div>
           </div>
 
           
           <div>
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Ton</label>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{{ tHub('hub.ui.marketing_newsletter.tone', 'Ton') }}</label>
             <div class="flex gap-2">
               <button
                 v-for="tone in tones"
@@ -97,7 +97,7 @@
             <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
             </svg>
-            {{ generating ? 'Génération en cours…' : 'Générer avec l\'IA' }}
+            {{ generating ? tHub('hub.ui.marketing_newsletter.generating', 'Génération en cours…') : tHub('hub.ui.marketing_newsletter.generate_ai', 'Générer avec l\'IA') }}
           </button>
         </div>
       </div>
@@ -110,7 +110,7 @@
       >
         <div v-if="result" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-            <span class="text-xs font-semibold text-gray-600">Aperçu généré</span>
+            <span class="text-xs font-semibold text-gray-600">{{ tHub('hub.ui.marketing_newsletter.preview', 'Aperçu généré') }}</span>
             <div class="flex items-center gap-2">
               <button
                 @click="copyResult"
@@ -119,7 +119,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
                 </svg>
-                {{ copied ? 'Copié !' : 'Copier' }}
+                {{ copied ? tHub('hub.ui.marketing_newsletter.copied', 'Copié !') : tHub('hub.ui.marketing_newsletter.copy', 'Copier') }}
               </button>
               <button
                 @click="result = null"
@@ -139,12 +139,12 @@
             <button
               disabled
               class="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed"
-              title="Configurez un provider d'envoi pour activer cette fonctionnalité"
+              :title="tHub('hub.ui.marketing_newsletter.send_disabled_hint', 'Configurez un provider d\'envoi pour activer cette fonctionnalité')"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
               </svg>
-              Envoyer (provider non configuré)
+              {{ tHub('hub.ui.marketing_newsletter.send_disabled', 'Envoyer (provider non configuré)') }}
             </button>
           </div>
         </div>
@@ -152,14 +152,14 @@
 
       
       <div class="bg-white rounded-xl border border-dashed border-gray-200 p-5">
-        <h2 class="text-sm font-semibold text-gray-600 mb-1">Configuration provider d'envoi</h2>
+        <h2 class="text-sm font-semibold text-gray-600 mb-1">{{ tHub('hub.ui.marketing_newsletter.provider_config', 'Configuration provider d\'envoi') }}</h2>
         <p class="text-xs text-gray-400 mb-4 leading-relaxed">
-          Pour activer l'envoi réel, ajoutez les variables d'environnement suivantes dans votre <code class="bg-gray-100 px-1 rounded font-mono">.env</code> :
+          {{ tHub('hub.ui.marketing_newsletter.provider_hint', 'Pour activer l\'envoi réel, ajoutez les variables d\'environnement suivantes dans votre') }} <code class="bg-gray-100 px-1 rounded font-mono">.env</code> :
         </p>
         <div class="bg-gray-50 rounded-lg p-3 font-mono text-xs text-gray-600 space-y-1">
-          <p><span class="text-green-600">RESEND_API_KEY</span>=re_xxxx<span class="text-gray-300"> # Resend (recommandé)</span></p>
-          <p><span class="text-green-600">NEWSLETTER_FROM</span>=newsletter@codemyshop.com</p>
-          <p><span class="text-green-600">NEWSLETTER_REPLY_TO</span>=contact@codemyshop.com</p>
+          <p><span class="text-green-600">RESEND_API_KEY</span>=re_xxxx<span class="text-gray-300"> # {{ tHub('hub.ui.marketing_newsletter.resend_rec', 'Resend (recommandé)') }}</span></p>
+          <p><span class="text-green-600">NEWSLETTER_FROM</span>=newsletter@votre-domaine.fr</p>
+          <p><span class="text-green-600">NEWSLETTER_REPLY_TO</span>=contact@votre-domaine.fr</p>
         </div>
       </div>
 
@@ -173,18 +173,20 @@ import type { AvatarType } from '~/types/avatar'
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
+const { t: tHub } = useHubT()
+
 const form = reactive({
   subject: '',
   targets: [] as AvatarType[],
   tone:    'professionnel' as string,
 })
 
-const tones = [
-  { value: 'professionnel', label: 'Pro' },
-  { value: 'décontracté',   label: 'Décontracté' },
-  { value: 'expert',        label: 'Expert' },
-  { value: 'enthousiaste',  label: 'Enthousiaste' },
-]
+const tones = computed(() => [
+  { value: 'professionnel', label: tHub('hub.ui.marketing_newsletter.tone_pro', 'Pro') },
+  { value: 'décontracté',   label: tHub('hub.ui.marketing_newsletter.tone_casual', 'Décontracté') },
+  { value: 'expert',        label: tHub('hub.ui.marketing_newsletter.tone_expert', 'Expert') },
+  { value: 'enthousiaste',  label: tHub('hub.ui.marketing_newsletter.tone_enthusiastic', 'Enthousiaste') },
+])
 
 function toggleTarget(type: AvatarType) {
   const idx = form.targets.indexOf(type)
@@ -216,7 +218,7 @@ async function generate() {
     result.value = res.text
   } catch (e: any) {
     
-    result.value = `[STUB] Objet : ${form.subject}\n\nCible : ${form.targets.join(', ') || 'tous'}\nTon : ${form.tone}\n\n---\nContenu généré par l'IA ici...\n\nActivez ANTHROPIC_API_KEY pour une génération réelle.`
+    result.value = tHub('hub.ui.marketing_newsletter.stub', '[STUB] Objet : {subject}\n\nCible : {targets}\nTon : {tone}\n\n---\nContenu généré par l\'IA ici...\n\nActivez ANTHROPIC_API_KEY pour une génération réelle.', { subject: form.subject, targets: form.targets.join(', ') || tHub('hub.ui.marketing_newsletter.all_short', 'tous'), tone: form.tone })
   } finally {
     generating.value = false
   }

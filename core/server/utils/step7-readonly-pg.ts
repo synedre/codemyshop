@@ -86,12 +86,19 @@ export interface ModuleslistPgRow {
   status: string
   link: string | null
   position: number
+  
+  slug: string | null
+  
+  summary: string | null
+  
+  contentMd: string | null
 }
 
 export async function listActiveModuleslistPg(): Promise<ModuleslistPgRow[]> {
   const result = await usePocPg().execute<any>(sql`
     SELECT name, codename, icon, category, flywheel, description,
-           features, tags, status, link, position
+           features, tags, status, link, position,
+           slug, summary, content_md
       FROM cs_main.cs_moduleslist
      WHERE active = 1
      ORDER BY position ASC
@@ -108,6 +115,9 @@ export async function listActiveModuleslistPg(): Promise<ModuleslistPgRow[]> {
     status: String(r.status || 'Production'),
     link: r.link,
     position: Number(r.position || 0),
+    slug: r.slug ?? null,
+    summary: r.summary ?? null,
+    contentMd: r.content_md ?? null,
   }))
 }
 

@@ -2,7 +2,10 @@
 
 import { listActiveSmartProjects } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   try {
     const projects = await listActiveSmartProjects({ event })
     return { projects }

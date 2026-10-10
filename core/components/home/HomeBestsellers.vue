@@ -3,7 +3,7 @@
 const props = defineProps<{
   title?: string | null
   subtitle?: string | null
-  payload?: { limit?: number; featuredPosition?: 'left' | 'right' } | null
+  payload?: { limit?: number; featuredPosition?: 'left' | 'right'; id_category?: number } | null
 }>()
 
 const limit = computed(() => Math.min(Math.max(props.payload?.limit ?? 5, 1), 5))
@@ -11,14 +11,24 @@ const featuredPosition = computed<'left' | 'right'>(() =>
   props.payload?.featuredPosition === 'right' ? 'right' : 'left',
 )
 
+const cfg = useRuntimeConfig()
+const idCategory = computed(() => Number(
+  props.payload?.id_category
+    ?? (cfg.public as any).bestsellersCategoryId
+    ?? 392,
+))
+
+const { activeLang } = useRouteLang()
+
 const { data } = await useFetch('/api/catalogue/by-category', {
-  query: { id_category: 392, limit: limit.value },
-  server: false,
-  lazy: true,
+  key: `home-bestsellers-${idCategory.value}-${limit.value}`,
+  query: { id_category: idCategory.value, limit: limit.value, lang: activeLang },
+  watch: [activeLang],
 })
 const products = computed(() => data.value?.products ?? [])
 
-const featuredBadge = { text: 'Top 1', variant: 'top' as const }
+const { t } = useHubT()
+const featuredBadge = computed(() => ({ text: t('home.bestsellers_badge', 'Top 1'), variant: 'top' as const }))
 
 function otherBadge(rank: number) {
   
@@ -30,7 +40,7 @@ function otherBadge(rank: number) {
 
 <template>
   <HomeFeaturedProductGrid
-    :title="title || 'Nos meilleures ventes'"
+    :title="title || t('home.bestsellers', 'Nos meilleures ventes')"
     :subtitle="subtitle"
     :products="products"
     :header-pill="{ text: '90 derniers jours', variant: 'primary' }"

@@ -1,17 +1,27 @@
 import { Resvg } from '@resvg/resvg-js'
 import sharp from 'sharp'
 import { resolve } from 'node:path'
+import { existsSync } from 'node:fs'
 
 import { wrapText, measureText } from './text-wrap'
 import { getCoverTenantConfig } from './cover-tenant-config'
 import { resolveBackground } from './cover-background'
 import { resolveMask } from './cover-mask'
 import { loadPersoForCover } from './cover-perso'
+import { resolveClientId } from './db'
 
 export const COVER_WIDTH = 1200
 export const COVER_HEIGHT = 630
 
-const FONT_REPO_DIR = resolve(process.cwd(), 'core/public/cover-assets/fonts')
+function resolveCoverFontDir(): string {
+  const candidates = [
+    resolve(process.cwd(), 'core/public/cover-assets/fonts'),
+    resolve(process.cwd(), '.output/public/cover-assets/fonts'),
+    resolve(process.cwd(), 'public/cover-assets/fonts'),
+  ]
+  return candidates.find((p) => existsSync(`${p}/Montserrat-Black.ttf`)) ?? candidates[0]
+}
+const FONT_REPO_DIR = resolveCoverFontDir()
 const MONTSERRAT_BLACK = `${FONT_REPO_DIR}/Montserrat-Black.ttf`
 const FONT_FAMILY = 'Montserrat'
 const FONT_FILES = [MONTSERRAT_BLACK]
@@ -141,7 +151,7 @@ function renderTextLayer(svg: string): Buffer {
 export async function generateCover(opts: GenerateCoverOptions): Promise<Buffer> {
   const width = opts.width ?? COVER_WIDTH
   const height = opts.height ?? COVER_HEIGHT
-  const tenant = opts.tenant ?? 'ac-hub'
+  const tenant = opts.tenant ?? resolveClientId()
   const usePhotoBg = opts.usePhotoBg ?? true
   const withAvatar = opts.withAvatar ?? true
 

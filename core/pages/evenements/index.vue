@@ -1,5 +1,9 @@
 
 <script setup lang="ts">
+
+import { useDisplayTimeZone } from '../../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
 definePageMeta({ layout: false })
 
 interface EventApi {
@@ -18,6 +22,7 @@ interface EventApi {
 const cfg = useRuntimeConfig()
 const brand = String((cfg.public as any).brandName ?? '')
 const { activeLang } = useRouteLang()
+const { t } = useHubT()
 
 const { data } = await useFetch<{ events: EventApi[] }>('/api/events', {
   query: { lang: activeLang, upcoming: '1' },
@@ -33,11 +38,15 @@ const filteredEvents = computed(() => {
 })
 
 useHead({
-  title: brand ? `Événements à venir — ${brand}` : 'Événements à venir',
-  meta: [{ name: 'description', content: `Tous les événements ${brand} : sessions skate, ateliers, contests, lives. Inscription en ligne.` }],
+  title: brand ? `${t('events.head_title', 'Événements à venir')} — ${brand}` : t('events.head_title', 'Événements à venir'),
+  meta: [{ name: 'description', content: t('events.meta_description', `Tous les événements ${brand} : ateliers, contests, lives. Inscription en ligne.`) }],
 })
 
-const TYPE_LABEL: Record<string, string> = { online: '🎥 En ligne', irl: '📍 Sur place', hybrid: '🌍 Hybride' }
+const TYPE_LABEL: Record<string, string> = {
+  online: `🎥 ${t('events.type_online', 'En ligne')}`,
+  irl: `📍 ${t('events.type_irl', 'Sur place')}`,
+  hybrid: `🌍 ${t('events.type_hybrid', 'Hybride')}`,
+}
 const TYPE_COLOR: Record<string, string> = {
   online: 'bg-blue-100 text-blue-800',
   irl: 'bg-emerald-100 text-emerald-800',
@@ -45,7 +54,7 @@ const TYPE_COLOR: Record<string, string> = {
 }
 
 function formatDate(s: string): string {
-  return new Date(s).toLocaleDateString('fr-FR', {
+  return new Date(s).toLocaleDateString('fr-FR', { timeZone: displayTz,
     weekday: 'short', day: 'numeric', month: 'short',
     hour: '2-digit', minute: '2-digit',
   })

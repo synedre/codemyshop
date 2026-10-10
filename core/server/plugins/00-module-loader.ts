@@ -3,8 +3,10 @@
 import { listAllManifests, manifestsByEdition } from '~/server/utils/module-loader'
 
 import '~/modules/faq/server/index'
+import '~/enterprise/banking/corsetva/server/index'
+import '~/enterprise/vertical-food/catchweight/server/index'
 
-const _serverSideEffectsCount = 1
+const _serverSideEffectsCount = 3
 
 export default defineNitroPlugin(() => {
   const all = listAllManifests()

@@ -7,7 +7,7 @@
       <div v-if="thread" class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
           <h1 class="text-base font-bold text-gray-800 dark:text-slate-100 truncate">
-            Ticket #{{ thread.id }}
+            {{ t('hub.ui.sav_detail.ticket', 'Ticket #{id}', { id: thread.id }) }}
           </h1>
           <span class="text-[10px] px-2 py-0.5 rounded-full font-medium" :class="statusClass(thread.status)">
             {{ statusLabel(thread.status) }}
@@ -17,7 +17,7 @@
           {{ thread.customerName }} — {{ thread.email }}
           <span v-if="thread.orderReference" class="ml-2 text-gray-300">•</span>
           <span v-if="thread.orderReference" class="ml-2">
-            Commande <NuxtLink :to="`/hub/orders/${thread.orderId}`" class="text-primary-600 hover:underline font-medium">{{ thread.orderReference }}</NuxtLink>
+            {{ t('hub.ui.sav_detail.order', 'Commande') }} <NuxtLink :to="`/hub/orders/${thread.orderId}`" class="text-primary-600 hover:underline font-medium">{{ thread.orderReference }}</NuxtLink>
           </span>
         </p>
       </div>
@@ -39,12 +39,12 @@
           
           <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
             <header class="flex items-center justify-between mb-5">
-              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Conversation</h2>
-              <span class="text-xs text-gray-400">{{ messages.length }} message{{ messages.length > 1 ? 's' : '' }}</span>
+              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.sav_detail.conversation', 'Conversation') }}</h2>
+              <span class="text-xs text-gray-400">{{ messages.length > 1 ? t('hub.ui.sav_detail.messages_other', '{n} messages', { n: messages.length }) : t('hub.ui.sav_detail.messages_one', '{n} message', { n: messages.length }) }}</span>
             </header>
 
             <div v-if="!messages.length" class="text-center py-8 text-xs text-gray-400">
-              Aucun message dans ce ticket.
+              {{ t('hub.ui.sav_detail.no_messages', 'Aucun message dans ce ticket.') }}
             </div>
 
             <div v-else class="space-y-4">
@@ -62,7 +62,7 @@
                 >
                   <div class="text-[10px] font-medium mb-1" :class="m.fromEmployee ? 'text-white/70' : 'text-gray-400'">
                     <span v-if="m.fromEmployee">
-                      ★ {{ (m.employeeFirstname || m.employeeLastname) ? `${m.employeeFirstname} ${m.employeeLastname}`.trim() : 'Équipe' }}
+                      ★ {{ (m.employeeFirstname || m.employeeLastname) ? `${m.employeeFirstname} ${m.employeeLastname}`.trim() : t('hub.ui.sav_detail.team', 'Équipe') }}
                     </span>
                     <span v-else>
                       {{ thread.customerName }}
@@ -78,37 +78,37 @@
           
           <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
             <header class="mb-4">
-              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Répondre au client</h2>
+              <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.sav_detail.reply_title', 'Répondre au client') }}</h2>
               <p class="text-[11px] text-gray-400 mt-0.5">
-                La réponse est envoyée par email via PrestaShop (template reply_msg) depuis l'adresse du tenant.
+                {{ t('hub.ui.sav_detail.reply_hint', 'La réponse est envoyée par email via PrestaShop (template reply_msg) depuis l\'adresse du tenant.') }}
               </p>
             </header>
 
             <textarea
               v-model="reply"
               rows="6"
-              placeholder="Bonjour, suite à votre demande concernant…"
+              :placeholder="t('hub.ui.sav_detail.reply_ph', 'Bonjour, suite à votre demande concernant…')"
               class="w-full text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600 outline-none resize-y"
             />
 
             <div class="flex items-center justify-between mt-4 flex-wrap gap-3">
               <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-300">
-                Statut après envoi
+                {{ t('hub.ui.sav_detail.status_after', 'Statut après envoi') }}
                 <select
                   v-model="replyStatus"
                   class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none"
                 >
-                  <option value="closed">Fermé</option>
-                  <option value="pending1">En attente client</option>
-                  <option value="pending2">En attente interne</option>
-                  <option value="open">Laisser ouvert</option>
+                  <option value="closed">{{ t('hub.ui.sav_detail.st_closed', 'Fermé') }}</option>
+                  <option value="pending1">{{ t('hub.ui.sav_detail.st_pending1', 'En attente client') }}</option>
+                  <option value="pending2">{{ t('hub.ui.sav_detail.st_pending2', 'En attente interne') }}</option>
+                  <option value="open">{{ t('hub.ui.sav_detail.st_keep_open', 'Laisser ouvert') }}</option>
                 </select>
               </label>
 
               <div class="flex items-center gap-2">
                 <span v-if="replySuccess" class="text-xs text-green-600 font-medium">
-                  Envoyé {{ replySuccess.to ? `à ${replySuccess.to}` : '' }}
-                  <span v-if="replySuccess.mail_sent === false" class="text-amber-600">(mail KO — message enregistré)</span>
+                  {{ replySuccess.to ? t('hub.ui.sav_detail.sent_to', 'Envoyé à {to}', { to: replySuccess.to }) : t('hub.ui.sav_detail.sent', 'Envoyé') }}
+                  <span v-if="replySuccess.mail_sent === false" class="text-amber-600">{{ t('hub.ui.sav_detail.mail_ko', '(mail KO — message enregistré)') }}</span>
                 </span>
                 <span v-if="replyError" class="text-xs text-red-600 font-medium truncate max-w-xs" :title="replyError">
                   {{ replyError }}
@@ -119,7 +119,7 @@
                   :disabled="sending || !reply.trim()"
                   class="text-xs px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
                 >
-                  {{ sending ? 'Envoi…' : 'Envoyer la réponse' }}
+                  {{ sending ? t('hub.ui.sav_detail.sending', 'Envoi…') : t('hub.ui.sav_detail.send_reply', 'Envoyer la réponse') }}
                 </button>
               </div>
             </div>
@@ -130,7 +130,7 @@
         <aside class="space-y-6">
           
           <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">Statut du ticket</h2>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">{{ t('hub.ui.sav_detail.ticket_status', 'Statut du ticket') }}</h2>
             <div class="space-y-2">
               <button
                 v-for="s in ALL_STATUSES"
@@ -154,20 +154,20 @@
 
           
           <section class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">Client</h2>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">{{ t('hub.ui.sav_detail.customer', 'Client') }}</h2>
             <div v-if="customer" class="space-y-2 text-xs">
               <div class="flex justify-between gap-3">
-                <span class="text-gray-400">Nom</span>
-                <NuxtLink :to="`/hub/contacts/${customer.id}`" class="text-primary-600 hover:underline font-medium truncate">
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.name', 'Nom') }}</span>
+                <NuxtLink :to="`/hub/customer/${customer.id}`" class="text-primary-600 hover:underline font-medium truncate">
                   {{ customer.firstname }} {{ customer.lastname }}
                 </NuxtLink>
               </div>
               <div class="flex justify-between gap-3">
-                <span class="text-gray-400">Email</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.email', 'Email') }}</span>
                 <span class="text-gray-700 dark:text-slate-200 truncate">{{ customer.email }}</span>
               </div>
               <div v-if="customer.company" class="flex justify-between gap-3">
-                <span class="text-gray-400">Société</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.company', 'Société') }}</span>
                 <span class="text-gray-700 dark:text-slate-200 truncate">{{ customer.company }}</span>
               </div>
               <div v-if="customer.siret" class="flex justify-between gap-3">
@@ -175,43 +175,43 @@
                 <span class="text-gray-700 dark:text-slate-200 font-mono">{{ customer.siret }}</span>
               </div>
               <div class="flex justify-between gap-3 pt-2 border-t border-gray-100 dark:border-slate-800">
-                <span class="text-gray-400">Commandes</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.orders', 'Commandes') }}</span>
                 <span class="text-gray-700 dark:text-slate-200 font-bold">{{ customer.nbOrders }}</span>
               </div>
               <div class="flex justify-between gap-3">
-                <span class="text-gray-400">CA TTC</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.revenue', 'CA TTC') }}</span>
                 <span class="text-gray-700 dark:text-slate-200 font-bold">{{ formatEur(customer.totalSpent) }}</span>
               </div>
               <div class="flex justify-between gap-3">
-                <span class="text-gray-400">Inscrit le</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.registered', 'Inscrit le') }}</span>
                 <span class="text-gray-700 dark:text-slate-200">{{ formatDate(customer.dateAdd) }}</span>
               </div>
             </div>
             <div v-else class="text-xs text-gray-400">
-              Ticket anonyme (formulaire contact) — pas de compte client associé.
+              {{ t('hub.ui.sav_detail.anonymous', 'Ticket anonyme (formulaire contact) — pas de compte client associé.') }}
             </div>
           </section>
 
           
           <section v-if="order" class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">Commande liée</h2>
+            <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">{{ t('hub.ui.sav_detail.linked_order', 'Commande liée') }}</h2>
             <div class="space-y-2 text-xs">
               <div class="flex justify-between gap-3">
-                <span class="text-gray-400">Référence</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.reference', 'Référence') }}</span>
                 <NuxtLink :to="`/hub/orders/${order.id}`" class="text-primary-600 hover:underline font-mono font-bold">
                   {{ order.reference }}
                 </NuxtLink>
               </div>
               <div v-if="order.statusName" class="flex justify-between gap-3">
-                <span class="text-gray-400">Statut</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.status', 'Statut') }}</span>
                 <span class="text-gray-700 dark:text-slate-200">{{ order.statusName }}</span>
               </div>
               <div class="flex justify-between gap-3">
-                <span class="text-gray-400">Total TTC</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.total_ttc', 'Total TTC') }}</span>
                 <span class="text-gray-700 dark:text-slate-200 font-bold">{{ formatEur(order.totalPaidTTC) }}</span>
               </div>
               <div class="flex justify-between gap-3">
-                <span class="text-gray-400">Date</span>
+                <span class="text-gray-400">{{ t('hub.ui.sav_detail.date', 'Date') }}</span>
                 <span class="text-gray-700 dark:text-slate-200">{{ formatDate(order.dateAdd) }}</span>
               </div>
             </div>
@@ -221,7 +221,7 @@
     </div>
 
     <div v-else class="flex-1 flex items-center justify-center">
-      <p class="text-sm text-gray-500">Ticket introuvable.</p>
+      <p class="text-sm text-gray-500">{{ t('hub.ui.sav_detail.not_found', 'Ticket introuvable.') }}</p>
     </div>
   </div>
 </template>
@@ -229,6 +229,7 @@
 <script setup lang="ts">
 
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+const { t } = useHubT()
 
 const { canAccess } = useRoles()
 if (!canAccess('crm_sav')) {
@@ -251,12 +252,12 @@ const replySuccess = ref<{ to?: string; mail_sent?: boolean } | null>(null)
 
 const updatingStatus = ref(false)
 
-const ALL_STATUSES = [
-  { value: 'open',     label: 'Ouvert',             dot: 'bg-red-400' },
-  { value: 'pending1', label: 'En attente client',  dot: 'bg-amber-400' },
-  { value: 'pending2', label: 'En attente interne', dot: 'bg-amber-400' },
-  { value: 'closed',   label: 'Fermé',              dot: 'bg-emerald-400' },
-]
+const ALL_STATUSES = computed(() => [
+  { value: 'open',     label: t('hub.ui.sav_detail.st_open', 'Ouvert'),             dot: 'bg-red-400' },
+  { value: 'pending1', label: t('hub.ui.sav_detail.st_pending1', 'En attente client'),  dot: 'bg-amber-400' },
+  { value: 'pending2', label: t('hub.ui.sav_detail.st_pending2', 'En attente interne'), dot: 'bg-amber-400' },
+  { value: 'closed',   label: t('hub.ui.sav_detail.st_closed', 'Fermé'),              dot: 'bg-emerald-400' },
+])
 
 async function load() {
   loading.value = true
@@ -291,7 +292,7 @@ async function sendReply() {
     setTimeout(() => { replySuccess.value = null }, 5000)
   } catch (err: any) {
     console.error('Reply error:', err)
-    replyError.value = err?.data?.message || err?.message || 'Échec de l\'envoi'
+    replyError.value = err?.data?.message || err?.message || t('hub.ui.sav_detail.send_failed', 'Échec de l\'envoi')
     setTimeout(() => { replyError.value = null }, 6000)
   } finally {
     sending.value = false
@@ -321,10 +322,10 @@ function statusClass(s: string) {
 }
 
 function statusLabel(s: string) {
-  if (s === 'open') return 'Ouvert'
-  if (s === 'closed') return 'Fermé'
-  if (s === 'pending1') return 'En attente client'
-  if (s === 'pending2') return 'En attente interne'
+  if (s === 'open') return t('hub.ui.sav_detail.st_open', 'Ouvert')
+  if (s === 'closed') return t('hub.ui.sav_detail.st_closed', 'Fermé')
+  if (s === 'pending1') return t('hub.ui.sav_detail.st_pending1', 'En attente client')
+  if (s === 'pending2') return t('hub.ui.sav_detail.st_pending2', 'En attente interne')
   return s
 }
 

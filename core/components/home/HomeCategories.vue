@@ -13,12 +13,22 @@
       >
         
         <NuxtImg
+          v-if="isIpxResolvable(cat.image)"
           :src="cat.image"
           :alt="cat.label"
           class="w-full h-full object-cover transition-transform duration-400 group-hover:scale-110"
           sizes="50vw sm:33vw lg:25vw"
+          densities="x1 x2 x3"
           preset="hero"
           loading="lazy"
+        />
+        <img
+          v-else
+          :src="cat.image"
+          :alt="cat.label"
+          class="w-full h-full object-cover transition-transform duration-400 group-hover:scale-110"
+          loading="lazy"
+          decoding="async"
         />
         
         <div class="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />

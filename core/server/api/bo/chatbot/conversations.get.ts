@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const page    = Math.max(1, Number(q.page || 1))
   const perPage = Math.min(200, Math.max(1, Number(q.perPage || 50)))
@@ -42,7 +45,8 @@ export default defineEventHandler(async (event) => {
             c.product_id_context, c.id_employee, c.id_smartlead,
             c.last_message_at, c.date_add, c.date_upd,
             lm.content AS last_message_content,
-            lm.role    AS last_message_role
+            lm.role    AS last_message_role,
+            pl.name    AS product_name
        FROM cs_main.cs_chatbot_conversation c
        LEFT JOIN LATERAL (
          SELECT content, role
@@ -50,6 +54,8 @@ export default defineEventHandler(async (event) => {
           WHERE id_conversation = c.id_conversation
           ORDER BY id_message DESC LIMIT 1
        ) lm ON TRUE
+       LEFT JOIN cs_main.ps_product_lang pl
+         ON pl.id_product = c.product_id_context AND pl.id_lang = 1
        ${whereSql}
    ORDER BY c.last_message_at DESC NULLS LAST, c.id_conversation DESC
       LIMIT ${perPage} OFFSET ${offset}`,
@@ -94,6 +100,7 @@ export default defineEventHandler(async (event) => {
       capturedCompany:   r.captured_company || '',
       capturedPhone:     r.captured_phone || '',
       productIdContext:  r.product_id_context ? Number(r.product_id_context) : null,
+      productName:       r.product_name || null,
       idEmployee:        r.id_employee ? Number(r.id_employee) : null,
       idSmartlead:       r.id_smartlead ? Number(r.id_smartlead) : null,
       lastMessageAt:     r.last_message_at,

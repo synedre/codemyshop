@@ -2,8 +2,8 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Playbooks</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ total }} playbook{{ total > 1 ? 's' : '' }}{{ !isOwner ? ` — ${roleLabel}` : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.playbooks.title', 'Playbooks') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ total > 1 ? t('hub.ui.playbooks.count_other', '{n} playbooks', { n: total }) : t('hub.ui.playbooks.count_one', '{n} playbook', { n: total }) }}{{ !isOwner ? ` — ${roleLabel}` : '' }}</p>
       </div>
       <div class="flex items-center gap-2">
         
@@ -11,23 +11,23 @@
           <button @click="groupBy = 'role'"
             class="text-xs px-3 py-1.5 transition-colors"
             :class="groupBy === 'role' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-slate-900 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800'">
-            Par profil
+            {{ t('hub.ui.playbooks.by_profile', 'Par profil') }}
           </button>
           <button @click="groupBy = 'feature'"
             class="text-xs px-3 py-1.5 transition-colors border-l border-gray-200 dark:border-slate-700"
             :class="groupBy === 'feature' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-slate-900 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800'">
-            Par feature
+            {{ t('hub.ui.playbooks.by_feature', 'Par feature') }}
           </button>
         </div>
         <select v-if="isOwner" v-model="statusFilter" @change="load" class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5">
-          <option value="published">Publiés</option>
-          <option value="draft">Brouillons</option>
-          <option value="all">Tous</option>
+          <option value="published">{{ t('hub.ui.playbooks.st_published', 'Publiés') }}</option>
+          <option value="draft">{{ t('hub.ui.playbooks.st_drafts', 'Brouillons') }}</option>
+          <option value="all">{{ t('hub.ui.playbooks.all', 'Tous') }}</option>
         </select>
-        <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors">Actualiser</button>
+        <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-colors">{{ t('hub.ui.playbooks.refresh', 'Actualiser') }}</button>
         <NuxtLink v-if="isOwner" to="/hub/playbooks/create" class="text-xs px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-          Nouveau playbook
+          {{ t('hub.ui.playbooks.new_playbook', 'Nouveau playbook') }}
         </NuxtLink>
       </div>
     </header>
@@ -60,11 +60,11 @@
         <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
         </svg>
-        <p class="text-sm">Aucun playbook disponible</p>
+        <p class="text-sm">{{ t('hub.ui.playbooks.none', 'Aucun playbook disponible') }}</p>
       </div>
 
       <div v-else-if="!visiblePlaybooks.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucun playbook dans ce groupe</p>
+        <p class="text-sm">{{ t('hub.ui.playbooks.none_in_group', 'Aucun playbook dans ce groupe') }}</p>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -74,7 +74,7 @@
             <h3 class="text-sm font-bold text-gray-800 dark:text-slate-100 group-hover:text-primary-600 transition-colors">{{ p.title }}</h3>
             <span v-if="isOwner && p.status !== 'published'" class="text-[10px] px-2 py-0.5 rounded-full font-medium"
               :class="p.status === 'draft' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'">
-              {{ p.status === 'draft' ? 'Brouillon' : 'Archivé' }}
+              {{ p.status === 'draft' ? t('hub.ui.playbooks.draft', 'Brouillon') : t('hub.ui.playbooks.archived', 'Archivé') }}
             </span>
           </div>
           <p v-if="p.description" class="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mb-3">{{ p.description }}</p>
@@ -99,6 +99,7 @@
 
 definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 
+const { t } = useHubT()
 const { role, roleLabel, isOwner } = useRoles()
 const playbooks = ref<any[]>([])
 const total = ref(0)
@@ -133,7 +134,7 @@ const groups = computed<Record<string, any[]>>(() => {
 
 const tabs = computed(() => {
   const list: { key: string; label: string; count: number }[] = [
-    { key: '__all__', label: 'Tous', count: playbooks.value.length },
+    { key: '__all__', label: t('hub.ui.playbooks.all', 'Tous'), count: playbooks.value.length },
   ]
   const keys = Object.keys(groups.value).sort((a, b) => {
     
@@ -143,7 +144,7 @@ const tabs = computed(() => {
   })
   for (const k of keys) {
     const label = k === '__none__'
-      ? (groupBy.value === 'role' ? 'Sans profil' : 'Sans feature')
+      ? (groupBy.value === 'role' ? t('hub.ui.playbooks.no_profile', 'Sans profil') : t('hub.ui.playbooks.no_feature', 'Sans feature'))
       : k
     list.push({ key: k, label, count: groups.value[k].length })
   }

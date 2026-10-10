@@ -2,7 +2,7 @@
 
 import { useClientDb } from '~/server/utils/db'
 
-export type BusinessVertical = 'food' | 'beauty' | 'vape' | 'fashion' | 'services' | 'electronics' | 'generic'
+export type BusinessVertical = 'food' | 'home' | 'beauty' | 'vape' | 'fashion' | 'services' | 'electronics' | 'generic'
 export type BusinessChannel = 'pure-online' | 'phygital' | 'b2b-only' | 'marketplace' | 'mix'
 
 export interface TenantProfile {

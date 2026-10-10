@@ -8,7 +8,9 @@ Nitro task at install / deploy time.
 
 - `fr.yaml` — French (default, primary source)
 - `en.yaml` — English
-- `de.yaml` — German *(not yet shipped — contribute via PR)*
+- `de.yaml` — German *(partial: storefront homepage namespaces only —
+  `instagram`, `reviews`, `footer`. Other namespaces still fall back to raw
+  keys, since the runtime serves one language with no fr fallback.)*
 
 ## Format
 

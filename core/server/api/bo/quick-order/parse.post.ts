@@ -1,6 +1,7 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ text: string }>(event)
   const raw = String(body?.text || '').trim()
 

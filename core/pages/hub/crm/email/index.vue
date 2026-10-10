@@ -6,14 +6,14 @@ const { t } = useHubT()
 
 type TabId = 'mail' | 'templates_client' | 'queue' | 'notifs_admin' | 'smtp' | 'newsletter'
 const activeTab = ref<TabId>('mail')
-const tabs: Array<{ id: TabId; label: string }> = [
+const tabs = computed<Array<{ id: TabId; label: string }>>(() => [
   { id: 'mail',             label: t('hub.email_tab_mail',       'Boîte de réception') },
   { id: 'templates_client', label: t('hub.email_tab_clients',    'Templates clients') },
   { id: 'queue',            label: t('hub.email_tab_queue',      'Queue d\'envoi') },
   { id: 'notifs_admin',     label: t('hub.email_tab_notifs',     'Templates notifs') },
   { id: 'newsletter',       label: t('hub.email_tab_newsletter', 'Newsletter') },
   { id: 'smtp',             label: t('hub.email_tab_smtp',       'SMTP') },
-]
+])
 
 interface EmailTemplate {
   slug:           string
@@ -104,10 +104,10 @@ async function saveSmtp() {
         reply_to:   smtpForm.reply_to || undefined,
       },
     })
-    smtpMessage.value = 'Configuration enregistrée.'
+    smtpMessage.value = t('hub.ui.crm_email.smtp_saved', 'Configuration enregistrée.')
     await refreshSmtp()
   } catch (err: any) {
-    smtpError.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    smtpError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   } finally {
     smtpSaving.value = false
   }
@@ -133,10 +133,10 @@ interface QueuedEmail {
 
 function priorityBadge(p: number | null | undefined): { label: string; cls: string } {
   const v = Number(p ?? 50)
-  if (v <= 15) return { label: 'Critique',  cls: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200' }
-  if (v <= 30) return { label: 'Important', cls: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200' }
-  if (v <= 70) return { label: 'Standard',  cls: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' }
-  return            { label: 'Marketing', cls: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200' }
+  if (v <= 15) return { label: t('hub.ui.crm_email.prio_critical', 'Critique'),  cls: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200' }
+  if (v <= 30) return { label: t('hub.ui.crm_email.prio_important', 'Important'), cls: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200' }
+  if (v <= 70) return { label: t('hub.ui.crm_email.prio_standard', 'Standard'),  cls: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' }
+  return            { label: t('hub.ui.crm_email.prio_marketing', 'Marketing'), cls: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200' }
 }
 interface QueueResponse {
   emails:  QueuedEmail[]
@@ -170,7 +170,7 @@ async function cancelEmail(id: number) {
     await $fetch(`/api/bo/email-queue/${id}`, { method: 'DELETE' })
     await refreshQueue()
   } catch (err: any) {
-    queueErrorMsg.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    queueErrorMsg.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   } finally {
     queueActionId.value = null
   }
@@ -183,7 +183,7 @@ async function retryEmail(id: number) {
     await $fetch(`/api/bo/email-queue/${id}/retry`, { method: 'POST' })
     await refreshQueue()
   } catch (err: any) {
-    queueErrorMsg.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    queueErrorMsg.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   } finally {
     queueActionId.value = null
   }
@@ -201,25 +201,25 @@ async function processNow() {
       { method: 'POST', body: { limit: 5 } },
     )
     if (r.scanned === 0) {
-      processNowMsg.value = 'Queue vide — rien à envoyer.'
+      processNowMsg.value = t('hub.ui.crm_email.queue_empty_msg', 'Queue vide — rien à envoyer.')
     } else {
-      processNowMsg.value = `${r.processed}/${r.scanned} envoyé${r.processed > 1 ? 's' : ''}` + (r.errors > 0 ? `, ${r.errors} en erreur` : '') + '.'
+      processNowMsg.value = (r.processed > 1 ? t('hub.ui.crm_email.sent_other', '{p}/{s} envoyés', { p: r.processed, s: r.scanned }) : t('hub.ui.crm_email.sent_one', '{p}/{s} envoyé', { p: r.processed, s: r.scanned })) + (r.errors > 0 ? t('hub.ui.crm_email.with_errors', ', {n} en erreur', { n: r.errors }) : '') + '.'
     }
     await refreshQueue()
   } catch (err: any) {
-    queueErrorMsg.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    queueErrorMsg.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   } finally {
     processingNow.value = false
   }
 }
 
-const STATUS_LABEL: Record<QueuedEmail['status'], string> = {
-  pending:   'En attente',
-  sending:   'Envoi…',
-  sent:      'Envoyé',
-  failed:    'Échec',
-  cancelled: 'Annulé',
-}
+const STATUS_LABEL = computed<Record<QueuedEmail['status'], string>>(() => ({
+  pending:   t('hub.ui.crm_email.pending', 'En attente'),
+  sending:   t('hub.ui.crm_email.sending', 'Envoi…'),
+  sent:      t('hub.ui.crm_email.sent', 'Envoyé'),
+  failed:    t('hub.ui.crm_email.failed', 'Échec'),
+  cancelled: t('hub.ui.crm_email.cancelled', 'Annulé'),
+}))
 const STATUS_BADGE: Record<QueuedEmail['status'], string> = {
   pending:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   sending:   'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
@@ -268,7 +268,7 @@ async function loadInbox() {
       selectedId.value = null
     }
   } catch (err: any) {
-    inboxError.value = err?.data?.statusMessage || err?.message || 'Erreur lecture inbox'
+    inboxError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err_inbox', 'Erreur lecture inbox')
   } finally {
     inboxLoading.value = false
   }
@@ -283,10 +283,10 @@ async function syncImap() {
       '/api/bo/email-client/sync',
       { method: 'POST', body: { sinceDays: syncSinceDays.value } },
     )
-    syncMsg.value = `Sync : ${r.inserted} nouveaux / ${r.fetched} fetch${r.attachments_inserted ? ` · ${r.attachments_inserted} pj` : ''}.`
+    syncMsg.value = t('hub.ui.crm_email.sync_result', 'Sync : {ins} nouveaux / {fetched} fetch', { ins: r.inserted, fetched: r.fetched }) + (r.attachments_inserted ? t('hub.ui.crm_email.sync_att', ' · {n} pj', { n: r.attachments_inserted }) : '') + '.'
     await loadInbox()
   } catch (err: any) {
-    inboxError.value = err?.data?.statusMessage || err?.message || 'Erreur sync IMAP'
+    inboxError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err_sync', 'Erreur sync IMAP')
   } finally {
     syncing.value = false
   }
@@ -467,14 +467,14 @@ async function discardDraft() {
     composeOpen.value = false
     return
   }
-  if (!confirm('Supprimer ce brouillon ?')) return
+  if (!confirm(t('hub.ui.crm_email.confirm_del_draft', 'Supprimer ce brouillon ?'))) return
   try {
     await $fetch(`/api/bo/email-client/draft/${currentDraftId.value}`, { method: 'DELETE' })
     currentDraftId.value = null
     composeOpen.value = false
     if (inboxFolder.value === 'draft') loadInbox()
   } catch (err: any) {
-    composeError.value = err?.data?.statusMessage || err?.message || 'Erreur suppression'
+    composeError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err_delete', 'Erreur suppression')
   }
 }
 
@@ -523,7 +523,7 @@ function openReply(m: InboxMessage) {
   composeForm.to = m.fromEmail
   composeForm.subject = m.subject.startsWith('Re: ') ? m.subject : `Re: ${m.subject}`
   const quoted = (m.bodyText || '').split('\n').map(l => `> ${l}`).join('\n')
-  composeForm.body = `\n\n--- Le ${formatDate(m.dateReceived)} ${m.fromName || m.fromEmail} a écrit ---\n${quoted}`
+  composeForm.body = `\n\n${t('hub.ui.crm_email.quote_hdr', '--- Le {date} {who} a écrit ---', { date: formatDate(m.dateReceived), who: m.fromName || m.fromEmail })}\n${quoted}`
   composeForm.replyTo = ''
   composeMsg.value = ''
   composeError.value = ''
@@ -536,7 +536,7 @@ async function sendCompose() {
   composeError.value = ''
   try {
     if (!composeForm.to || !composeForm.subject || !composeForm.body) {
-      throw new Error('Champs requis : To, Subject, Body.')
+      throw new Error(t('hub.ui.crm_email.err_required', 'Champs requis : To, Subject, Body.'))
     }
     await $fetch('/api/bo/email-client/send', {
       method: 'POST',
@@ -555,7 +555,7 @@ async function sendCompose() {
         draftId: currentDraftId.value || undefined,
       },
     })
-    composeMsg.value = 'Email envoyé.'
+    composeMsg.value = t('hub.ui.crm_email.email_sent', 'Email envoyé.')
     currentDraftId.value = null
     if (draftDebounceTimer) { clearTimeout(draftDebounceTimer); draftDebounceTimer = null }
     setTimeout(() => {
@@ -564,7 +564,7 @@ async function sendCompose() {
       if (inboxFolder.value === 'draft') loadInbox()
     }, 1200)
   } catch (err: any) {
-    composeError.value = err?.data?.statusMessage || err?.message || 'Erreur envoi'
+    composeError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err_send', 'Erreur envoi')
   } finally {
     composeSending.value = false
   }
@@ -609,7 +609,7 @@ function newCanned() {
 
 async function saveCanned() {
   if (!cannedDraft.label.trim()) {
-    cannedDraftError.value = 'Label requis.'
+    cannedDraftError.value = t('hub.ui.crm_email.label_required', 'Label requis.')
     return
   }
   cannedDraftSaving.value = true
@@ -629,20 +629,20 @@ async function saveCanned() {
     await loadCanned()
     newCanned()
   } catch (err: any) {
-    cannedDraftError.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    cannedDraftError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   } finally {
     cannedDraftSaving.value = false
   }
 }
 
 async function deleteCanned(id: number) {
-  if (!confirm('Supprimer ce modèle ?')) return
+  if (!confirm(t('hub.ui.crm_email.confirm_del_tpl', 'Supprimer ce modèle ?'))) return
   try {
     await $fetch(`/api/bo/email-client/canned/${id}`, { method: 'DELETE' })
     await loadCanned()
     if (cannedDraft.id === id) newCanned()
   } catch (err: any) {
-    cannedDraftError.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    cannedDraftError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   }
 }
 
@@ -655,9 +655,9 @@ async function saveSignature() {
       body: { bodyText: signatureDraft.value, bodyHtml: '' },
     })
     signature.value = { bodyText: signatureDraft.value, bodyHtml: '' }
-    signatureMsg.value = 'Signature enregistrée.'
+    signatureMsg.value = t('hub.ui.crm_email.sig_saved', 'Signature enregistrée.')
   } catch (err: any) {
-    signatureMsg.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    signatureMsg.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   } finally {
     signatureSaving.value = false
   }
@@ -712,7 +712,7 @@ async function loadNewsletter() {
       },
     })
   } catch (err: any) {
-    newsletterError.value = err?.data?.statusMessage || err?.message || 'Erreur'
+    newsletterError.value = err?.data?.statusMessage || err?.message || t('hub.ui.crm_email.err', 'Erreur')
   } finally {
     newsletterLoading.value = false
   }
@@ -736,7 +736,7 @@ function onNewsletterSearchInput() {
 
 const newsletterUnsubscribingId = ref<number | null>(null)
 async function newsletterUnsubscribe(s: NewsletterSubscriber) {
-  if (!confirm(`Désabonner ${s.email} de la newsletter ?`)) return
+  if (!confirm(t('hub.ui.crm_email.confirm_unsub', 'Désabonner {email} de la newsletter ?', { email: s.email }))) return
   newsletterUnsubscribingId.value = s.id_subscriber
   try {
     await $fetch(`/api/bo/crm/newsletter/${s.id_subscriber}/unsubscribe`, {
@@ -745,7 +745,7 @@ async function newsletterUnsubscribe(s: NewsletterSubscriber) {
     })
     await loadNewsletter()
   } catch (err: any) {
-    alert(err?.data?.statusMessage || 'Erreur désabonnement')
+    alert(err?.data?.statusMessage || t('hub.ui.crm_email.err_unsub', 'Erreur désabonnement'))
   } finally {
     newsletterUnsubscribingId.value = null
   }
@@ -756,12 +756,12 @@ function newsletterExportCsv() {
   window.open(url, '_blank')
 }
 
-const NEWSLETTER_STATUS_LABEL: Record<NewsletterStatus, string> = {
-  pending:      'En attente',
-  confirmed:    'Confirmé',
-  unsubscribed: 'Désabonné',
-  bounced:      'Bounce',
-}
+const NEWSLETTER_STATUS_LABEL = computed<Record<NewsletterStatus, string>>(() => ({
+  pending:      t('hub.ui.crm_email.pending', 'En attente'),
+  confirmed:    t('hub.ui.crm_email.nl_confirmed', 'Confirmé'),
+  unsubscribed: t('hub.ui.crm_email.nl_unsub', 'Désabonné'),
+  bounced:      t('hub.ui.crm_email.nl_bounce', 'Bounce'),
+}))
 const NEWSLETTER_STATUS_BADGE: Record<NewsletterStatus, string> = {
   pending:      'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   confirmed:    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
@@ -853,7 +853,7 @@ function formatNewsletterDate(iso: string | null): string {
           :title="t('hub.email_process_now_help', 'Bypass le cron 60s : envoie jusqu\'à 5 emails pending immédiatement.')"
           @click="processNow"
         >
-          {{ processingNow ? 'Envoi…' : 'Process now' }}
+          {{ processingNow ? t('hub.ui.crm_email.sending', 'Envoi…') : t('hub.ui.crm_email.process_now', 'Process now') }}
         </button>
       </div>
 
@@ -878,14 +878,14 @@ function formatNewsletterDate(iso: string | null): string {
         <table class="w-full text-sm">
           <thead class="bg-gray-50 dark:bg-slate-800/40">
             <tr class="text-left text-gray-500 uppercase tracking-wide text-[10px]">
-              <th class="font-medium px-4 py-2.5">Statut</th>
-              <th class="font-medium px-4 py-2.5">Priorité</th>
-              <th class="font-medium px-4 py-2.5">Destinataire</th>
-              <th class="font-medium px-4 py-2.5">Sujet</th>
-              <th class="font-medium px-4 py-2.5">Template</th>
-              <th class="font-medium px-4 py-2.5">Tentatives</th>
-              <th class="font-medium px-4 py-2.5">Créé</th>
-              <th class="font-medium px-4 py-2.5 text-right">Actions</th>
+              <th class="font-medium px-4 py-2.5">{{ t('hub.ui.crm_email.status', 'Statut') }}</th>
+              <th class="font-medium px-4 py-2.5">{{ t('hub.ui.crm_email.priority', 'Priorité') }}</th>
+              <th class="font-medium px-4 py-2.5">{{ t('hub.ui.crm_email.recipient', 'Destinataire') }}</th>
+              <th class="font-medium px-4 py-2.5">{{ t('hub.ui.crm_email.subject', 'Sujet') }}</th>
+              <th class="font-medium px-4 py-2.5">{{ t('hub.ui.crm_email.template', 'Template') }}</th>
+              <th class="font-medium px-4 py-2.5">{{ t('hub.ui.crm_email.attempts', 'Tentatives') }}</th>
+              <th class="font-medium px-4 py-2.5">{{ t('hub.ui.crm_email.created', 'Créé') }}</th>
+              <th class="font-medium px-4 py-2.5 text-right">{{ t('hub.ui.crm_email.actions', 'Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -901,7 +901,7 @@ function formatNewsletterDate(iso: string | null): string {
                 </span>
               </td>
               <td class="px-4 py-2.5">
-                <span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full font-mono" :class="priorityBadge(m.priority).cls" :title="`Priorité ${m.priority}/100`">
+                <span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full font-mono" :class="priorityBadge(m.priority).cls" :title="t('hub.ui.crm_email.prio_tip', 'Priorité {p}/100', { p: m.priority })">
                   {{ priorityBadge(m.priority).label }}
                 </span>
               </td>
@@ -912,7 +912,7 @@ function formatNewsletterDate(iso: string | null): string {
                   v-if="m.template_slug"
                   :to="`/hub/crm/email/template/${m.template_slug}`"
                   class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:underline"
-                  :title="`Éditer le template ${m.template_slug}`"
+                  :title="t('hub.ui.crm_email.edit_tpl_tip', 'Éditer le template {slug}', { slug: m.template_slug })"
                 >{{ m.template_slug }}</NuxtLink>
                 <span v-else class="text-gray-400">—</span>
               </td>
@@ -931,7 +931,7 @@ function formatNewsletterDate(iso: string | null): string {
                   class="text-xs px-2 py-1 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded transition-colors disabled:opacity-40"
                   @click="cancelEmail(m.id_ac_email_queue)"
                 >
-                  Annuler
+                  {{ t('hub.ui.crm_email.cancel', 'Annuler') }}
                 </button>
                 <button
                   v-else-if="m.status === 'failed' || m.status === 'cancelled'"
@@ -940,7 +940,7 @@ function formatNewsletterDate(iso: string | null): string {
                   class="text-xs px-2 py-1 border border-primary-200 text-primary-700 hover:bg-primary-50 rounded transition-colors disabled:opacity-40"
                   @click="retryEmail(m.id_ac_email_queue)"
                 >
-                  Réessayer
+                  {{ t('hub.ui.crm_email.retry', 'Réessayer') }}
                 </button>
               </td>
             </tr>
@@ -1006,7 +1006,7 @@ function formatNewsletterDate(iso: string | null): string {
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
               : 'bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400'"
           >
-            {{ smtpData?.source === 'db' ? 'Source : DB' : 'Source : .env (fallback)' }}
+            {{ smtpData?.source === 'db' ? t('hub.ui.crm_email.src_db', 'Source : DB') : t('hub.ui.crm_email.src_env', 'Source : .env (fallback)') }}
           </span>
         </div>
         <p class="text-xs text-gray-500 dark:text-slate-400 mb-4">
@@ -1018,7 +1018,7 @@ function formatNewsletterDate(iso: string | null): string {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
           <div>
-            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">Host SMTP/IMAP</label>
+            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.smtp_host', 'Host SMTP/IMAP') }}</label>
             <input v-model="smtpForm.host" type="text" placeholder="ssl0.ovh.net" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
           </div>
           <div>
@@ -1026,17 +1026,17 @@ function formatNewsletterDate(iso: string | null): string {
             <input v-model.number="smtpForm.port" type="number" min="1" max="65535" placeholder="465" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
           </div>
           <div>
-            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">Utilisateur</label>
+            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.user', 'Utilisateur') }}</label>
             <input v-model="smtpForm.user" type="text" placeholder="contact@…" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
           </div>
           <div>
-            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">From SMTP (expéditeur brut)</label>
+            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.smtp_from', 'From SMTP (expéditeur brut)') }}</label>
             <input v-model="smtpForm.from" type="text" placeholder="contact@…" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
           </div>
           <div class="col-span-1 sm:col-span-2">
             <label class="flex items-center gap-2 text-sm">
               <input v-model="smtpForm.secure" type="checkbox" class="rounded" />
-              <span>Connexion sécurisée (TLS / port 465)</span>
+              <span>{{ t('hub.ui.crm_email.smtp_secure', 'Connexion sécurisée (TLS / port 465)') }}</span>
             </label>
           </div>
 
@@ -1046,12 +1046,12 @@ function formatNewsletterDate(iso: string | null): string {
             </p>
           </div>
           <div class="col-span-1 sm:col-span-2">
-            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">From Resend (expéditeur affiché)</label>
-            <input v-model="smtpForm.from_email" type="text" placeholder='Example Shop <notifications@example-shop.com>' class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
-            <p class="text-[10px] text-gray-400 mt-1">Format <span class="font-mono">Nom &lt;email@domaine.tld&gt;</span> — le domaine doit être vérifié dans Resend.</p>
+            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.resend_from', 'From Resend (expéditeur affiché)') }}</label>
+            <input v-model="smtpForm.from_email" type="text" :placeholder="t('hub.ui.crm_email.resend_from_ph', 'Ma Boutique <notifications@exemple.fr>')" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
+            <p class="text-[10px] text-gray-400 mt-1">{{ t('hub.ui.crm_email.resend_fmt_a', 'Format') }} <span class="font-mono">Nom &lt;email@domaine.tld&gt;</span> {{ t('hub.ui.crm_email.resend_fmt_b', '— le domaine doit être vérifié dans Resend.') }}</p>
           </div>
           <div class="col-span-1 sm:col-span-2">
-            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">Reply-to par défaut</label>
+            <label class="block text-xs uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.reply_to_default', 'Reply-to par défaut') }}</label>
             <input v-model="smtpForm.reply_to" type="text" placeholder="contact@…" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
           </div>
         </div>
@@ -1063,7 +1063,7 @@ function formatNewsletterDate(iso: string | null): string {
             class="text-sm px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
             @click="saveSmtp"
           >
-            {{ smtpSaving ? 'Enregistrement…' : 'Enregistrer' }}
+            {{ smtpSaving ? t('hub.ui.crm_email.saving', 'Enregistrement…') : t('hub.ui.crm_email.save', 'Enregistrer') }}
           </button>
           <button
             type="button"
@@ -1085,7 +1085,7 @@ function formatNewsletterDate(iso: string | null): string {
             {{ t('hub.email_mail_help', 'Boîte mail persistée en DB (cs_email_message) — sync IMAP explicite. Envois SMTP archivés en folder=sent.') }}
           </p>
           <p v-if="inboxData?.account" class="text-[10px] text-gray-400 dark:text-slate-500 mt-1 font-mono">
-            <span class="uppercase tracking-wide">compte</span> {{ inboxData.account }}
+            <span class="uppercase tracking-wide">{{ t('hub.ui.crm_email.account', 'compte') }}</span> {{ inboxData.account }}
           </p>
         </div>
         <div class="flex items-center gap-2 shrink-0 flex-wrap">
@@ -1095,21 +1095,21 @@ function formatNewsletterDate(iso: string | null): string {
               :class="[ 'text-xs px-3 py-1.5 transition-colors', inboxFolder === 'inbox' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50' ]"
               @click="inboxFolder = 'inbox'"
             >
-              📥 Reçus
+              📥 {{ t('hub.ui.crm_email.f_inbox', 'Reçus') }}
             </button>
             <button
               type="button"
               :class="[ 'text-xs px-3 py-1.5 transition-colors', inboxFolder === 'sent' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50' ]"
               @click="inboxFolder = 'sent'"
             >
-              📤 Envoyés
+              📤 {{ t('hub.ui.crm_email.f_sent', 'Envoyés') }}
             </button>
             <button
               type="button"
               :class="[ 'text-xs px-3 py-1.5 transition-colors', inboxFolder === 'draft' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50' ]"
               @click="inboxFolder = 'draft'"
             >
-              📝 Brouillons
+              📝 {{ t('hub.ui.crm_email.f_draft', 'Brouillons') }}
             </button>
           </div>
           <select
@@ -1117,10 +1117,10 @@ function formatNewsletterDate(iso: string | null): string {
             class="text-xs px-2 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900"
             :title="t('hub.email_mail_sync_window', 'Fenêtre de sync IMAP (combien de jours en arrière fetch).')"
           >
-            <option :value="7">Sync 7j</option>
-            <option :value="14">Sync 14j</option>
-            <option :value="30">Sync 30j</option>
-            <option :value="90">Sync 90j</option>
+            <option :value="7">{{ t('hub.ui.crm_email.sync_days', 'Sync {n}j', { n: 7 }) }}</option>
+            <option :value="14">{{ t('hub.ui.crm_email.sync_days', 'Sync {n}j', { n: 14 }) }}</option>
+            <option :value="30">{{ t('hub.ui.crm_email.sync_days', 'Sync {n}j', { n: 30 }) }}</option>
+            <option :value="90">{{ t('hub.ui.crm_email.sync_days', 'Sync {n}j', { n: 90 }) }}</option>
           </select>
           <button
             type="button"
@@ -1128,7 +1128,7 @@ function formatNewsletterDate(iso: string | null): string {
             class="text-xs px-3 py-1.5 border border-primary-200 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 disabled:opacity-40 transition-colors font-medium"
             @click="syncImap"
           >
-            {{ syncing ? 'Sync…' : '↻ Synchroniser' }}
+            {{ syncing ? t('hub.ui.crm_email.syncing', 'Sync…') : t('hub.ui.crm_email.sync_btn', '↻ Synchroniser') }}
           </button>
           <button
             type="button"
@@ -1136,14 +1136,14 @@ function formatNewsletterDate(iso: string | null): string {
             :title="t('hub.email_mail_prefs', 'Modèles + signature')"
             @click="openPrefs"
           >
-            ⚙ Préférences
+            ⚙ {{ t('hub.ui.crm_email.prefs', 'Préférences') }}
           </button>
           <button
             type="button"
             class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
             @click="openCompose"
           >
-            ✉ Nouveau message
+            ✉ {{ t('hub.ui.crm_email.new_msg', 'Nouveau message') }}
           </button>
         </div>
       </div>
@@ -1156,10 +1156,10 @@ function formatNewsletterDate(iso: string | null): string {
         
         <div class="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 overflow-hidden">
           <div v-if="inboxLoading && !inboxData" class="p-8 text-center text-sm text-gray-500">
-            Chargement IMAP…
+            {{ t('hub.ui.crm_email.imap_loading', 'Chargement IMAP…') }}
           </div>
           <div v-else-if="!inboxData?.messages?.length" class="p-8 text-center text-sm text-gray-500 dark:text-slate-400">
-            Boîte vide sur la période sélectionnée.
+            {{ t('hub.ui.crm_email.empty_box', 'Boîte vide sur la période sélectionnée.') }}
           </div>
           <ul v-else class="divide-y divide-gray-100 dark:divide-slate-800 max-h-[640px] overflow-y-auto">
             <li
@@ -1176,12 +1176,12 @@ function formatNewsletterDate(iso: string | null): string {
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0 flex-1">
                   <div class="text-xs font-semibold text-gray-900 dark:text-white truncate flex items-center gap-1.5">
-                    <span class="truncate">{{ inboxFolder === 'inbox' ? (m.fromName || m.fromEmail) : (m.toEmails || '— Sans destinataire') }}</span>
-                    <span v-if="m.hasAttachments" class="text-amber-500" title="Pièces jointes">📎</span>
-                    <span v-if="inboxFolder === 'draft'" class="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">brouillon</span>
+                    <span class="truncate">{{ inboxFolder === 'inbox' ? (m.fromName || m.fromEmail) : (m.toEmails || t('hub.ui.crm_email.no_recipient', '— Sans destinataire')) }}</span>
+                    <span v-if="m.hasAttachments" class="text-amber-500" :title="t('hub.ui.crm_email.attachments', 'Pièces jointes')">📎</span>
+                    <span v-if="inboxFolder === 'draft'" class="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">{{ t('hub.ui.crm_email.draft_tag', 'brouillon') }}</span>
                   </div>
                   <div class="text-xs text-gray-700 dark:text-slate-300 truncate mt-0.5">
-                    {{ m.subject || '(sans objet)' }}
+                    {{ m.subject || t('hub.ui.crm_email.no_subject', '(sans objet)') }}
                   </div>
                   <div v-if="inboxFolder === 'inbox'" class="text-[10px] text-gray-400 dark:text-slate-500 truncate mt-0.5 font-mono">
                     {{ m.fromEmail }}
@@ -1201,16 +1201,16 @@ function formatNewsletterDate(iso: string | null): string {
         
         <div class="rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
           <div v-if="!selectedMessage" class="p-12 text-center text-sm text-gray-400">
-            <template v-if="inboxFolder === 'draft'">← Clique sur un brouillon pour reprendre la rédaction</template>
-            <template v-else>← Sélectionne un message</template>
+            <template v-if="inboxFolder === 'draft'">{{ t('hub.ui.crm_email.pick_draft', '← Clique sur un brouillon pour reprendre la rédaction') }}</template>
+            <template v-else>{{ t('hub.ui.crm_email.pick_msg', '← Sélectionne un message') }}</template>
           </div>
           <div v-else class="flex flex-col h-full">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800">
-              <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ selectedMessage.subject || '(sans objet)' }}</h3>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ selectedMessage.subject || t('hub.ui.crm_email.no_subject', '(sans objet)') }}</h3>
               <div class="flex items-center justify-between gap-4 mt-2 flex-wrap">
                 <div class="text-xs text-gray-600 dark:text-slate-400">
-                  <div><span class="text-gray-400">De :</span> <span class="font-medium">{{ selectedMessage.fromName || selectedMessage.fromEmail }}</span> <span class="text-gray-400 font-mono">&lt;{{ selectedMessage.fromEmail }}&gt;</span></div>
-                  <div v-if="selectedMessage.toEmails"><span class="text-gray-400">À :</span> <span class="font-mono">{{ selectedMessage.toEmails }}</span></div>
+                  <div><span class="text-gray-400">{{ t('hub.ui.crm_email.from', 'De :') }}</span> <span class="font-medium">{{ selectedMessage.fromName || selectedMessage.fromEmail }}</span> <span class="text-gray-400 font-mono">&lt;{{ selectedMessage.fromEmail }}&gt;</span></div>
+                  <div v-if="selectedMessage.toEmails"><span class="text-gray-400">{{ t('hub.ui.crm_email.to', 'À :') }}</span> <span class="font-mono">{{ selectedMessage.toEmails }}</span></div>
                   <div class="text-[10px] text-gray-400 mt-0.5">{{ selectedMessage.dateReceived ? new Date(selectedMessage.dateReceived).toLocaleString('fr-FR') : '—' }}</div>
                 </div>
                 <button
@@ -1219,14 +1219,14 @@ function formatNewsletterDate(iso: string | null): string {
                   class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
                   @click="openReply(selectedMessage)"
                 >
-                  ↩ Répondre
+                  ↩ {{ t('hub.ui.crm_email.reply', 'Répondre') }}
                 </button>
               </div>
             </div>
 
             
             <div v-if="selectedMessage.hasAttachments && attachmentsBy[selectedMessage.id]?.length" class="px-5 py-3 border-b border-gray-100 dark:border-slate-800">
-              <p class="text-[10px] uppercase tracking-wide text-gray-400 mb-2">📎 {{ attachmentsBy[selectedMessage.id].length }} pièce{{ attachmentsBy[selectedMessage.id].length > 1 ? 's' : '' }} jointe{{ attachmentsBy[selectedMessage.id].length > 1 ? 's' : '' }}</p>
+              <p class="text-[10px] uppercase tracking-wide text-gray-400 mb-2">📎 {{ attachmentsBy[selectedMessage.id].length > 1 ? t('hub.ui.crm_email.att_other', '{n} pièces jointes', { n: attachmentsBy[selectedMessage.id].length }) : t('hub.ui.crm_email.att_one', '{n} pièce jointe', { n: attachmentsBy[selectedMessage.id].length }) }}</p>
               <div class="flex flex-wrap gap-2">
                 <a
                   v-for="att in attachmentsBy[selectedMessage.id]"
@@ -1244,7 +1244,7 @@ function formatNewsletterDate(iso: string | null): string {
             </div>
 
             <div class="px-5 py-4 flex-1 overflow-y-auto">
-              <pre class="whitespace-pre-wrap text-sm text-gray-800 dark:text-slate-200 font-sans leading-relaxed">{{ selectedMessage.bodyText || '(corps vide)' }}</pre>
+              <pre class="whitespace-pre-wrap text-sm text-gray-800 dark:text-slate-200 font-sans leading-relaxed">{{ selectedMessage.bodyText || t('hub.ui.crm_email.empty_body', '(corps vide)') }}</pre>
             </div>
           </div>
         </div>
@@ -1259,7 +1259,7 @@ function formatNewsletterDate(iso: string | null): string {
         <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
           <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-              <h3 class="text-base font-bold text-gray-900 dark:text-white truncate">{{ currentDraftId ? 'Brouillon' : 'Nouveau message' }}</h3>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white truncate">{{ currentDraftId ? t('hub.ui.crm_email.draft', 'Brouillon') : t('hub.ui.crm_email.new_msg', 'Nouveau message') }}</h3>
               <span
                 v-if="draftSavingState !== 'idle'"
                 class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full whitespace-nowrap"
@@ -1269,7 +1269,7 @@ function formatNewsletterDate(iso: string | null): string {
                   'bg-rose-100 text-rose-700': draftSavingState === 'error',
                 }"
               >
-                {{ draftSavingState === 'saving' ? 'Sauvegarde…' : draftSavingState === 'saved' ? 'Brouillon enregistré' : 'Erreur sauvegarde' }}
+                {{ draftSavingState === 'saving' ? t('hub.ui.crm_email.draft_saving', 'Sauvegarde…') : draftSavingState === 'saved' ? t('hub.ui.crm_email.draft_saved', 'Brouillon enregistré') : t('hub.ui.crm_email.draft_err', 'Erreur sauvegarde') }}
               </span>
             </div>
             <button
@@ -1281,7 +1281,7 @@ function formatNewsletterDate(iso: string | null): string {
           </div>
           <div class="px-5 py-4 space-y-3 flex-1 overflow-y-auto">
             <div>
-              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">Destinataire</label>
+              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.recipient', 'Destinataire') }}</label>
               <input v-model="composeForm.to" type="email" placeholder="contact@exemple.com" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
             </div>
 
@@ -1291,7 +1291,7 @@ function formatNewsletterDate(iso: string | null): string {
                 v-model.number="cannedPickerId"
                 class="flex-1 text-xs px-2 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900"
               >
-                <option :value="null">— Insérer un modèle —</option>
+                <option :value="null">{{ t('hub.ui.crm_email.insert_tpl', '— Insérer un modèle —') }}</option>
                 <option v-for="c in cannedList" :key="c.id" :value="c.id">{{ c.label }}</option>
               </select>
               <button
@@ -1300,27 +1300,27 @@ function formatNewsletterDate(iso: string | null): string {
                 class="text-xs px-3 py-1.5 border border-primary-200 text-primary-700 rounded-lg hover:bg-primary-50 disabled:opacity-40 transition-colors font-medium"
                 @click="applyCanned"
               >
-                Insérer
+                {{ t('hub.ui.crm_email.insert', 'Insérer') }}
               </button>
             </div>
 
             <div>
-              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">Sujet</label>
+              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.subject', 'Sujet') }}</label>
               <input v-model="composeForm.subject" type="text" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
             </div>
             <div>
-              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">Reply-to (optionnel)</label>
-              <input v-model="composeForm.replyTo" type="email" placeholder="laisser vide = compte SMTP par défaut" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
+              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.reply_to_opt', 'Reply-to (optionnel)') }}</label>
+              <input v-model="composeForm.replyTo" type="email" :placeholder="t('hub.ui.crm_email.reply_to_ph', 'laisser vide = compte SMTP par défaut')" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
             </div>
             <div>
-              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">Message</label>
+              <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.message', 'Message') }}</label>
               <textarea v-model="composeForm.body" rows="10" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900"></textarea>
 
               
               <div v-if="signature.bodyText" class="mt-2 space-y-1">
                 <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
                   <input v-model="useSignature" type="checkbox" class="rounded" />
-                  <span>Ajouter ma signature</span>
+                  <span>{{ t('hub.ui.crm_email.add_sig', 'Ajouter ma signature') }}</span>
                 </label>
                 <pre v-if="useSignature" class="text-[11px] text-gray-500 dark:text-slate-500 italic whitespace-pre-wrap font-sans border-l-2 border-gray-200 dark:border-slate-700 pl-3">{{ signature.bodyText }}</pre>
               </div>
@@ -1329,13 +1329,13 @@ function formatNewsletterDate(iso: string | null): string {
             
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label class="text-[10px] uppercase text-gray-500 tracking-wide">Pièces jointes</label>
+                <label class="text-[10px] uppercase text-gray-500 tracking-wide">{{ t('hub.ui.crm_email.attachments', 'Pièces jointes') }}</label>
                 <label class="text-xs px-3 py-1 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors font-medium">
-                  📎 Ajouter
+                  📎 {{ t('hub.ui.crm_email.add', 'Ajouter') }}
                   <input type="file" multiple class="hidden" @change="addFiles" />
                 </label>
               </div>
-              <div v-if="composeAttachments.length === 0" class="text-[11px] text-gray-400 italic">Aucune pièce jointe.</div>
+              <div v-if="composeAttachments.length === 0" class="text-[11px] text-gray-400 italic">{{ t('hub.ui.crm_email.no_att', 'Aucune pièce jointe.') }}</div>
               <ul v-else class="space-y-1">
                 <li v-for="(a, idx) in composeAttachments" :key="idx" class="flex items-center justify-between gap-2 px-2 py-1 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
                   <div class="min-w-0 flex-1">
@@ -1345,7 +1345,7 @@ function formatNewsletterDate(iso: string | null): string {
                   <button type="button" class="text-xs text-rose-600 hover:text-rose-700 px-2" @click="removeAttachment(idx)">✕</button>
                 </li>
               </ul>
-              <p class="text-[10px] text-gray-400 mt-1">Limite 25 MB total.</p>
+              <p class="text-[10px] text-gray-400 mt-1">{{ t('hub.ui.crm_email.att_limit', 'Limite 25 MB total.') }}</p>
             </div>
 
             <div v-if="composeMsg" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs">{{ composeMsg }}</div>
@@ -1358,7 +1358,7 @@ function formatNewsletterDate(iso: string | null): string {
               class="text-xs px-3 py-1.5 border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 transition-colors font-medium"
               @click="discardDraft"
             >
-              🗑 Supprimer brouillon
+              🗑 {{ t('hub.ui.crm_email.del_draft', 'Supprimer brouillon') }}
             </button>
             <span v-else></span>
             <div class="flex items-center gap-2">
@@ -1367,7 +1367,7 @@ function formatNewsletterDate(iso: string | null): string {
                 class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium"
                 @click="closeComposeKeepDraft"
               >
-                Fermer
+                {{ t('hub.ui.crm_email.close', 'Fermer') }}
               </button>
               <button
                 type="button"
@@ -1375,7 +1375,7 @@ function formatNewsletterDate(iso: string | null): string {
                 class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
                 @click="sendCompose"
               >
-                {{ composeSending ? 'Envoi…' : 'Envoyer' }}
+                {{ composeSending ? t('hub.ui.crm_email.sending', 'Envoi…') : t('hub.ui.crm_email.send', 'Envoyer') }}
               </button>
             </div>
           </div>
@@ -1390,7 +1390,7 @@ function formatNewsletterDate(iso: string | null): string {
       >
         <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
           <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-            <h3 class="text-base font-bold text-gray-900 dark:text-white">Préférences Mail</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ t('hub.ui.crm_email.prefs_title', 'Préférences Mail') }}</h3>
             <button type="button" class="text-gray-400 hover:text-gray-600" @click="prefsOpen = false">✕</button>
           </div>
           <nav class="flex border-b border-gray-100 dark:border-slate-800 px-4">
@@ -1398,18 +1398,18 @@ function formatNewsletterDate(iso: string | null): string {
               type="button"
               :class="[ 'text-xs px-4 py-2.5 -mb-px border-b-2 transition-colors font-medium', prefsTab === 'canned' ? 'border-primary-600 text-primary-700' : 'border-transparent text-gray-500 hover:text-gray-700' ]"
               @click="prefsTab = 'canned'"
-            >Modèles ({{ cannedList.length }})</button>
+            >{{ t('hub.ui.crm_email.tpl_n', 'Modèles ({n})', { n: cannedList.length }) }}</button>
             <button
               type="button"
               :class="[ 'text-xs px-4 py-2.5 -mb-px border-b-2 transition-colors font-medium', prefsTab === 'signature' ? 'border-primary-600 text-primary-700' : 'border-transparent text-gray-500 hover:text-gray-700' ]"
               @click="prefsTab = 'signature'"
-            >Signature</button>
+            >{{ t('hub.ui.crm_email.signature', 'Signature') }}</button>
           </nav>
 
           
           <div v-if="prefsTab === 'canned'" class="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-[260px_1fr]">
             <div class="border-r border-gray-100 dark:border-slate-800 overflow-y-auto">
-              <button type="button" class="w-full text-left px-4 py-2.5 text-xs font-medium text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 border-b border-gray-100 dark:border-slate-800" @click="newCanned">+ Nouveau modèle</button>
+              <button type="button" class="w-full text-left px-4 py-2.5 text-xs font-medium text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 border-b border-gray-100 dark:border-slate-800" @click="newCanned">{{ t('hub.ui.crm_email.new_tpl', '+ Nouveau modèle') }}</button>
               <ul class="divide-y divide-gray-100 dark:divide-slate-800">
                 <li
                   v-for="c in cannedList"
@@ -1427,15 +1427,15 @@ function formatNewsletterDate(iso: string | null): string {
             </div>
             <div class="p-4 overflow-y-auto space-y-3">
               <div>
-                <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">Label (visible dans le picker)</label>
-                <input v-model="cannedDraft.label" type="text" placeholder="Réponse devis B2B" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
+                <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.tpl_label', 'Label (visible dans le picker)') }}</label>
+                <input v-model="cannedDraft.label" type="text" :placeholder="t('hub.ui.crm_email.tpl_label_ph', 'Réponse devis B2B')" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
               </div>
               <div>
-                <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">Sujet (optionnel)</label>
+                <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.subject_opt', 'Sujet (optionnel)') }}</label>
                 <input v-model="cannedDraft.subject" type="text" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900" />
               </div>
               <div>
-                <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">Corps</label>
+                <label class="block text-[10px] uppercase text-gray-500 tracking-wide mb-1">{{ t('hub.ui.crm_email.body', 'Corps') }}</label>
                 <textarea v-model="cannedDraft.body" rows="10" class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900"></textarea>
               </div>
               <div v-if="cannedDraftError" class="px-3 py-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">{{ cannedDraftError }}</div>
@@ -1446,7 +1446,7 @@ function formatNewsletterDate(iso: string | null): string {
                   class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
                   @click="saveCanned"
                 >
-                  {{ cannedDraftSaving ? '…' : (cannedDraft.id ? 'Mettre à jour' : 'Créer') }}
+                  {{ cannedDraftSaving ? '…' : (cannedDraft.id ? t('hub.ui.crm_email.update', 'Mettre à jour') : t('hub.ui.crm_email.create', 'Créer')) }}
                 </button>
                 <button
                   v-if="cannedDraft.id"
@@ -1454,7 +1454,7 @@ function formatNewsletterDate(iso: string | null): string {
                   class="text-xs px-4 py-1.5 border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 transition-colors font-medium"
                   @click="deleteCanned(cannedDraft.id!)"
                 >
-                  Supprimer
+                  {{ t('hub.ui.crm_email.delete', 'Supprimer') }}
                 </button>
                 <button
                   v-if="cannedDraft.id"
@@ -1462,7 +1462,7 @@ function formatNewsletterDate(iso: string | null): string {
                   class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                   @click="newCanned"
                 >
-                  Annuler édition
+                  {{ t('hub.ui.crm_email.cancel_edit', 'Annuler édition') }}
                 </button>
               </div>
             </div>
@@ -1471,12 +1471,12 @@ function formatNewsletterDate(iso: string | null): string {
           
           <div v-else class="p-5 flex-1 overflow-y-auto space-y-3">
             <p class="text-xs text-gray-500 dark:text-slate-400">
-              Signature ajoutée automatiquement à tes nouveaux mails (toggle "Ajouter ma signature" coché par défaut).
+              {{ t('hub.ui.crm_email.sig_help', 'Signature ajoutée automatiquement à tes nouveaux mails (toggle "Ajouter ma signature" coché par défaut).') }}
             </p>
             <textarea
               v-model="signatureDraft"
               rows="8"
-              placeholder="Cordialement,&#10;Aude DURAND&#10;Example Shop — fruits secs &amp; épicerie fine&#10;06 12 34 56 78"
+              :placeholder="t('hub.ui.crm_email.signature_ph', 'Cordialement,\nCamille DURAND\nMa Boutique — épicerie fine\n01 23 45 67 89')"
               class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-mono focus:border-primary-600 focus:outline-none bg-white dark:bg-slate-900"
             ></textarea>
             <div v-if="signatureMsg" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs">{{ signatureMsg }}</div>
@@ -1486,7 +1486,7 @@ function formatNewsletterDate(iso: string | null): string {
               class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors font-medium"
               @click="saveSignature"
             >
-              {{ signatureSaving ? '…' : 'Enregistrer la signature' }}
+              {{ signatureSaving ? '…' : t('hub.ui.crm_email.save_sig', 'Enregistrer la signature') }}
             </button>
           </div>
         </div>
@@ -1525,25 +1525,25 @@ function formatNewsletterDate(iso: string | null): string {
       
       <div class="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-3">
         <div class="flex items-center gap-2">
-          <label class="text-[10px] uppercase font-semibold text-gray-500 dark:text-slate-400">Statut</label>
+          <label class="text-[10px] uppercase font-semibold text-gray-500 dark:text-slate-400">{{ t('hub.ui.crm_email.status', 'Statut') }}</label>
           <select
             v-model="newsletterStatus"
             class="text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200"
             @change="newsletterPage = 0"
           >
-            <option value="all">Tous</option>
-            <option value="pending">En attente</option>
-            <option value="confirmed">Confirmé</option>
-            <option value="unsubscribed">Désabonné</option>
-            <option value="bounced">Bounce</option>
+            <option value="all">{{ t('hub.ui.crm_email.all', 'Tous') }}</option>
+            <option value="pending">{{ t('hub.ui.crm_email.pending', 'En attente') }}</option>
+            <option value="confirmed">{{ t('hub.ui.crm_email.nl_confirmed', 'Confirmé') }}</option>
+            <option value="unsubscribed">{{ t('hub.ui.crm_email.nl_unsub', 'Désabonné') }}</option>
+            <option value="bounced">{{ t('hub.ui.crm_email.nl_bounce', 'Bounce') }}</option>
           </select>
         </div>
         <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-          <label class="text-[10px] uppercase font-semibold text-gray-500 dark:text-slate-400">Recherche</label>
+          <label class="text-[10px] uppercase font-semibold text-gray-500 dark:text-slate-400">{{ t('hub.ui.crm_email.search', 'Recherche') }}</label>
           <input
             v-model="newsletterSearch"
             type="search"
-            placeholder="email…"
+            :placeholder="t('hub.ui.crm_email.email_ph', 'email…')"
             class="flex-1 text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200"
             @input="onNewsletterSearchInput"
           />
@@ -1553,12 +1553,12 @@ function formatNewsletterDate(iso: string | null): string {
           class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white transition-colors"
           @click="newsletterExportCsv"
         >
-          Export CSV
+          {{ t('hub.ui.crm_email.export_csv', 'Export CSV') }}
         </button>
       </div>
 
       
-      <p v-if="newsletterLoading" class="text-xs text-gray-400 italic text-center py-4">Chargement…</p>
+      <p v-if="newsletterLoading" class="text-xs text-gray-400 italic text-center py-4">{{ t('hub.ui.crm_email.loading', 'Chargement…') }}</p>
       <p v-else-if="newsletterError" class="text-xs text-rose-600 dark:text-rose-400 text-center py-4">{{ newsletterError }}</p>
 
       
@@ -1569,13 +1569,13 @@ function formatNewsletterDate(iso: string | null): string {
         <table class="w-full text-xs">
           <thead class="bg-gray-50 dark:bg-slate-800 text-left text-[10px] uppercase tracking-wider text-gray-500 dark:text-slate-400">
             <tr>
-              <th class="px-3 py-2 font-semibold">Email</th>
-              <th class="px-3 py-2 font-semibold">Statut</th>
-              <th class="px-3 py-2 font-semibold">Source</th>
-              <th class="px-3 py-2 font-semibold">Locale</th>
-              <th class="px-3 py-2 font-semibold">Consentement</th>
+              <th class="px-3 py-2 font-semibold">{{ t('hub.ui.crm_email.email', 'Email') }}</th>
+              <th class="px-3 py-2 font-semibold">{{ t('hub.ui.crm_email.status', 'Statut') }}</th>
+              <th class="px-3 py-2 font-semibold">{{ t('hub.ui.crm_email.h_source', 'Source') }}</th>
+              <th class="px-3 py-2 font-semibold">{{ t('hub.ui.crm_email.locale', 'Locale') }}</th>
+              <th class="px-3 py-2 font-semibold">{{ t('hub.ui.crm_email.consent', 'Consentement') }}</th>
               <th class="px-3 py-2 font-semibold">IP</th>
-              <th class="px-3 py-2 font-semibold text-right">Actions</th>
+              <th class="px-3 py-2 font-semibold text-right">{{ t('hub.ui.crm_email.actions', 'Actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-slate-800">
@@ -1604,7 +1604,7 @@ function formatNewsletterDate(iso: string | null): string {
                   class="text-[10px] font-semibold px-2 py-1 rounded-md text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20 disabled:opacity-40"
                   @click="newsletterUnsubscribe(s)"
                 >
-                  Désabonner
+                  {{ t('hub.ui.crm_email.unsubscribe', 'Désabonner') }}
                 </button>
               </td>
             </tr>
@@ -1623,14 +1623,14 @@ function formatNewsletterDate(iso: string | null): string {
               :disabled="newsletterPage === 0"
               class="px-2 py-1 rounded-md hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
               @click="newsletterPage = Math.max(0, newsletterPage - 1)"
-            >← Préc.</button>
-            <span>Page {{ newsletterPage + 1 }}</span>
+            >{{ t('hub.ui.crm_email.prev', '← Préc.') }}</button>
+            <span>{{ t('hub.ui.crm_email.page_n', 'Page {n}', { n: newsletterPage + 1 }) }}</span>
             <button
               type="button"
               :disabled="(newsletterPage + 1) * NEWSLETTER_PAGE_SIZE >= newsletterData.total"
               class="px-2 py-1 rounded-md hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
               @click="newsletterPage = newsletterPage + 1"
-            >Suiv. →</button>
+            >{{ t('hub.ui.crm_email.next', 'Suiv. →') }}</button>
           </div>
         </div>
       </div>

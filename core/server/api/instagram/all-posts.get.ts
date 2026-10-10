@@ -1,4 +1,5 @@
 
+import { errorMessage } from '~/server/utils/redact-url-secrets'
 
 interface IgMediaRaw {
   id:              string
@@ -68,7 +69,7 @@ export default defineCachedEventHandler(async (event): Promise<{ items: IgMedia[
     }
     return { items, total: items.length, truncated }
   } catch (err: any) {
-    console.warn('[instagram/all-posts] Graph API error:', err?.message)
+    console.warn('[instagram/all-posts] Graph API error:', errorMessage(err))
     return { items, total: items.length, truncated: true }
   }
 }, {

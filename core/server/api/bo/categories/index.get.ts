@@ -2,10 +2,10 @@
 
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
-import { resolveClientId } from '~/server/utils/db'
-import { listLatestStatusByCategoryIds } from '~/enterprise/ai/category-queue/server/utils/category-queue'
+import { requireEmployeeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const page = Math.max(1, Number(q.page || 1))
   const perPage = Math.min(10000, Math.max(1, Number(q.perPage || 100)))
@@ -113,21 +113,26 @@ export default defineEventHandler(async (event) => {
     }
 
     
+    
+    
     try {
       if (categories.length) {
-        const tenant = resolveClientId(event) || 'ac-hub'
-        const ids = categories.map((c) => c.id)
-        const redacRows = await listLatestStatusByCategoryIds(tenant, ids, { event })
-        const redacMap = new Map(redacRows.map((r) => [r.id_category, r.status]))
+        const { filledCountExpr, deriveSeoStatus } = await import('~/server/utils/seo-coverage')
+        const idsCov = sql.join(categories.map((c: any) => sql`${c.id}`), sql`, `)
+        const covResult: any = await d.execute(sql`
+          SELECT l.id_category AS "id", (${sql.raw(filledCountExpr('category'))}) AS "filled"
+          FROM cs_main.ps_category_lang l
+          WHERE l.id_lang = 1 AND l.id_shop = 1 AND l.id_category IN (${idsCov})
+        `)
+        const covMap = new Map<number, number>()
+        for (const r of (((covResult as any) as any[]) ?? [])) covMap.set(Number(r.id), Number(r.filled))
         for (const cat of categories) {
-          ;(cat as any).redactionStatus = redacMap.get(cat.id) || null
+          ;(cat as any).seoStatus = deriveSeoStatus(covMap.get(cat.id) ?? 0, 'category')
         }
       }
-    } catch {
-      
-      for (const cat of categories) {
-        ;(cat as any).redactionStatus = null
-      }
+    } catch (e: any) {
+      console.error('[bo/categories] seoStatus enrich error:', e?.message)
+      for (const cat of categories) (cat as any).seoStatus = null
     }
 
     return { categories, total, page, perPage, totalPages: Math.ceil(total / perPage) }

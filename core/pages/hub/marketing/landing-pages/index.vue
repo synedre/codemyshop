@@ -2,34 +2,34 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Landing pages</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.marketing_landing_pages.title', 'Landing pages') }}</h1>
         <p class="text-xs text-gray-400 mt-0.5">
-          {{ total }} page{{ total > 1 ? 's' : '' }} institutionnelle{{ total > 1 ? 's' : '' }}
+          {{ total > 1 ? t('hub.ui.marketing_landing_pages.count_other', '{n} pages institutionnelles', { n: total }) : t('hub.ui.marketing_landing_pages.count_one', '{n} page institutionnelle', { n: total }) }}
         </p>
       </div>
       <div class="flex items-center gap-2">
         <div class="flex border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          <button @click="setStatus('')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === '' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">Toutes</button>
-          <button @click="setStatus('active')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'active' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-50'">En ligne</button>
-          <button @click="setStatus('draft')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'draft' ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-50'">Brouillons</button>
+          <button @click="setStatus('')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === '' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_landing_pages.all', 'Toutes') }}</button>
+          <button @click="setStatus('active')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'active' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_landing_pages.online', 'En ligne') }}</button>
+          <button @click="setStatus('draft')" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="statusFilter === 'draft' ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-50'">{{ t('hub.ui.marketing_landing_pages.drafts', 'Brouillons') }}</button>
         </div>
-        <HubLangSelector aria-label="Langue d'affichage des pages" />
+        <HubLangSelector :aria-label="t('hub.ui.marketing_landing_pages.lang_aria', 'Langue d\'affichage des pages')" />
         <input
           v-model="search"
           type="text"
-          placeholder="Titre, URL…"
+          :placeholder="t('hub.ui.marketing_landing_pages.search_ph', 'Titre, URL…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
         <NuxtLink
           to="/hub/marketing/landing-pages/new"
           class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
         >
-          + Nouvelle page
+          {{ t('hub.ui.marketing_landing_pages.new_page', '+ Nouvelle page') }}
         </NuxtLink>
       </div>
     </header>
 
-    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" label="pages"
+    <HubPaginationBar v-if="total > 0" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.marketing_landing_pages.pages_label', 'pages')"
       :per-page="perPage" :per-page-options="perPageOptions"
       @go="goPage" @update:per-page="setPerPage"
       class="border-b border-gray-100 dark:border-slate-800" />
@@ -40,17 +40,17 @@
       </div>
 
       <div v-else-if="!pages.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucune page</p>
+        <p class="text-sm">{{ t('hub.ui.marketing_landing_pages.none', 'Aucune page') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
             <th class="px-4 py-2.5 font-medium">#</th>
-            <th class="px-4 py-2.5 font-medium">Titre</th>
-            <th class="px-4 py-2.5 font-medium">URL</th>
-            <th class="px-4 py-2.5 font-medium">Mise à jour</th>
-            <th class="px-4 py-2.5 font-medium text-center">Statut</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_landing_pages.col_title', 'Titre') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_landing_pages.col_url', 'URL') }}</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.marketing_landing_pages.col_updated', 'Mise à jour') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center">{{ t('hub.ui.marketing_landing_pages.col_status', 'Statut') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -62,7 +62,7 @@
           >
             <td class="px-4 py-2.5 font-mono text-xs text-gray-400">#{{ p.id }}</td>
             <td class="px-4 py-2.5 text-gray-800 dark:text-slate-100 font-medium truncate max-w-lg">
-              {{ p.title || '— Sans titre —' }}
+              {{ p.title || t('hub.ui.marketing_landing_pages.untitled', '— Sans titre —') }}
             </td>
             <td class="px-4 py-2.5 text-xs font-mono text-gray-400 truncate max-w-xs">
               /{{ p.linkRewrite || '—' }}
@@ -74,7 +74,7 @@
                   ? 'bg-emerald-50 text-emerald-600'
                   : 'bg-gray-100 text-gray-500'"
               >
-                {{ p.active ? 'En ligne' : 'Brouillon' }}
+                {{ p.active ? t('hub.ui.marketing_landing_pages.online', 'En ligne') : t('hub.ui.marketing_landing_pages.draft', 'Brouillon') }}
               </span>
             </td>
           </tr>
@@ -82,7 +82,7 @@
       </table>
     </div>
 
-    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" label="pages" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
+    <HubPaginationBar v-if="totalPages > 1" :page="page" :total-pages="totalPages" :total="total" :label="t('hub.ui.marketing_landing_pages.pages_label', 'pages')" @go="goPage" class="border-t border-gray-100 dark:border-slate-800" />
   </div>
 </template>
 
@@ -95,6 +95,7 @@ if (!canAccess('intelligence')) {
   navigateTo('/hub/dashboard')
 }
 
+const { t } = useHubT()
 const router = useRouter()
 const { currentLangId } = useHubLang()
 

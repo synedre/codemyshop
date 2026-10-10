@@ -2,23 +2,22 @@
 
 import archiver from 'archiver'
 import { PassThrough } from 'node:stream'
-import { sql } from 'drizzle-orm'
-import { usePocPg } from '~/server/db/drizzle-pg'
 import { resolveClientId } from '~/server/utils/db'
 import { getOrdersForCustomer } from '~/server/utils/orders-db'
+import { requireCustomer } from '~/server/utils/customer-session'
 import { generateInvoicePdf } from '~/server/utils/invoice-pdf'
+import { loadInvoiceContext } from '~/server/utils/invoice-context'
 
 export default defineEventHandler(async (event) => {
-  const { clientId, customerId, ids } = getQuery(event) as {
+  
+  const { customerId } = requireCustomer(event)
+  const { clientId, ids } = getQuery(event) as {
     clientId?: string
-    customerId?: string
     ids?: string
   }
 
-  if (!customerId) throw createError({ statusCode: 400, message: 'customerId requis' })
-
   const ctx = clientId ? { clientId: String(clientId) } : { event }
-  const allOrders = await getOrdersForCustomer(Number(customerId), 100, ctx)
+  const allOrders = await getOrdersForCustomer(customerId, 100, ctx)
 
   
   let orders = allOrders.filter(o => o.invoiceNumber)
@@ -32,9 +31,7 @@ export default defineEventHandler(async (event) => {
   if (!orders.length) throw createError({ statusCode: 404, message: 'Aucune facture disponible' })
 
   
-  const d = usePocPg()
-  const shopRows: any[] = await d.execute(sql`SELECT value FROM cs_main.ps_configuration WHERE name = 'PS_SHOP_NAME' LIMIT 1`) as any[]
-  const shopName = shopRows?.[0]?.value || 'Boutique'
+  const { shopName, seller, labels } = await loadInvoiceContext()
 
   const resolvedClientId = clientId ? String(clientId) : resolveClientId(event)
   const { getThemePrimaryColor } = await import('~/modules/theme/server/utils/theme')
@@ -46,7 +43,7 @@ export default defineEventHandler(async (event) => {
   archive.pipe(passthrough)
 
   for (const order of orders) {
-    const pdf = await generateInvoicePdf(order, shopName, accentColor)
+    const pdf = await generateInvoicePdf(order, shopName, accentColor, seller, labels)
     archive.append(pdf, { name: `facture-${order.invoiceNumber}-${order.reference}.pdf` })
   }
 

@@ -27,6 +27,10 @@ export const homepageSectionVaisseau = vaisseauMereAcSchema.table(
     socialHandle: varchar('social_handle', { length: 128 }),
     socialUrl: varchar('social_url', { length: 512 }),
     featuredPosition: varchar('featured_position', { length: 8 }),
+    idCategory: integer('id_category'),
+    
+    
+    variantCode: varchar('variant_code', { length: 64 }).notNull().default('default'),
     active: integer('active').notNull().default(1),
     dateAdd: timestamp('date_add', { mode: 'date' }).notNull().defaultNow(),
     dateUpd: timestamp('date_upd', { mode: 'date' }).notNull().defaultNow(),
@@ -34,6 +38,7 @@ export const homepageSectionVaisseau = vaisseauMereAcSchema.table(
   (t) => ({
     kPosition: index('idx_homepage_section_position').on(t.position),
     kActive: index('idx_homepage_section_active').on(t.active),
+    kVariant: index('idx_homepage_section_variant').on(t.variantCode),
   }),
 )
 

@@ -2,6 +2,8 @@
 
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '../db/drizzle-pg'
+import { resolveCrmAccountContact } from './crm-account-resolve'
+import { SHOP_NOW_SQL } from './shop-now'
 
 interface DbContext {
   event?: any
@@ -139,7 +141,16 @@ export async function crmCreateLeadProject(
     if (itemsJson) {
       try { const dec = JSON.parse(itemsJson); if (Array.isArray(dec)) itemsCount = dec.length } catch {  }
     }
-    projectTitle = `Devis ${companyName} — ${itemsCount} produit${itemsCount > 1 ? 's' : ''}`
+    if (itemsCount > 0) {
+      
+      projectTitle = `Devis ${companyName} — ${itemsCount} produit${itemsCount > 1 ? 's' : ''}`
+    } else if (profession) {
+      
+      
+      projectTitle = `Devis ${companyName} — ${profession}`
+    } else {
+      projectTitle = `Devis ${companyName}`
+    }
   } else if (articleTitle) {
     projectTitle = `Blog — ${articleTitle.slice(0, 100)}`
   } else {
@@ -174,7 +185,54 @@ export async function crmCreateLeadProject(
     return { success: false, leadId, projectId: 0, error: 'INSERT cs_smartproject KO' }
   }
 
+  
+  await syncLeadProjectToCrm(d, leadId, projectId, input, projectTitle, projectNeeds)
+
   return { success: true, leadId, projectId }
+}
+
+async function syncLeadProjectToCrm(
+  d: any,
+  leadId: number,
+  projectId: number,
+  input: CrmLeadInput,
+  projectTitle: string,
+  projectNeeds: string,
+): Promise<void> {
+  try {
+    const resolved = await resolveCrmAccountContact(d, {
+      email: input.email || '',
+      companyName: input.companyName || '',
+      firstname: input.firstname || '',
+      lastname: input.lastname || '',
+      phone: input.phone || '',
+      source: input.leadSource || (input.projectType === 'devis' ? 'Demande de devis' : 'Site web'),
+    }, { object: 'smartlead', externalId: String(leadId) })
+    if (!resolved) return
+    const { accountId, contactId } = resolved
+
+    if (projectId > 0) {
+      const kind = projectTitle.toLowerCase().includes('devis') || input.projectType === 'devis' ? 'devis' : 'note'
+      const body = `[${projectTitle}] (Statut: lead_entrant)${projectNeeds ? `\nBesoins : ${projectNeeds}` : ''}`
+      const insAct = ((await d.execute(sql`
+        INSERT INTO cs_main.cs_crm_activity
+          (id_account, id_contact, kind, body, occurred_at, source, created_at)
+        VALUES
+          (${accountId}, ${contactId}, ${kind}, ${body}, ${sql.raw(SHOP_NOW_SQL)}, 'pipeline', CURRENT_TIMESTAMP)
+        RETURNING id_activity AS "idActivity"
+      `)) as any) as Array<{ idActivity: number | string }>
+      const activityId = Number(insAct[0]?.idActivity || 0)
+      if (activityId > 0) {
+        await d.execute(sql`
+          INSERT INTO cs_main.cs_crm_external_ref (source, object, external_id, entity, id_entity, created_at)
+          VALUES ('pipeline', 'smartproject', ${String(projectId)}, 'activity', ${activityId}, CURRENT_TIMESTAMP)
+          ON CONFLICT (source, object, external_id, entity) DO NOTHING
+        `)
+      }
+    }
+  } catch {
+    
+  }
 }
 
 async function getCrmDefault(d: any, key: string, fallback: string): Promise<string> {

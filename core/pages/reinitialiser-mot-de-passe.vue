@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: false })
+const { localePath } = useLocalePath()
 
 const { t } = useHubT()
 const route = useRoute()
@@ -37,7 +38,7 @@ async function onSubmit() {
       body: { email, token, newPassword: newPassword.value },
     })
     success.value = true
-    setTimeout(() => router.push('/connexion'), 2000)
+    setTimeout(() => router.push(localePath('/connexion')), 2000)
   } catch (err: any) {
     error.value = err.data?.message ?? t('auth.reset_password_error', 'Une erreur est survenue, réessayez.')
   } finally {
@@ -45,7 +46,7 @@ async function onSubmit() {
   }
 }
 
-useHead({ title: brand ? `Nouveau mot de passe — ${brand}` : 'Nouveau mot de passe' })
+useHead({ title: brand ? `${t('auth.head_title_reset', 'Nouveau mot de passe')} — ${brand}` : t('auth.head_title_reset', 'Nouveau mot de passe') })
 </script>
 
 <template>
@@ -110,7 +111,7 @@ useHead({ title: brand ? `Nouveau mot de passe — ${brand}` : 'Nouveau mot de p
         </form>
 
         <p class="text-xs text-gray-400 text-center mt-4">
-          <NuxtLink to="/connexion" class="text-primary-600 hover:underline">
+          <NuxtLink :to="localePath('/connexion')" class="text-primary-600 hover:underline">
             {{ t('auth.reset_back_to_login', 'Retour à la connexion') }}
           </NuxtLink>
         </p>

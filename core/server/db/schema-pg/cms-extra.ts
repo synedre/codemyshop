@@ -1,8 +1,8 @@
 
 
 import {
-  integer, numeric, primaryKey, serial, smallint, text, timestamp, varchar,
-  pgSchema,
+  integer, numeric, primaryKey, serial, smallint, text, timestamp, uniqueIndex,
+  varchar, pgSchema,
 } from 'drizzle-orm/pg-core'
 
 export const vaisseauMereAcSchema = pgSchema('cs_main')
@@ -36,6 +36,28 @@ export const cmsExtra = vaisseauMereAcSchema.table(
     reelScript: text('reel_script'),
     reelEnabled: smallint('reel_enabled').notNull().default(0),
   },
+  (t) => ({
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    uIdCms: uniqueIndex('ux_ac_cms_extra_id_cms').on(t.idCms),
+  }),
 )
 
 export const cmsExtraLang = vaisseauMereAcSchema.table(

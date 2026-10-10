@@ -5,8 +5,8 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">Avatars IA</h1>
-          <p class="text-xs text-gray-400 mt-0.5">{{ avatars.length }} avatar(s) configur&eacute;(s)</p>
+          <h1 class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.ai_avatars.title', 'Avatars IA') }}</h1>
+          <p class="text-xs text-gray-400 mt-0.5">{{ tHub('hub.ui.ai_avatars.count', '{n} avatar(s) configuré(s)', { n: avatars.length }) }}</p>
         </div>
         <button
           @click="openCreate"
@@ -15,7 +15,7 @@
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Cr&eacute;er un Avatar
+          {{ tHub('hub.ui.ai_avatars.create_btn', 'Créer un Avatar') }}
         </button>
       </div>
     </header>
@@ -31,9 +31,9 @@
 
       <div v-else-if="!avatars.length" class="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm p-10 text-center">
         <div class="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mx-auto mb-4 text-2xl">&#x1f9d1;&#x200d;&#x1f4bb;</div>
-        <p class="text-sm font-bold text-gray-700 dark:text-slate-200 mb-1">Aucun avatar configur&eacute;</p>
-        <p class="text-xs text-gray-400 mb-4">Cr&eacute;ez votre premier avatar pour personnaliser vos contenus IA.</p>
-        <button @click="openCreate" class="text-sm text-primary-600 font-semibold hover:underline">+ Cr&eacute;er un avatar</button>
+        <p class="text-sm font-bold text-gray-700 dark:text-slate-200 mb-1">{{ tHub('hub.ui.ai_avatars.empty_title', 'Aucun avatar configuré') }}</p>
+        <p class="text-xs text-gray-400 mb-4">{{ tHub('hub.ui.ai_avatars.empty_hint', 'Créez votre premier avatar pour personnaliser vos contenus IA.') }}</p>
+        <button @click="openCreate" class="text-sm text-primary-600 font-semibold hover:underline">{{ tHub('hub.ui.ai_avatars.empty_cta', '+ Créer un avatar') }}</button>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -63,25 +63,25 @@
               </div>
               
               <p v-if="av.painPoints" class="text-xs text-gray-400 line-clamp-1 leading-relaxed">
-                <span class="font-medium text-gray-500">Douleurs :</span> {{ av.painPoints }}
+                <span class="font-medium text-gray-500">{{ tHub('hub.ui.ai_avatars.pain_label', 'Douleurs :') }}</span> {{ av.painPoints }}
               </p>
               <p v-else-if="av.toneRules" class="text-xs text-gray-400 line-clamp-1 leading-relaxed">{{ av.toneRules }}</p>
-              <p v-if="av.personas?.length" class="text-[10px] text-orange-500 mt-1 font-medium">{{ av.personas.length }} persona(s)</p>
+              <p v-if="av.personas?.length" class="text-[10px] text-orange-500 mt-1 font-medium">{{ tHub('hub.ui.ai_avatars.personas_count', '{n} persona(s)', { n: av.personas.length }) }}</p>
 
               
               <div v-if="(av.products?.length ?? 0)" class="mt-2 pt-2 border-t border-gray-50">
-                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Top produits</p>
+                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ tHub('hub.ui.ai_avatars.top_products', 'Top produits') }}</p>
                 <div class="space-y-0.5">
                   <p v-for="p in av.products" :key="p.idProduct" class="text-[11px] text-gray-600 leading-snug truncate">
                     <span class="text-primary-600 font-bold">#{{ p.position }}</span>
-                    <span class="ml-1">{{ p.productName || `Produit ${p.idProduct}` }}</span>
+                    <span class="ml-1">{{ p.productName || tHub('hub.ui.ai_avatars.product_n', 'Produit {id}', { id: p.idProduct }) }}</span>
                   </p>
                 </div>
               </div>
 
               
               <div v-if="(av.zones?.length ?? 0)" class="mt-2 pt-2 border-t border-gray-50">
-                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Zones d'influence</p>
+                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">{{ tHub('hub.ui.ai_avatars.influence_zones', 'Zones d\'influence') }}</p>
                 <div class="flex flex-wrap gap-1">
                   <span
                     v-for="z in av.zones"
@@ -98,7 +98,7 @@
               <button
                 @click.stop="confirmDelete(av)"
                 class="p-1.5 rounded-lg text-gray-400 hover:text-danger-500 hover:bg-danger-50 transition-colors"
-                title="Supprimer"
+                :title="tHub('hub.ui.ai_avatars.delete', 'Supprimer')"
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -111,7 +111,7 @@
             <div class="flex-1 bg-gray-100 dark:bg-slate-800 rounded-full h-1.5">
               <div class="h-1.5 rounded-full bg-primary-400 transition-all" :style="`width: ${completeness(av)}%`" />
             </div>
-            <span class="text-[10px] font-semibold text-gray-500">{{ completeness(av) }}% complet</span>
+            <span class="text-[10px] font-semibold text-gray-500">{{ tHub('hub.ui.ai_avatars.complete_pct', '{pct}% complet', { pct: completeness(av) }) }}</span>
           </div>
         </div>
       </div>
@@ -127,7 +127,7 @@
             <div v-if="slideOpen" class="relative w-full max-w-lg bg-white dark:bg-slate-900 shadow-2xl flex flex-col h-full">
               
               <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800 shrink-0">
-                <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ editingId ? 'Modifier l\u2019avatar' : 'Cr\u00e9er un avatar' }}</h2>
+                <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ editingId ? tHub('hub.ui.ai_avatars.edit_avatar', 'Modifier l’avatar') : tHub('hub.ui.ai_avatars.create_avatar', 'Créer un avatar') }}</h2>
                 <button @click="slideOpen = false" class="text-gray-400 hover:text-gray-600 transition-colors">
                   <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -140,39 +140,39 @@
                 <fieldset>
                   <legend class="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="w-5 h-5 rounded bg-primary-100 text-primary-600 flex items-center justify-center text-[10px] font-bold">1</span>
-                    Identit&eacute;
+                    {{ tHub('hub.ui.ai_avatars.sec_identity', 'Identité') }}
                   </legend>
                   <div class="space-y-4">
                     <div>
-                      <label class="field-label">Nom de l'avatar *</label>
-                      <input v-model="form.name" required placeholder="Ex: Grossiste B2B" class="input-field" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.avatar_name', 'Nom de l\'avatar *') }}</label>
+                      <input v-model="form.name" required :placeholder="tHub('hub.ui.ai_avatars.avatar_name_ph', 'Ex: Grossiste B2B')" class="input-field" />
                     </div>
                     <div>
-                      <label class="field-label">Slug *</label>
-                      <input v-model="form.slug" required placeholder="Ex: grossiste-b2b" class="input-field font-mono text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.slug', 'Slug *') }}</label>
+                      <input v-model="form.slug" required :placeholder="tHub('hub.ui.ai_avatars.slug_ph', 'Ex: grossiste-b2b')" class="input-field font-mono text-xs" />
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="field-label">Ic&ocirc;ne (emoji)</label>
+                        <label class="field-label">{{ tHub('hub.ui.ai_avatars.icon_emoji', 'Icône (emoji)') }}</label>
                         <input v-model="form.icon" placeholder="&#x1f4bc;" class="input-field text-center text-lg" maxlength="4" />
                       </div>
                       <div>
-                        <label class="field-label">Couleur</label>
+                        <label class="field-label">{{ tHub('hub.ui.ai_avatars.color', 'Couleur') }}</label>
                         <select v-model="form.colorClass" class="input-field text-xs">
-                          <option value="bg-violet-100 text-violet-700">Violet</option>
-                          <option value="bg-blue-100 text-blue-700">Bleu</option>
-                          <option value="bg-green-100 text-green-700">Vert</option>
-                          <option value="bg-amber-100 text-amber-700">Ambre</option>
-                          <option value="bg-indigo-100 text-indigo-700">Indigo</option>
-                          <option value="bg-orange-100 text-orange-700">Orange</option>
-                          <option value="bg-primary-100 text-primary-700">Primary</option>
-                          <option value="bg-gray-100 dark:bg-slate-800 text-gray-600">Gris</option>
+                          <option value="bg-violet-100 text-violet-700">{{ tHub('hub.ui.ai_avatars.c_violet', 'Violet') }}</option>
+                          <option value="bg-blue-100 text-blue-700">{{ tHub('hub.ui.ai_avatars.c_blue', 'Bleu') }}</option>
+                          <option value="bg-green-100 text-green-700">{{ tHub('hub.ui.ai_avatars.c_green', 'Vert') }}</option>
+                          <option value="bg-amber-100 text-amber-700">{{ tHub('hub.ui.ai_avatars.c_amber', 'Ambre') }}</option>
+                          <option value="bg-indigo-100 text-indigo-700">{{ tHub('hub.ui.ai_avatars.c_indigo', 'Indigo') }}</option>
+                          <option value="bg-orange-100 text-orange-700">{{ tHub('hub.ui.ai_avatars.c_orange', 'Orange') }}</option>
+                          <option value="bg-primary-100 text-primary-700">{{ tHub('hub.ui.ai_avatars.c_primary', 'Primary') }}</option>
+                          <option value="bg-gray-100 dark:bg-slate-800 text-gray-600">{{ tHub('hub.ui.ai_avatars.c_gray', 'Gris') }}</option>
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label class="field-label">Mots-cl&eacute;s d&eacute;clencheurs</label>
-                      <input v-model="keywordsInput" placeholder="palette, tva, volume, franco (s&eacute;par&eacute;s par virgule)" class="input-field text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.trigger_keywords', 'Mots-clés déclencheurs') }}</label>
+                      <input v-model="keywordsInput" :placeholder="tHub('hub.ui.ai_avatars.trigger_keywords_ph', 'palette, tva, volume, franco (séparés par virgule)')" class="input-field text-xs" />
                       <div class="flex flex-wrap gap-1 mt-2">
                         <span v-for="kw in parsedKeywords" :key="kw" class="text-[10px] bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full border border-primary-100">{{ kw }}</span>
                       </div>
@@ -184,28 +184,28 @@
                 <fieldset>
                   <legend class="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="w-5 h-5 rounded bg-violet-100 text-violet-600 flex items-center justify-center text-[10px] font-bold">2</span>
-                    Profil IA
+                    {{ tHub('hub.ui.ai_avatars.sec_ai_profile', 'Profil IA') }}
                   </legend>
                   <div class="space-y-4">
                     <div>
-                      <label class="field-label">Ton &amp; r&egrave;gles d'affichage</label>
-                      <textarea v-model="form.toneRules" rows="3" placeholder="Ex: Ton direct et technique, masquer la TVA, prix HT uniquement..." class="input-field resize-none text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.tone_rules', 'Ton & règles d\'affichage') }}</label>
+                      <textarea v-model="form.toneRules" rows="3" :placeholder="tHub('hub.ui.ai_avatars.tone_rules_ph', 'Ex: Ton direct et technique, masquer la TVA, prix HT uniquement...')" class="input-field resize-none text-xs" />
                     </div>
                     <div>
-                      <label class="field-label">Comportement d'achat</label>
-                      <textarea v-model="form.buyingBehavior" rows="3" placeholder="Ex: Commande en gros (palettes), compare 3 fournisseurs, n&eacute;gocie les frais de port..." class="input-field resize-none text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.buying_behavior', 'Comportement d\'achat') }}</label>
+                      <textarea v-model="form.buyingBehavior" rows="3" :placeholder="tHub('hub.ui.ai_avatars.buying_behavior_ph', 'Ex: Commande en gros (palettes), compare 3 fournisseurs, négocie les frais de port...')" class="input-field resize-none text-xs" />
                     </div>
                     <div>
-                      <label class="field-label">Points de douleur</label>
-                      <textarea v-model="form.painPoints" rows="3" placeholder="Ex: D&eacute;lais de livraison imprévisibles, qualit&eacute; irr&eacute;guli&egrave;re, manque de r&eacute;activit&eacute; fournisseur..." class="input-field resize-none text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.pain_points', 'Points de douleur') }}</label>
+                      <textarea v-model="form.painPoints" rows="3" :placeholder="tHub('hub.ui.ai_avatars.pain_points_ph', 'Ex: Délais de livraison imprévisibles, qualité irrégulière, manque de réactivité fournisseur...')" class="input-field resize-none text-xs" />
                     </div>
                     <div>
-                      <label class="field-label">Objectifs &amp; motivations</label>
-                      <textarea v-model="form.goals" rows="3" placeholder="Ex: R&eacute;duire les co&ucirc;ts d'approvisionnement de 15%, diversifier les sources..." class="input-field resize-none text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.goals', 'Objectifs & motivations') }}</label>
+                      <textarea v-model="form.goals" rows="3" :placeholder="tHub('hub.ui.ai_avatars.goals_ph', 'Ex: Réduire les coûts d\'approvisionnement de 15%, diversifier les sources...')" class="input-field resize-none text-xs" />
                     </div>
                     <div>
-                      <label class="field-label">Objections fr&eacute;quentes</label>
-                      <textarea v-model="form.objections" rows="3" placeholder="Ex: &laquo; C'est trop cher &raquo;, &laquo; Je travaille d&eacute;j&agrave; avec un fournisseur &raquo;, &laquo; Pas le temps &raquo;..." class="input-field resize-none text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.objections', 'Objections fréquentes') }}</label>
+                      <textarea v-model="form.objections" rows="3" :placeholder="tHub('hub.ui.ai_avatars.objections_ph', 'Ex: « C\'est trop cher », « Je travaille déjà avec un fournisseur », « Pas le temps »...')" class="input-field resize-none text-xs" />
                     </div>
                   </div>
                 </fieldset>
@@ -214,35 +214,35 @@
                 <fieldset>
                   <legend class="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="w-5 h-5 rounded bg-green-100 text-green-600 flex items-center justify-center text-[10px] font-bold">3</span>
-                    D&eacute;mographie &amp; Canaux
+                    {{ tHub('hub.ui.ai_avatars.sec_demo', 'Démographie & Canaux') }}
                   </legend>
                   <div class="space-y-4">
                     <div>
-                      <label class="field-label">D&eacute;mographie</label>
-                      <textarea v-model="form.demographics" rows="2" placeholder="Ex: Dirigeant PME, 40-55 ans, secteur agroalimentaire, 10-50 salari&eacute;s" class="input-field resize-none text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.demographics', 'Démographie') }}</label>
+                      <textarea v-model="form.demographics" rows="2" :placeholder="tHub('hub.ui.ai_avatars.demographics_ph', 'Ex: Dirigeant PME, 40-55 ans, secteur agroalimentaire, 10-50 salariés')" class="input-field resize-none text-xs" />
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="field-label">Fourchette budget</label>
-                        <input v-model="form.budgetRange" placeholder="Ex: 5k-50k&euro;/an" class="input-field text-xs" />
+                        <label class="field-label">{{ tHub('hub.ui.ai_avatars.budget_range', 'Fourchette budget') }}</label>
+                        <input v-model="form.budgetRange" :placeholder="tHub('hub.ui.ai_avatars.budget_range_ph', 'Ex: 5k-50k€/an')" class="input-field text-xs" />
                       </div>
                       <div>
-                        <label class="field-label">Cycle de d&eacute;cision</label>
+                        <label class="field-label">{{ tHub('hub.ui.ai_avatars.decision_cycle', 'Cycle de décision') }}</label>
                         <select v-model="form.decisionCycle" class="input-field text-xs">
-                          <option value="">Non d&eacute;fini</option>
-                          <option value="court">Court (&lt; 1 semaine)</option>
-                          <option value="moyen">Moyen (1-4 semaines)</option>
-                          <option value="long">Long (&gt; 1 mois)</option>
+                          <option value="">{{ tHub('hub.ui.ai_avatars.undefined', 'Non défini') }}</option>
+                          <option value="court">{{ tHub('hub.ui.ai_avatars.cycle_short', 'Court (< 1 semaine)') }}</option>
+                          <option value="moyen">{{ tHub('hub.ui.ai_avatars.cycle_medium', 'Moyen (1-4 semaines)') }}</option>
+                          <option value="long">{{ tHub('hub.ui.ai_avatars.cycle_long', 'Long (> 1 mois)') }}</option>
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label class="field-label">Canaux pr&eacute;f&eacute;r&eacute;s</label>
-                      <input v-model="form.preferredChannels" placeholder="Ex: email, t&eacute;l&eacute;phone, LinkedIn" class="input-field text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.preferred_channels', 'Canaux préférés') }}</label>
+                      <input v-model="form.preferredChannels" :placeholder="tHub('hub.ui.ai_avatars.preferred_channels_ph', 'Ex: email, téléphone, LinkedIn')" class="input-field text-xs" />
                     </div>
                     <div>
-                      <label class="field-label">Contenu qui r&eacute;sonne</label>
-                      <textarea v-model="form.contentPreferences" rows="2" placeholder="Ex: &Eacute;tudes de cas chiffr&eacute;es, comparatifs, t&eacute;moignages de pairs" class="input-field resize-none text-xs" />
+                      <label class="field-label">{{ tHub('hub.ui.ai_avatars.resonant_content', 'Contenu qui résonne') }}</label>
+                      <textarea v-model="form.contentPreferences" rows="2" :placeholder="tHub('hub.ui.ai_avatars.resonant_content_ph', 'Ex: Études de cas chiffrées, comparatifs, témoignages de pairs')" class="input-field resize-none text-xs" />
                     </div>
                   </div>
                 </fieldset>
@@ -251,8 +251,8 @@
                 <fieldset>
                   <legend class="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="w-5 h-5 rounded bg-orange-100 text-orange-600 flex items-center justify-center text-[10px] font-bold">4</span>
-                    Personas
-                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">Repr&eacute;sentations visuelles de l'avatar</span>
+                    {{ tHub('hub.ui.ai_avatars.sec_personas', 'Personas') }}
+                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">{{ tHub('hub.ui.ai_avatars.personas_hint', 'Représentations visuelles de l\'avatar') }}</span>
                   </legend>
 
                   <div class="space-y-3">
@@ -265,28 +265,28 @@
                         type="button"
                         @click="form.personas.splice(pi, 1)"
                         class="absolute top-2 right-2 p-1 rounded-lg text-gray-400 hover:text-danger-500 hover:bg-danger-50 opacity-0 group-hover:opacity-100 transition-all"
-                        title="Supprimer"
+                        :title="tHub('hub.ui.ai_avatars.delete', 'Supprimer')"
                       >
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
 
                       <div class="grid grid-cols-2 gap-3">
                         <div>
-                          <label class="field-label">Pr&eacute;nom</label>
-                          <input v-model="persona.name" placeholder="Ex: Marc" class="input-field text-xs" />
+                          <label class="field-label">{{ tHub('hub.ui.ai_avatars.first_name', 'Prénom') }}</label>
+                          <input v-model="persona.name" :placeholder="tHub('hub.ui.ai_avatars.first_name_ph', 'Ex: Marc')" class="input-field text-xs" />
                         </div>
                         <div>
-                          <label class="field-label">Tranche d'&acirc;ge</label>
-                          <input v-model="persona.ageRange" placeholder="Ex: 45-55 ans" class="input-field text-xs" />
+                          <label class="field-label">{{ tHub('hub.ui.ai_avatars.age_range', 'Tranche d\'âge') }}</label>
+                          <input v-model="persona.ageRange" :placeholder="tHub('hub.ui.ai_avatars.age_range_ph', 'Ex: 45-55 ans')" class="input-field text-xs" />
                         </div>
                       </div>
                       <div>
-                        <label class="field-label">Apparence physique</label>
-                        <textarea v-model="persona.appearance" rows="2" placeholder="Ex: Homme trapu, mains de travailleur, tablier blanc, moustache" class="input-field resize-none text-xs" />
+                        <label class="field-label">{{ tHub('hub.ui.ai_avatars.appearance', 'Apparence physique') }}</label>
+                        <textarea v-model="persona.appearance" rows="2" :placeholder="tHub('hub.ui.ai_avatars.appearance_ph', 'Ex: Homme trapu, mains de travailleur, tablier blanc, moustache')" class="input-field resize-none text-xs" />
                       </div>
                       <div>
-                        <label class="field-label">Character sheet</label>
-                        <textarea v-model="persona.characterSheet" rows="3" placeholder="Ex: Boulanger artisan depuis 25 ans, passionn&eacute; par les viennoiseries aux amandes." class="input-field resize-none text-xs" />
+                        <label class="field-label">{{ tHub('hub.ui.ai_avatars.character_sheet', 'Character sheet') }}</label>
+                        <textarea v-model="persona.characterSheet" rows="3" :placeholder="tHub('hub.ui.ai_avatars.character_sheet_ph', 'Ex: Boulanger artisan depuis 25 ans, passionné par les viennoiseries aux amandes.')" class="input-field resize-none text-xs" />
                       </div>
 
                       
@@ -297,18 +297,18 @@
                           class="text-[10px] px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium inline-flex items-center gap-1.5"
                         >
                           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
-                          Prompt Nano Banana
+                          {{ tHub('hub.ui.ai_avatars.prompt_nano_banana', 'Prompt Nano Banana') }}
                         </button>
-                        <span class="text-[10px] text-gray-400">G&eacute;n&egrave;re le prompt pour cr&eacute;er le character sheet 10 expressions</span>
+                        <span class="text-[10px] text-gray-400">{{ tHub('hub.ui.ai_avatars.prompt_nano_hint', 'Génère le prompt pour créer le character sheet 10 expressions') }}</span>
                       </div>
 
                       
                       <div class="mt-2">
-                        <label class="field-label">Planche d'expressions (character sheet)</label>
+                        <label class="field-label">{{ tHub('hub.ui.ai_avatars.expr_sheet', 'Planche d\'expressions (character sheet)') }}</label>
                         <div v-if="persona.characterSheetUrl" class="relative group/cs">
                           <img :src="persona.characterSheetUrl" class="w-full rounded-lg border border-gray-200 dark:border-slate-600 cursor-pointer" @click="triggerCharacterSheetUpload(pi)" />
                           <div class="absolute inset-0 bg-black/30 opacity-0 group-hover/cs:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                            <span class="text-white text-xs font-medium bg-black/50 px-3 py-1.5 rounded-full">Remplacer &amp; red&eacute;couper</span>
+                            <span class="text-white text-xs font-medium bg-black/50 px-3 py-1.5 rounded-full">{{ tHub('hub.ui.ai_avatars.replace_recut', 'Remplacer & redécouper') }}</span>
                           </div>
                         </div>
                         <button
@@ -320,21 +320,21 @@
                         >
                           <svg v-if="!csSlicing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
                           <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                          {{ csSlicing ? 'D\u00e9coupe en cours\u2026' : 'Uploader la planche \u2014 d\u00e9coupe auto des 10 expressions' }}
+                          {{ csSlicing ? tHub('hub.ui.ai_avatars.slicing', 'Découpe en cours…') : tHub('hub.ui.ai_avatars.upload_sheet', 'Uploader la planche — découpe auto des 10 expressions') }}
                         </button>
                       </div>
 
                       
                       <div class="mt-2 pt-3 border-t border-gray-100 dark:border-slate-700">
                         <div class="flex items-center justify-between mb-2">
-                          <label class="field-label mb-0">Expressions faciales</label>
+                          <label class="field-label mb-0">{{ tHub('hub.ui.ai_avatars.facial_expr', 'Expressions faciales') }}</label>
                           <button
                             type="button"
                             @click="addExpression(pi)"
                             class="text-[10px] text-primary-600 hover:text-primary-700 font-semibold"
-                          >+ Ajouter</button>
+                          >{{ tHub('hub.ui.ai_avatars.add', '+ Ajouter') }}</button>
                         </div>
-                        <div v-if="!persona.expressions?.length" class="text-[10px] text-gray-400 py-2">Aucune expression. Cliquez sur &laquo; + Ajouter &raquo;.</div>
+                        <div v-if="!persona.expressions?.length" class="text-[10px] text-gray-400 py-2">{{ tHub('hub.ui.ai_avatars.no_expr', 'Aucune expression. Cliquez sur « + Ajouter ».') }}</div>
                         <div v-else class="space-y-2">
                           <div
                             v-for="(expr, ei) in persona.expressions"
@@ -365,10 +365,10 @@
                             
                             <div class="flex-1 space-y-2 min-w-0">
                               <div class="grid grid-cols-2 gap-2">
-                                <input v-model="expr.slug" placeholder="slug (ex: confiant)" class="input-field text-[11px] font-mono py-1.5" />
-                                <input v-model="expr.label" placeholder="Label (ex: Confiant)" class="input-field text-[11px] py-1.5" />
+                                <input v-model="expr.slug" :placeholder="tHub('hub.ui.ai_avatars.expr_slug_ph', 'slug (ex: confiant)')" class="input-field text-[11px] font-mono py-1.5" />
+                                <input v-model="expr.label" :placeholder="tHub('hub.ui.ai_avatars.expr_label_ph', 'Label (ex: Confiant)')" class="input-field text-[11px] py-1.5" />
                               </div>
-                              <input v-model="expr.prompt" placeholder="Prompt visage (ex: sourire confiant, regard direct)" class="input-field text-[11px] py-1.5" />
+                              <input v-model="expr.prompt" :placeholder="tHub('hub.ui.ai_avatars.expr_prompt_ph', 'Prompt visage (ex: sourire confiant, regard direct)')" class="input-field text-[11px] py-1.5" />
                             </div>
                             
                             <button
@@ -389,7 +389,7 @@
                       class="w-full py-2.5 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-500 hover:border-primary-300 hover:text-primary-600 transition-colors font-medium flex items-center justify-center gap-1.5"
                     >
                       <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                      Ajouter un persona
+                      {{ tHub('hub.ui.ai_avatars.add_persona', 'Ajouter un persona') }}
                     </button>
                   </div>
                 </fieldset>
@@ -398,8 +398,8 @@
                 <fieldset v-if="allExpressionSlugs.length">
                   <legend class="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="w-5 h-5 rounded bg-rose-100 text-rose-600 flex items-center justify-center text-[10px] font-bold">5</span>
-                    Mapping Type &rarr; Expression
-                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">Quelle expression pour quel type d'article</span>
+                    {{ tHub('hub.ui.ai_avatars.sec_mapping', 'Mapping Type → Expression') }}
+                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">{{ tHub('hub.ui.ai_avatars.mapping_hint', 'Quelle expression pour quel type d\'article') }}</span>
                   </legend>
                   <div class="space-y-2">
                     <div v-for="pt in pageTypes" :key="pt.value" class="flex items-center gap-3">
@@ -409,7 +409,7 @@
                         @change="form.pageTypeExpressionMap[pt.value] = ($event.target as HTMLSelectElement).value"
                         class="input-field text-[11px] py-1.5 flex-1"
                       >
-                        <option value="">Par d&eacute;faut</option>
+                        <option value="">{{ tHub('hub.ui.ai_avatars.default', 'Par défaut') }}</option>
                         <option v-for="slug in allExpressionSlugs" :key="slug" :value="slug">{{ slug }}</option>
                       </select>
                     </div>
@@ -420,8 +420,8 @@
                 <fieldset v-if="editingId">
                   <legend class="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="w-5 h-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold">6</span>
-                    Top produits cibles
-                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">Produits prioritaires pour cet avatar</span>
+                    {{ tHub('hub.ui.ai_avatars.sec_top_products', 'Top produits cibles') }}
+                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">{{ tHub('hub.ui.ai_avatars.top_products_hint', 'Produits prioritaires pour cet avatar') }}</span>
                   </legend>
                   <div class="space-y-2">
                     <div
@@ -438,14 +438,29 @@
                       </button>
                       <div class="flex items-center gap-2">
                         <span class="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">#{{ p.position }}</span>
+                        
+                        <div v-if="p.idProduct > 0 && p.productName" class="flex-1 flex items-center justify-between gap-2 px-3 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg">
+                          <span class="text-xs text-gray-700 dark:text-slate-200 truncate">
+                            <span class="font-medium">{{ p.productName }}</span>
+                            <span v-if="p.reference" class="ml-1.5 text-gray-400 font-mono text-[10px]">{{ p.reference }}</span>
+                            <span class="ml-1.5 text-gray-400 text-[10px]">#{{ p.idProduct }}</span>
+                          </span>
+                          <button
+                            type="button"
+                            @click="p.idProduct = 0; p.productName = ''; p.reference = ''; productSearch[idx] = ''; productSearchResults[idx] = []"
+                            class="text-[10px] text-red-500 hover:text-red-700 hover:underline shrink-0"
+                          >{{ tHub('hub.ui.ai_avatars.change', 'Changer') }}</button>
+                        </div>
+                        
                         <input
+                          v-else
                           :value="productSearch[idx] ?? ''"
                           @input="onProductSearchInput(idx, ($event.target as HTMLInputElement).value)"
-                          :placeholder="p.productName ? `${p.productName} (id ${p.idProduct})` : 'Rechercher un produit (nom, ref, id)…'"
+                          :placeholder="tHub('hub.ui.ai_avatars.search_product_ph', 'Rechercher un produit (nom, ref, id)…')"
                           class="input-field text-xs flex-1"
                         />
                       </div>
-                      <div v-if="productSearchResults[idx]?.length" class="border border-gray-100 dark:border-slate-700 rounded-lg max-h-40 overflow-y-auto bg-gray-50 dark:bg-slate-800">
+                      <div v-if="productSearchResults[idx]?.length && !(p.idProduct > 0)" class="border border-gray-100 dark:border-slate-700 rounded-lg max-h-40 overflow-y-auto bg-gray-50 dark:bg-slate-800">
                         <button
                           v-for="cand in productSearchResults[idx]"
                           :key="cand.idProduct"
@@ -461,7 +476,7 @@
                       <textarea
                         v-model="p.reason"
                         rows="2"
-                        placeholder="Pourquoi ce produit pour cet avatar ?"
+                        :placeholder="tHub('hub.ui.ai_avatars.why_product_ph', 'Pourquoi ce produit pour cet avatar ?')"
                         class="input-field resize-none text-[11px]"
                       />
                     </div>
@@ -470,15 +485,15 @@
                       type="button"
                       @click="addProductTarget"
                       class="w-full py-2 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-500 hover:border-emerald-300 hover:text-emerald-600"
-                    >+ Ajouter un produit</button>
+                    >{{ tHub('hub.ui.ai_avatars.add_product', '+ Ajouter un produit') }}</button>
                     <div class="flex items-center gap-2 pt-1">
                       <button
                         type="button"
                         @click="saveProducts"
                         :disabled="savingProducts"
                         class="text-xs px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50"
-                      >{{ savingProducts ? 'Enregistrement…' : 'Enregistrer les produits' }}</button>
-                      <span v-if="productsSavedFlash" class="text-[10px] text-emerald-600 font-medium">✓ Sauvegardé</span>
+                      >{{ savingProducts ? tHub('hub.ui.ai_avatars.saving', 'Enregistrement…') : tHub('hub.ui.ai_avatars.save_products', 'Enregistrer les produits') }}</button>
+                      <span v-if="productsSavedFlash" class="text-[10px] text-emerald-600 font-medium">{{ tHub('hub.ui.ai_avatars.saved', '✓ Sauvegardé') }}</span>
                     </div>
                   </div>
                 </fieldset>
@@ -487,8 +502,8 @@
                 <fieldset v-if="editingId">
                   <legend class="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <span class="w-5 h-5 rounded bg-sky-100 text-sky-600 flex items-center justify-center text-[10px] font-bold">7</span>
-                    Zones d'influence géographique
-                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">Cibler la prospection par région/dépt</span>
+                    {{ tHub('hub.ui.ai_avatars.sec_zones', 'Zones d\'influence géographique') }}
+                    <span class="text-[10px] font-normal text-gray-400 normal-case tracking-normal ml-1">{{ tHub('hub.ui.ai_avatars.zones_hint', 'Cibler la prospection par région/dépt') }}</span>
                   </legend>
                   <div class="space-y-2">
                     <div
@@ -506,16 +521,16 @@
                       <div class="flex items-center gap-2">
                         <span class="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">#{{ z.position }}</span>
                         <select v-model="z.zoneType" class="input-field text-[11px] py-1.5 w-32">
-                          <option value="region">Région</option>
-                          <option value="departement">Département</option>
-                          <option value="country">Pays</option>
-                          <option value="city">Ville</option>
+                          <option value="region">{{ tHub('hub.ui.ai_avatars.z_region', 'Région') }}</option>
+                          <option value="departement">{{ tHub('hub.ui.ai_avatars.z_department', 'Département') }}</option>
+                          <option value="country">{{ tHub('hub.ui.ai_avatars.z_country', 'Pays') }}</option>
+                          <option value="city">{{ tHub('hub.ui.ai_avatars.z_city', 'Ville') }}</option>
                         </select>
-                        <input v-model="z.zoneCode" placeholder="Code" maxlength="16" class="input-field text-[11px] py-1.5 w-20 font-mono" />
-                        <input v-model="z.zoneLabel" placeholder="Libellé" maxlength="96" class="input-field text-[11px] py-1.5 flex-1" />
+                        <input v-model="z.zoneCode" :placeholder="tHub('hub.ui.ai_avatars.zone_code_ph', 'Code')" maxlength="16" class="input-field text-[11px] py-1.5 w-20 font-mono" />
+                        <input v-model="z.zoneLabel" :placeholder="tHub('hub.ui.ai_avatars.zone_label_ph', 'Libellé')" maxlength="96" class="input-field text-[11px] py-1.5 flex-1" />
                       </div>
                       <div class="flex items-center gap-2">
-                        <label class="text-[10px] text-gray-500 shrink-0">Poids</label>
+                        <label class="text-[10px] text-gray-500 shrink-0">{{ tHub('hub.ui.ai_avatars.weight', 'Poids') }}</label>
                         <input
                           v-model.number="z.weight"
                           type="range"
@@ -529,7 +544,7 @@
                       <textarea
                         v-model="z.reason"
                         rows="2"
-                        placeholder="Pourquoi cette zone (proximité Rungis, densité métier, signal réel…)"
+                        :placeholder="tHub('hub.ui.ai_avatars.why_zone_ph', 'Pourquoi cette zone (proximité d\'un marché, densité métier, signal réel…)')"
                         class="input-field resize-none text-[11px]"
                       />
                     </div>
@@ -538,15 +553,15 @@
                       type="button"
                       @click="addZone"
                       class="w-full py-2 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-500 hover:border-sky-300 hover:text-sky-600"
-                    >+ Ajouter une zone</button>
+                    >{{ tHub('hub.ui.ai_avatars.add_zone', '+ Ajouter une zone') }}</button>
                     <div class="flex items-center gap-2 pt-1">
                       <button
                         type="button"
                         @click="saveZones"
                         :disabled="savingZones"
                         class="text-xs px-3 py-1.5 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 disabled:opacity-50"
-                      >{{ savingZones ? 'Enregistrement…' : 'Enregistrer les zones' }}</button>
-                      <span v-if="zonesSavedFlash" class="text-[10px] text-sky-600 font-medium">✓ Sauvegardé</span>
+                      >{{ savingZones ? tHub('hub.ui.ai_avatars.saving', 'Enregistrement…') : tHub('hub.ui.ai_avatars.save_zones', 'Enregistrer les zones') }}</button>
+                      <span v-if="zonesSavedFlash" class="text-[10px] text-sky-600 font-medium">{{ tHub('hub.ui.ai_avatars.saved', '✓ Sauvegardé') }}</span>
                     </div>
                   </div>
                 </fieldset>
@@ -556,9 +571,9 @@
 
               
               <div class="px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex gap-3 shrink-0">
-                <button @click="slideOpen = false" class="flex-1 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">Annuler</button>
+                <button @click="slideOpen = false" class="flex-1 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">{{ tHub('hub.ui.ai_avatars.cancel', 'Annuler') }}</button>
                 <button @click="saveAvatar" :disabled="saving" class="flex-1 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50">
-                  {{ saving ? 'Enregistrement\u2026' : 'Enregistrer' }}
+                  {{ saving ? tHub('hub.ui.ai_avatars.saving', 'Enregistrement…') : tHub('hub.ui.ai_avatars.save', 'Enregistrer') }}
                 </button>
               </div>
             </div>
@@ -574,8 +589,8 @@
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col">
             <header class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between shrink-0">
               <div>
-                <h3 class="font-bold text-gray-800 dark:text-slate-100 text-sm">Prompt Nano Banana — Character Sheet</h3>
-                <p class="text-[10px] text-gray-400 mt-0.5">10 expressions, fond vert, grille 2&times;5. Copier et coller dans Nano Banana.</p>
+                <h3 class="font-bold text-gray-800 dark:text-slate-100 text-sm">{{ tHub('hub.ui.ai_avatars.prompt_modal_title', 'Prompt Nano Banana — Character Sheet') }}</h3>
+                <p class="text-[10px] text-gray-400 mt-0.5">{{ tHub('hub.ui.ai_avatars.prompt_modal_hint', '10 expressions, fond vert, grille 2×5. Copier et coller dans Nano Banana.') }}</p>
               </div>
               <div class="flex items-center gap-2">
                 <button
@@ -583,7 +598,7 @@
                   class="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
                   :class="csPromptCopied ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'"
                 >
-                  {{ csPromptCopied ? 'Copi&eacute; !' : 'Copier' }}
+                  {{ csPromptCopied ? tHub('hub.ui.ai_avatars.copied', 'Copié !') : tHub('hub.ui.ai_avatars.copy', 'Copier') }}
                 </button>
                 <button @click="csPromptVisible = false" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -609,11 +624,11 @@
       <Transition name="fade">
         <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" @click.self="deleteTarget = null">
           <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <h3 class="font-bold text-gray-800 dark:text-slate-100 mb-2">Supprimer cet avatar ?</h3>
-            <p class="text-sm text-gray-500 mb-5">&laquo; {{ deleteTarget.name }} &raquo; sera d&eacute;sactiv&eacute;.</p>
+            <h3 class="font-bold text-gray-800 dark:text-slate-100 mb-2">{{ tHub('hub.ui.ai_avatars.delete_title', 'Supprimer cet avatar ?') }}</h3>
+            <p class="text-sm text-gray-500 mb-5">{{ tHub('hub.ui.ai_avatars.delete_body', '« {name} » sera désactivé.', { name: deleteTarget.name }) }}</p>
             <div class="flex gap-3">
-              <button @click="deleteTarget = null" class="flex-1 py-2 border rounded-xl text-sm">Annuler</button>
-              <button @click="doDelete" class="flex-1 py-2 bg-danger-500 text-white rounded-xl text-sm font-semibold">Supprimer</button>
+              <button @click="deleteTarget = null" class="flex-1 py-2 border rounded-xl text-sm">{{ tHub('hub.ui.ai_avatars.cancel', 'Annuler') }}</button>
+              <button @click="doDelete" class="flex-1 py-2 bg-danger-500 text-white rounded-xl text-sm font-semibold">{{ tHub('hub.ui.ai_avatars.delete', 'Supprimer') }}</button>
             </div>
           </div>
         </div>
@@ -625,6 +640,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
+const { t: tHub } = useHubT()
 
 interface Expression {
   slug:     string
@@ -735,14 +751,14 @@ function completeness(av: AvatarDef): number {
   return Math.round(((filled + hasPersonas) / (fields.length + 1)) * 100)
 }
 
-const pageTypes = [
-  { value: 'guide', icon: '📘', label: 'Guide' },
-  { value: 'comparatif', icon: '⚖️', label: 'Comparatif' },
-  { value: 'astuces', icon: '💡', label: 'Astuces' },
-  { value: 'actualite', icon: '📰', label: 'Actualité' },
-  { value: 'test-produit', icon: '📝', label: 'Test produit' },
-  { value: 'recette', icon: '🍳', label: 'Recette' },
-]
+const pageTypes = computed(() => [
+  { value: 'guide', icon: '📘', label: tHub('hub.ui.ai_avatars.pt_guide', 'Guide') },
+  { value: 'comparatif', icon: '⚖️', label: tHub('hub.ui.ai_avatars.pt_comparison', 'Comparatif') },
+  { value: 'astuces', icon: '💡', label: tHub('hub.ui.ai_avatars.pt_tips', 'Astuces') },
+  { value: 'actualite', icon: '📰', label: tHub('hub.ui.ai_avatars.pt_news', 'Actualité') },
+  { value: 'test-produit', icon: '📝', label: tHub('hub.ui.ai_avatars.pt_review', 'Test produit') },
+  { value: 'recette', icon: '🍳', label: tHub('hub.ui.ai_avatars.pt_recipe', 'Recette') },
+])
 
 const allExpressionSlugs = computed(() => {
   const slugs = new Set<string>()
@@ -1148,7 +1164,7 @@ async function saveProducts() {
     setTimeout(() => { productsSavedFlash.value = false }, 2000)
     await loadAvatars()
   } catch (e: any) {
-    formError.value = e.data?.message || 'Erreur enregistrement produits'
+    formError.value = e.data?.message || tHub('hub.ui.ai_avatars.err_save_products', 'Erreur enregistrement produits')
   } finally { savingProducts.value = false }
 }
 
@@ -1171,7 +1187,7 @@ async function saveZones() {
     setTimeout(() => { zonesSavedFlash.value = false }, 2000)
     await loadAvatars()
   } catch (e: any) {
-    formError.value = e.data?.message || 'Erreur enregistrement zones'
+    formError.value = e.data?.message || tHub('hub.ui.ai_avatars.err_save_zones', 'Erreur enregistrement zones')
   } finally { savingZones.value = false }
 }
 
@@ -1249,7 +1265,7 @@ watch(() => form.name, (name) => {
 
 async function saveAvatar() {
   if (!form.name.trim() || !form.slug.trim()) {
-    formError.value = 'Nom et slug requis'
+    formError.value = tHub('hub.ui.ai_avatars.name_slug_required', 'Nom et slug requis')
     return
   }
   saving.value = true
@@ -1282,7 +1298,7 @@ async function saveAvatar() {
     slideOpen.value = false
     await loadAvatars()
   } catch (e: any) {
-    formError.value = e.data?.message || 'Erreur'
+    formError.value = e.data?.message || tHub('hub.ui.ai_avatars.err_generic', 'Erreur')
   } finally { saving.value = false }
 }
 

@@ -1,4 +1,4 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 import {
   findUrssafDeclarationByPeriod,
@@ -10,6 +10,7 @@ import {
 } from '~/enterprise/banking/urssaf/server/utils/urssaf'
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ periodMonth: string; action: string; receiptPath?: string }>(event)
   const { periodMonth, action, receiptPath } = body || {}
 

@@ -2,6 +2,7 @@
 
 import http from 'node:http'
 import https from 'node:https'
+import { resolveClientId } from '~/server/utils/db'
 
 function resolveBaseUrl(clientId: string): string {
   const env = process.env
@@ -43,7 +44,7 @@ export default defineEventHandler(async (event) => {
 
   const { clientId, size } = getQuery(event) as { clientId?: string; size?: string }
   const imgSize = size || 'home_default'
-  const resolvedClient = clientId || 'ac-hub'
+  const resolvedClient = clientId || resolveClientId(event)
 
   const baseUrl = resolveBaseUrl(resolvedClient)
 

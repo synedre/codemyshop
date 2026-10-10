@@ -2,21 +2,25 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Caractéristiques</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ filtered.length }} caractéristique{{ filtered.length > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.features.title', 'Caractéristiques') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ filtered.length > 1 ? t('hub.ui.features.count_other', '{n} caractéristiques', { n: filtered.length }) : t('hub.ui.features.count_one', '{n} caractéristique', { n: filtered.length }) }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <HubLangSelector aria-label="Langue d'affichage" />
+        <HubLangSelector :aria-label="t('hub.ui.features.display_lang', 'Langue d\'affichage')" />
         <input
           v-model="search"
           type="text"
-          placeholder="Nom…"
+          :placeholder="t('hub.ui.features.name_ph', 'Nom…')"
           class="text-xs border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:ring-2 focus:ring-primary-300"
         />
         <NuxtLink
+          to="/hub/features/import"
+          class="text-xs px-4 py-1.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium"
+        >{{ t('hub.ui.features.import_link', 'Charger un tableur') }}</NuxtLink>
+        <NuxtLink
           to="/hub/features/new"
           class="text-xs px-4 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
-        >+ Nouvelle caractéristique</NuxtLink>
+        >{{ t('hub.ui.features.new_feature', '+ Nouvelle caractéristique') }}</NuxtLink>
       </div>
     </header>
 
@@ -26,17 +30,17 @@
       </div>
 
       <div v-else-if="!filtered.length" class="flex flex-col items-center justify-center py-20 text-gray-400">
-        <p class="text-sm">Aucune caractéristique</p>
+        <p class="text-sm">{{ t('hub.ui.features.none', 'Aucune caractéristique') }}</p>
       </div>
 
       <table v-else class="w-full text-sm">
         <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
           <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
             <th class="px-4 py-2.5 font-medium w-14">#</th>
-            <th class="px-4 py-2.5 font-medium">Nom</th>
-            <th class="px-4 py-2.5 font-medium text-center w-24">Valeurs</th>
-            <th class="px-4 py-2.5 font-medium text-center w-24">Produits</th>
-            <th class="px-4 py-2.5 font-medium text-center w-24">Position</th>
+            <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.features.col_name', 'Nom') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-24">{{ t('hub.ui.features.col_values', 'Valeurs') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-24">{{ t('hub.ui.features.col_products', 'Produits') }}</th>
+            <th class="px-4 py-2.5 font-medium text-center w-24">{{ t('hub.ui.features.col_position', 'Position') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -65,6 +69,7 @@ definePageMeta({ layout: 'hub', middleware: 'hub-auth', ssr: false })
 const { canAccess } = useRoles()
 if (!canAccess('intelligence')) navigateTo('/hub/dashboard')
 
+const { t } = useHubT()
 const router = useRouter()
 const { currentLangId } = useHubLang()
 

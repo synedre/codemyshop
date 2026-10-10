@@ -1,4 +1,4 @@
-
+import { requireEmployeeSession } from '~/server/utils/session'
 
 import {
   updateProjectDetail,
@@ -22,6 +22,7 @@ const PROJECT_KEYS = new Set([
 const CONTACT_KEYS = new Set(['firstname', 'lastname', 'email', 'phone_whatsapp'])
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const idStr = getRouterParam(event, 'id')
   const idProject = Number(idStr)
   if (!idProject || idProject <= 0) {

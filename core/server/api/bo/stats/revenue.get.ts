@@ -2,7 +2,9 @@
 
 import { useClientDb, useClientDbById } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const { clientId } = getQuery(event) as { clientId?: string }
   const db = clientId ? useClientDbById(String(clientId)) : useClientDb(event)
 

@@ -4,7 +4,10 @@ import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
 import { listFaqsByParent } from '~/modules/faq/server/utils/faq'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id || id < 2) throw createError({ statusCode: 400, message: 'id invalide' })
   const q = getQuery(event)
@@ -60,8 +63,11 @@ export default defineEventHandler(async (event) => {
 
   
   
-  const { getCategoryH1 } = await import('~/modules/category-extra/server/utils/category-extra')
+  const { getCategoryH1, getCategoryHeroImageUrl } = await import('~/modules/category-extra/server/utils/category-extra')
   category.h1 = (await getCategoryH1(id, langId, { event })) || ''
+
+  
+  category.heroImageUrl = (await getCategoryHeroImageUrl(id, { event })) || null
 
   
   

@@ -5,7 +5,7 @@
     <header class="sticky top-0 z-10 px-8 py-5 border-b border-white/5 backdrop-blur-xl bg-white/70 dark:bg-slate-900/70">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-xl font-extrabold tracking-tight text-gray-900 dark:text-slate-100">Dashboard</h1>
+          <h1 class="text-xl font-extrabold tracking-tight text-gray-900 dark:text-slate-100">{{ t('hub.ui.dashboard.title', 'Dashboard') }}</h1>
           <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ todayLabel }}</p>
         </div>
         <div class="flex items-center gap-3">
@@ -29,6 +29,29 @@
     </header>
 
     <div class="p-8 space-y-8 max-w-7xl mx-auto">
+
+      
+      <NuxtLink
+        v-if="hasFeature('seo-console')"
+        to="/hub/marketing/seo-console/keywords"
+        class="group flex items-center gap-5 rounded-2xl border p-6 transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5
+               bg-white border-white/5 dark:bg-slate-800/80 dark:border-slate-700/50"
+      >
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-primary-500/10 transition-transform duration-300 group-hover:scale-110">
+          <svg class="w-6 h-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100">{{ t('hub.ui.dashboard.seo_title', 'Rank-tracker SEO') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ t('hub.ui.dashboard.seo_desc', 'Suivi des positions de mots-clés mois par mois (façon Semrush), depuis Search Console') }}</p>
+        </div>
+        <span class="text-primary-500 shrink-0 transition-transform duration-300 group-hover:translate-x-1">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </span>
+      </NuxtLink>
 
       
       <div class="grid grid-cols-2 xl:grid-cols-4 gap-6">
@@ -73,7 +96,7 @@
                     bg-white border-white/5 dark:bg-slate-800/80 dark:border-slate-700/50">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100">Évolution du CA</h2>
+              <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100">{{ t('hub.ui.dashboard.revenue_trend', 'Évolution du CA') }}</h2>
               <p class="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{{ activePeriodLabel }}</p>
             </div>
             <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-green-500/10 text-green-500 dark:text-green-400">
@@ -85,7 +108,7 @@
 
         <div class="rounded-2xl border p-6
                     bg-white border-white/5 dark:bg-slate-800/80 dark:border-slate-700/50">
-          <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100 mb-5">Répartition</h2>
+          <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100 mb-5">{{ t('hub.ui.dashboard.breakdown', 'Répartition') }}</h2>
           <div class="space-y-4">
             <div v-for="s in statusBreakdown" :key="s.label" class="flex items-center gap-3">
               <span class="w-2 h-2 rounded-full shrink-0" :style="`background-color:${s.color || '#94a3b8'}`" />
@@ -98,12 +121,12 @@
           </div>
 
           <div class="border-t border-white/5 dark:border-slate-700 mt-6 pt-6">
-            <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100 mb-3">Conversion</h2>
+            <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100 mb-3">{{ t('hub.ui.dashboard.conversion', 'Conversion') }}</h2>
             <div class="flex items-end gap-2">
               <span class="text-4xl font-extrabold tracking-tight tabular-nums text-gray-900 dark:text-slate-100">{{ stats.conversionRate }}%</span>
-              <span class="text-xs text-green-500 font-semibold mb-1.5">+0.4 pts</span>
+              <span class="text-xs text-green-500 font-semibold mb-1.5">{{ t('hub.ui.dashboard.pts_delta', '+0.4 pts') }}</span>
             </div>
-            <p class="text-xs text-gray-500 dark:text-slate-500 mt-1">Visites → Commandes</p>
+            <p class="text-xs text-gray-500 dark:text-slate-500 mt-1">{{ t('hub.ui.dashboard.visits_to_orders', 'Visites → Commandes') }}</p>
             <div class="mt-4 bg-gray-100 dark:bg-slate-700 rounded-full h-2">
               <div class="h-2 rounded-full bg-primary-500 transition-all duration-700" :style="`width: ${stats.conversionRate}%`" />
             </div>
@@ -139,29 +162,33 @@
       </div>
 
       
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" style="min-height: 380px;">
+      <div class="grid grid-cols-1 gap-6" style="min-height: 380px;">
         <HubRecentLeads :leads="recentLeads" @quote-created="onQuoteCreated" />
-        <HubTeamTasks :tasks="teamTasks" @task-created="onTaskCreated" @task-toggled="onTaskToggled" />
+      </div>
+
+      
+      <div class="grid grid-cols-1 gap-6">
+        <HubNewCustomersMonth :count="newCustomersMonth.count" :list="newCustomersMonth.list" />
       </div>
 
       
       <div class="rounded-2xl border overflow-hidden
                   bg-white border-white/5 dark:bg-slate-800/80 dark:border-slate-700/50">
         <div class="px-6 py-5 border-b border-white/5 dark:border-slate-700 flex items-center justify-between">
-          <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100">Dernières commandes</h2>
+          <h2 class="text-sm font-extrabold tracking-tight text-gray-900 dark:text-slate-100">{{ t('hub.ui.dashboard.latest_orders', 'Dernières commandes') }}</h2>
           <NuxtLink to="/hub/orders" class="text-xs text-primary-500 hover:text-primary-400 font-semibold transition-colors duration-300">
-            Voir tout →
+            {{ t('hub.ui.dashboard.see_all', 'Voir tout →') }}
           </NuxtLink>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-white/5 dark:border-slate-700">
-                <th class="text-left px-6 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">Réf.</th>
-                <th class="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">Client</th>
-                <th class="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest hidden md:table-cell">Date</th>
-                <th class="text-right px-4 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">Montant</th>
-                <th class="text-center px-6 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">Statut</th>
+                <th class="text-left px-6 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">{{ t('hub.ui.dashboard.col_ref', 'Réf.') }}</th>
+                <th class="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">{{ t('hub.ui.dashboard.col_customer', 'Client') }}</th>
+                <th class="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest hidden md:table-cell">{{ t('hub.ui.dashboard.col_date', 'Date') }}</th>
+                <th class="text-right px-4 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">{{ t('hub.ui.dashboard.col_amount', 'Montant') }}</th>
+                <th class="text-center px-6 py-3 text-[10px] font-semibold text-gray-500 dark:text-slate-500 uppercase tracking-widest">{{ t('hub.ui.dashboard.col_status', 'Statut') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5 dark:divide-slate-700/50">
@@ -196,22 +223,26 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
+const { t } = useHubT()
+
 const todayLabel = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
+const { hasFeature, loaded: featuresLoaded, loadFeatures } = useFeatureFlag()
+
 const periods = [
-  { value: '7d', label: '7 j' },
-  { value: '30d', label: '30 j' },
-  { value: '90d', label: '90 j' },
-  { value: '1y', label: '1 an' },
-  { value: 'all', label: 'Tout' },
+  { value: '7d', label: t('hub.ui.dashboard.period_7d', '7 j') },
+  { value: '30d', label: t('hub.ui.dashboard.period_30d', '30 j') },
+  { value: '90d', label: t('hub.ui.dashboard.period_90d', '90 j') },
+  { value: '1y', label: t('hub.ui.dashboard.period_1y', '1 an') },
+  { value: 'all', label: t('hub.ui.dashboard.period_all', 'Tout') },
 ]
 const activePeriod = ref('1y')
 const activePeriodLabel = computed(() => ({
-  '7d': '7 derniers jours',
-  '30d': '30 derniers jours',
-  '90d': '90 derniers jours',
-  '1y': '12 derniers mois',
-  'all': 'Tout l\'historique',
+  '7d': t('hub.ui.dashboard.range_7d', '7 derniers jours'),
+  '30d': t('hub.ui.dashboard.range_30d', '30 derniers jours'),
+  '90d': t('hub.ui.dashboard.range_90d', '90 derniers jours'),
+  '1y': t('hub.ui.dashboard.range_1y', '12 derniers mois'),
+  'all': t('hub.ui.dashboard.range_all', "Tout l'historique"),
 }[activePeriod.value] ?? ''))
 
 interface DashboardStats {
@@ -230,19 +261,38 @@ const liveRecentOrders = ref<{ id: string; client: string; date: string; amount:
 
 async function fetchDashboardStats() {
   const data = await $fetch<any>('/api/hub/dashboard/stats', { query: { period: activePeriod.value } })
-  stats.value = data.stats
-  caGrowth.value = data.caGrowth
-  liveChart.value = data.chart || []
-  liveStatusBreakdown.value = data.statusBreakdown || []
-  liveRecentOrders.value = data.recentOrders || []
+  
+  
+  if (data?.stats) {
+    stats.value = {
+      revenue: data.stats.revenue ?? 0,
+      orders: data.stats.orders ?? 0,
+      avgBasket: data.stats.avgBasket ?? 0,
+      visits: data.stats.visits ?? 0,
+      conversionRate: data.stats.conversionRate ?? 0,
+      trends: {
+        revenue: data.stats.trends?.revenue ?? 0,
+        orders: data.stats.trends?.orders ?? 0,
+        avgBasket: data.stats.trends?.avgBasket ?? 0,
+        visits: data.stats.trends?.visits ?? 0,
+      },
+    }
+  }
+  caGrowth.value = data?.caGrowth ?? 0
+  liveChart.value = data?.chart || []
+  liveStatusBreakdown.value = data?.statusBreakdown || []
+  liveRecentOrders.value = data?.recentOrders || []
+  newCustomersMonth.value = data?.newCustomersMonth || { count: 0, list: [] }
   return stats.value
 }
 
+const newCustomersMonth = ref<{ count: number; list: { id: number; name: string; email: string; company: string; date: string; nbOrders: number }[] }>({ count: 0, list: [] })
+
 const statCards = computed(() => [
-  { iconBg: 'bg-primary-500/10', iconColor: 'text-primary-500', label: 'Ventes du jour', value: `${stats.value.revenue.toLocaleString('fr-FR')} \u20ac`, trend: stats.value.trends.revenue, svgIcon: 'svg', svgPath: 'M14.25 7.756a4.5 4.5 0 1 0 0 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
-  { iconBg: 'bg-violet-500/10', iconColor: 'text-violet-500', label: 'Commandes', value: stats.value.orders, trend: stats.value.trends.orders, svgIcon: 'svg', svgPath: 'M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z' },
-  { iconBg: 'bg-amber-500/10', iconColor: 'text-amber-500', label: 'Panier moyen', value: `${stats.value.avgBasket.toFixed(2).replace('.', ',')} \u20ac`, trend: stats.value.trends.avgBasket, svgIcon: 'svg', svgPath: 'M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z' },
-  { iconBg: 'bg-sky-500/10', iconColor: 'text-sky-500', label: 'Visites', value: stats.value.visits.toLocaleString('fr-FR'), trend: stats.value.trends.visits, svgIcon: 'svg', svgPath: 'M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z' },
+  { iconBg: 'bg-primary-500/10', iconColor: 'text-primary-500', label: t('hub.ui.dashboard.card_sales_today', 'Ventes du jour'), value: `${(stats.value?.revenue ?? 0).toLocaleString('fr-FR')} \u20ac`, trend: stats.value?.trends?.revenue ?? 0, svgIcon: 'svg', svgPath: 'M14.25 7.756a4.5 4.5 0 1 0 0 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
+  { iconBg: 'bg-violet-500/10', iconColor: 'text-violet-500', label: t('hub.ui.dashboard.card_orders', 'Commandes'), value: stats.value?.orders ?? 0, trend: stats.value?.trends?.orders ?? 0, svgIcon: 'svg', svgPath: 'M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z' },
+  { iconBg: 'bg-amber-500/10', iconColor: 'text-amber-500', label: t('hub.ui.dashboard.card_avg_basket', 'Panier moyen'), value: `${(stats.value?.avgBasket ?? 0).toFixed(2).replace('.', ',')} \u20ac`, trend: stats.value?.trends?.avgBasket ?? 0, svgIcon: 'svg', svgPath: 'M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z' },
+  { iconBg: 'bg-sky-500/10', iconColor: 'text-sky-500', label: t('hub.ui.dashboard.card_visits', 'Visites'), value: (stats.value?.visits ?? 0).toLocaleString('fr-FR'), trend: stats.value?.trends?.visits ?? 0, svgIcon: 'svg', svgPath: 'M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z' },
 ])
 
 const chartData = computed(() => liveChart.value)
@@ -259,37 +309,58 @@ function statusBadge(status: string): string {
 }
 
 const crmCards = computed(() => [
-  { label: 'Leads entrants', value: 18, trend: 20, iconBg: 'bg-violet-500/10', iconColor: 'text-violet-500', svgPath: 'M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z' },
-  { label: 'Devis générés', value: 7, trend: 16, iconBg: 'bg-sky-500/10', iconColor: 'text-sky-500', svgPath: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
-  { label: 'Taux Lead → Client', value: '38.9%', trend: 3, trendUnit: ' pts', iconBg: 'bg-green-500/10', iconColor: 'text-green-500', svgPath: 'M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941' },
+  { label: t('hub.ui.dashboard.card_leads_in', 'Leads entrants'), value: 18, trend: 20, iconBg: 'bg-violet-500/10', iconColor: 'text-violet-500', svgPath: 'M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z' },
+  { label: t('hub.ui.dashboard.card_quotes', 'Devis générés'), value: 7, trend: 16, iconBg: 'bg-sky-500/10', iconColor: 'text-sky-500', svgPath: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z' },
+  { label: t('hub.ui.dashboard.card_lead_to_customer', 'Taux Lead → Client'), value: '38.9%', trend: 3, trendUnit: t('hub.ui.dashboard.pts_unit', ' pts'), iconBg: 'bg-green-500/10', iconColor: 'text-green-500', svgPath: 'M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941' },
 ])
 
 import type { Lead } from '~/components/hub/RecentLeads.vue'
-import type { Task } from '~/components/hub/TeamTasks.vue'
 
-const recentLeads = ref<Lead[]>([
-  { id: 1, name: 'Sophie Martin', email: 'sophie.martin@gmail.com', source: 'Formulaire', date: '16/03/2026', status: 'Nouveau', avatarShade: '600' },
-  { id: 2, name: 'Jean-Paul Dubois', email: 'jpdubois@pro.fr', source: 'LinkedIn', date: '15/03/2026', status: 'Contacté', avatarShade: '500' },
-  { id: 3, name: 'Amira Benali', email: 'amira.b@hotmail.com', source: 'WhatsApp', date: '15/03/2026', status: 'Qualifié', avatarShade: '700' },
-  { id: 4, name: 'Rémi Fontaine', email: 'remi.fontaine@entreprise.com', source: 'Direct', date: '14/03/2026', status: 'Contacté', avatarShade: '600' },
-  { id: 5, name: 'Clara Lejeune', email: 'c.lejeune@mail.fr', source: 'Formulaire', date: '14/03/2026', status: 'Nouveau', avatarShade: '500' },
-])
+const recentLeads = ref<Lead[]>([])
+
+const SOURCE_LABEL: Record<string, Lead['source']> = {
+  form: 'Formulaire', formulaire: 'Formulaire',
+  whatsapp: 'WhatsApp', linkedin: 'LinkedIn',
+  direct: 'Direct', manual: 'Direct',
+}
+const SHADES: Lead['avatarShade'][] = ['500', '600', '700']
+
+async function fetchRecentLeads() {
+  try {
+    const data = await $fetch<any>('/api/bo/leads', { query: { perPage: 5, sort: 'dateAdd', dir: 'desc' } })
+    recentLeads.value = (data?.leads || []).map((l: any, i: number) => {
+      const rawKind = String(l.source || '').toLowerCase()
+      const kind: Lead['kind'] = rawKind === 'customer-noorder'
+        ? 'customer-noorder'
+        : rawKind === 'contact'
+          ? 'contact'
+          : 'lead'
+      
+      
+      const channel = String(l.leadSource || l.lead_source || '').toLowerCase()
+      return {
+        id: Number(l.id ?? l.id_lead ?? l.id_customer ?? i + 1),
+        name: (l.name || `${l.firstname || ''} ${l.lastname || ''}`.trim()) || l.email || '—',
+        email: l.email || '',
+        source: SOURCE_LABEL[channel] || 'Direct',
+        date: l.dateAdd ? new Date(l.dateAdd).toLocaleDateString('fr-FR')
+              : l.date_add ? new Date(l.date_add).toLocaleDateString('fr-FR')
+              : '',
+        status: 'Nouveau' as const,
+        avatarShade: SHADES[i % SHADES.length],
+        kind,
+      }
+    })
+  } catch (err: any) {
+    console.error('[dashboard.recentLeads]', err?.message)
+    recentLeads.value = []
+  }
+}
 
 function onQuoteCreated(quote: object) { console.log('Devis:', quote) }
 
-const teamTasks = ref<Task[]>([
-  { id: 1, title: 'Rappeler Sophie Martin', assignee: { name: 'Alexandre C.', initials: 'AC', color: 'var(--color-primary-600)' }, status: 'todo', priority: 'high' },
-  { id: 2, title: 'Préparer proposition Example Shop Q2', assignee: { name: 'Sophie M.', initials: 'SM', color: '#10b981' }, status: 'in_progress', priority: 'high' },
-  { id: 3, title: 'Mettre à jour catalogue été', assignee: { name: 'Jean D.', initials: 'JD', color: '#f59e0b' }, status: 'done', priority: 'medium' },
-  { id: 4, title: 'Relance emailing segment inactifs', assignee: { name: 'Claire T.', initials: 'CT', color: '#8b5cf6' }, status: 'todo', priority: 'medium' },
-  { id: 5, title: 'Vérifier stocks produits promos', assignee: { name: 'Jean D.', initials: 'JD', color: '#f59e0b' }, status: 'in_progress', priority: 'low' },
-])
-
-function onTaskCreated(task: Task) { teamTasks.value.unshift(task) }
-function onTaskToggled(id: number) { const t = teamTasks.value.find(t => t.id === id); if (t) t.status = t.status === 'done' ? 'todo' : 'done' }
-
 const refreshing = ref(false)
 async function refresh() { refreshing.value = true; await fetchDashboardStats(); setTimeout(() => { refreshing.value = false }, 600) }
-onMounted(fetchDashboardStats)
+onMounted(() => { fetchDashboardStats(); fetchRecentLeads(); if (!featuresLoaded.value) loadFeatures() })
 watch(activePeriod, () => { fetchDashboardStats() })
 </script>

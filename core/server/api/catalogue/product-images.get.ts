@@ -1,6 +1,7 @@
 
 
 import { useClientDb, resolveClientId } from '~/server/utils/db'
+import { COVER_FIRST_ORDER } from '~/server/utils/product-image-cover'
 
 interface ImageRow { id_image: number; cover: number | null; position: number }
 
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event): Promise<{ imageIds: number[] }>
       `SELECT id_image, cover, position
          FROM ps_image
         WHERE id_product = ?
-        ORDER BY cover DESC, position ASC, id_image ASC`,
+        ORDER BY ${COVER_FIRST_ORDER}, position ASC, id_image ASC`,
       [productId],
     )
     return { imageIds: rows.map(r => Number(r.id_image)).filter(Number.isFinite) }

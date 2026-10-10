@@ -57,13 +57,25 @@ export default defineEventHandler(async (event) => {
   }
 
   
+  
+  
+  
+  const localPart = email.split('@')[0] || ''
+  const derivedFirstname = localPart
+    .replace(/[._+\-]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim()
+  const sourceHost = getRequestHost(event) || null
   await sendAdminContactFormEmail({
+    firstname: derivedFirstname,
+    lastname:  '',
     email,
     message,
     articleTitle,
     articleUrl,
     leadId,
     projectId,
+    sourceHost,
   }).catch((err: any) => {
     console.error('[blog/contact] Email admin error:', err?.message || err)
   })

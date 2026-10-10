@@ -3,27 +3,27 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Relance</h1>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.carts_abandoned.title', 'Relance') }}</h1>
         <p class="text-xs text-gray-400 mt-0.5">
-          <template v-if="activeTab === 'carts'">{{ counters.total }} panier{{ counters.total > 1 ? 's' : '' }} abandonné{{ counters.total > 1 ? 's' : '' }} · valeur potentielle {{ formatEur(counters.value_total) }}</template>
-          <template v-else>{{ qCounters.total }} devis pending · valeur potentielle {{ formatEur(qCounters.value_total) }}</template>
+          <template v-if="activeTab === 'carts'">{{ counters.total > 1 ? t('hub.ui.carts_abandoned.summary_carts_other', '{n} paniers abandonnés · valeur potentielle {value}', { n: counters.total, value: formatEur(counters.value_total) }) : t('hub.ui.carts_abandoned.summary_carts_one', '{n} panier abandonné · valeur potentielle {value}', { n: counters.total, value: formatEur(counters.value_total) }) }}</template>
+          <template v-else>{{ t('hub.ui.carts_abandoned.summary_quotes', '{n} devis pending · valeur potentielle {value}', { n: qCounters.total, value: formatEur(qCounters.value_total) }) }}</template>
         </p>
       </div>
       <div class="flex items-center gap-3">
         <label v-if="activeTab === 'carts'" class="flex items-center gap-2 cursor-pointer">
-          <span class="text-xs text-gray-500">Manuel</span>
+          <span class="text-xs text-gray-500">{{ t('hub.ui.carts_abandoned.manual', 'Manuel') }}</span>
           <button
             type="button"
             @click="toggleAuto"
             class="relative w-10 h-5 rounded-full transition-colors"
             :class="config.auto ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-slate-700'"
-            :title="config.auto ? 'Cron auto activé' : 'Cron auto désactivé (manuel uniquement)'"
+            :title="config.auto ? t('hub.ui.carts_abandoned.auto_on_title', 'Cron auto activé') : t('hub.ui.carts_abandoned.auto_off_title', 'Cron auto désactivé (manuel uniquement)')"
           >
             <span class="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform" :class="config.auto ? 'translate-x-5' : 'translate-x-0.5'"></span>
           </button>
-          <span class="text-xs font-semibold" :class="config.auto ? 'text-emerald-600' : 'text-gray-500'">Auto (cron)</span>
+          <span class="text-xs font-semibold" :class="config.auto ? 'text-emerald-600' : 'text-gray-500'">{{ t('hub.ui.carts_abandoned.auto_cron', 'Auto (cron)') }}</span>
         </label>
-        <button @click="reload" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">↻ Actualiser</button>
+        <button @click="reload" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">↻ {{ t('hub.ui.carts_abandoned.refresh', 'Actualiser') }}</button>
       </div>
     </header>
 
@@ -41,7 +41,7 @@
         ]"
         @click="activeTab = 'carts'"
       >
-        🛒 Paniers
+        🛒 {{ t('hub.ui.carts_abandoned.tab_carts', 'Paniers') }}
         <span v-if="counters.total" class="ml-1 inline-block px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300">{{ counters.total }}</span>
       </button>
       <button
@@ -56,7 +56,7 @@
         ]"
         @click="activeTab = 'quotes'"
       >
-        📋 Devis
+        📋 {{ t('hub.ui.carts_abandoned.tab_quotes', 'Devis') }}
         <span v-if="qCounters.total" class="ml-1 inline-block px-1.5 py-0.5 rounded-full text-[10px] bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300">{{ qCounters.total }}</span>
       </button>
     </nav>
@@ -70,27 +70,27 @@
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ counters.bucket_1_24h }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">1-3 j</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{{ t('hub.ui.carts_abandoned.bucket_1_3d', '1-3 j') }}</p>
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ counters.bucket_1_3d }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">3-7 j</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{{ t('hub.ui.carts_abandoned.bucket_3_7d', '3-7 j') }}</p>
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ counters.bucket_3_7d }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">+7 j</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{{ t('hub.ui.carts_abandoned.bucket_7d_plus', '+7 j') }}</p>
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ counters.bucket_7d_plus }}</p>
         </div>
         <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">Valeur potent.</p>
+          <p class="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">{{ t('hub.ui.carts_abandoned.value_potential', 'Valeur potent.') }}</p>
           <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ formatEur(counters.value_total) }}</p>
         </div>
         <div class="bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-800/30 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-1">Relancés 24h</p>
+          <p class="text-[10px] uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-1">{{ t('hub.ui.carts_abandoned.reminded_24h', 'Relancés 24h') }}</p>
           <p class="text-lg font-bold text-violet-700 dark:text-violet-300">{{ counters.sent_24h }}</p>
         </div>
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">Convertis</p>
+          <p class="text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">{{ t('hub.ui.carts_abandoned.converted', 'Convertis') }}</p>
           <p class="text-lg font-bold text-blue-700 dark:text-blue-300">{{ counters.total_converted }}</p>
         </div>
       </div>
@@ -98,39 +98,39 @@
       
       <div class="px-6 py-3 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shrink-0 flex items-center gap-3 flex-wrap">
         <label class="text-xs text-gray-600 dark:text-slate-300">
-          Âge min (h)
+          {{ t('hub.ui.carts_abandoned.age_min_h', 'Âge min (h)') }}
           <input v-model.number="filters.ageMinH" type="number" min="1" class="ml-1 w-16 text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-800" @change="loadCarts" />
         </label>
         <label class="text-xs text-gray-600 dark:text-slate-300">
-          Âge max (h)
+          {{ t('hub.ui.carts_abandoned.age_max_h', 'Âge max (h)') }}
           <input v-model.number="filters.ageMaxH" type="number" min="1" class="ml-1 w-20 text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-800" @change="loadCarts" />
         </label>
         <label class="text-xs text-gray-600 dark:text-slate-300">
-          Valeur min (€)
+          {{ t('hub.ui.carts_abandoned.value_min', 'Valeur min (€)') }}
           <input v-model.number="filters.valueMin" type="number" min="0" class="ml-1 w-20 text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-800" @change="loadCarts" />
         </label>
         <label class="text-xs text-gray-600 dark:text-slate-300">
-          Cooldown (j)
+          {{ t('hub.ui.carts_abandoned.cooldown_d', 'Cooldown (j)') }}
           <input v-model.number="filters.cooldownDays" type="number" min="1" class="ml-1 w-14 text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-800" @change="loadCarts" />
         </label>
         <label class="flex items-center gap-1 text-xs text-gray-600 dark:text-slate-300 cursor-pointer">
           <input v-model="filters.onlyEligible" type="checkbox" @change="loadCarts" class="rounded text-primary-600 focus:ring-primary-500" />
-          Exclure paniers récemment relancés
+          {{ t('hub.ui.carts_abandoned.exclude_recent', 'Exclure paniers récemment relancés') }}
         </label>
 
         <div class="ml-auto flex items-center gap-2">
           <label class="flex items-center gap-1.5 text-xs cursor-pointer" :class="testMode ? 'text-amber-600 font-semibold' : 'text-gray-500'">
             <input v-model="testMode" type="checkbox" class="rounded text-amber-500 focus:ring-amber-400" />
-            🧪 Test
+            🧪 {{ t('hub.ui.carts_abandoned.test', 'Test') }}
           </label>
           <input
             v-if="testMode"
             v-model="testEmail"
             type="email"
-            placeholder="email-test@…"
+            :placeholder="t('hub.ui.carts_abandoned.test_email_ph', 'email-test@…')"
             class="text-xs border border-amber-300 dark:border-amber-700 rounded px-2 py-1 bg-amber-50 dark:bg-amber-900/20 w-52 focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
-          <span v-if="selectedIds.size > 0" class="text-xs text-gray-500">{{ selectedIds.size }} sélectionné{{ selectedIds.size > 1 ? 's' : '' }}</span>
+          <span v-if="selectedIds.size > 0" class="text-xs text-gray-500">{{ selectedIds.size > 1 ? t('hub.ui.carts_abandoned.selected_other', '{n} sélectionnés', { n: selectedIds.size }) : t('hub.ui.carts_abandoned.selected_one', '{n} sélectionné', { n: selectedIds.size }) }}</span>
           <button
             @click="sendCarts"
             :disabled="selectedIds.size === 0 || sending || (testMode && !isValidEmail(testEmail))"
@@ -138,7 +138,7 @@
             :class="testMode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary-600 hover:bg-primary-700'"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
-            {{ sending ? 'Envoi…' : (testMode ? `Tester ${selectedIds.size || 'X'} mails` : `Relancer ${selectedIds.size || 'X'}`) }}
+            {{ sending ? t('hub.ui.carts_abandoned.sending', 'Envoi…') : (testMode ? t('hub.ui.carts_abandoned.test_send', 'Tester {n} mails', { n: selectedIds.size || 'X' }) : t('hub.ui.carts_abandoned.send', 'Relancer {n}', { n: selectedIds.size || 'X' })) }}
           </button>
         </div>
       </div>
@@ -150,8 +150,8 @@
         </div>
         <div v-else-if="!carts.length" class="flex flex-col items-center justify-center py-20 text-center">
           <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-3xl mb-4">🛒</div>
-          <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">Aucun panier abandonné dans cette tranche</p>
-          <p class="text-xs text-gray-400 mt-2">Ajuste les filtres ou actualise.</p>
+          <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">{{ t('hub.ui.carts_abandoned.empty_carts', 'Aucun panier abandonné dans cette tranche') }}</p>
+          <p class="text-xs text-gray-400 mt-2">{{ t('hub.ui.carts_abandoned.empty_hint', 'Ajuste les filtres ou actualise.') }}</p>
         </div>
         <table v-else class="w-full text-sm">
           <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
@@ -160,13 +160,14 @@
                 <input type="checkbox" :checked="allCartsSelected" @change="toggleAllCarts" class="rounded text-primary-600 focus:ring-primary-500" />
               </th>
               <th class="px-4 py-2.5 font-medium">#</th>
-              <th class="px-4 py-2.5 font-medium">Client</th>
-              <th class="px-4 py-2.5 font-medium">Société</th>
-              <th class="px-4 py-2.5 font-medium">Activité</th>
-              <th class="px-4 py-2.5 font-medium text-center">Articles</th>
-              <th class="px-4 py-2.5 font-medium text-right">Valeur HT</th>
-              <th class="px-4 py-2.5 font-medium">Âge</th>
-              <th class="px-4 py-2.5 font-medium">Dernier mail</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_customer', 'Client') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center" :title="t('hub.ui.carts_abandoned.tip_already_customer', 'Le client a déjà passé au moins une commande sur la boutique')">{{ t('hub.ui.carts_abandoned.col_already_customer', 'Déjà client') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_company', 'Société') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_activity', 'Activité') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ t('hub.ui.carts_abandoned.col_items', 'Articles') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ t('hub.ui.carts_abandoned.col_value_ht', 'Valeur HT') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_age', 'Âge') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_last_mail', 'Dernier mail') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -183,6 +184,10 @@
                 <div class="font-medium text-gray-800 dark:text-slate-100">{{ c.customer_name }}</div>
                 <div class="text-[10px] text-gray-400">{{ c.email }}</div>
               </td>
+              <td class="px-4 py-2.5 text-center">
+                <span v-if="c.has_ordered_before" class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">{{ t('hub.ui.carts_abandoned.yes', 'Oui') }}</span>
+                <span v-else class="text-xs px-2 py-0.5 rounded-full bg-gray-50 text-gray-400">{{ t('hub.ui.carts_abandoned.no', 'Non') }}</span>
+              </td>
               <td class="px-4 py-2.5 text-xs text-gray-500">{{ c.company || '—' }}</td>
               <td class="px-4 py-2.5 text-xs">
                 <span v-if="c.activity_code" class="inline-block px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-[10px] font-medium">
@@ -194,7 +199,7 @@
               <td class="px-4 py-2.5 text-right font-bold">{{ formatEur(c.total_estimated) }}</td>
               <td class="px-4 py-2.5 text-xs text-gray-500">{{ formatAgeHours(c.age_hours) }}</td>
               <td class="px-4 py-2.5 text-xs">
-                <span v-if="c.last_sent_at" class="text-amber-600">Le {{ formatDate(c.last_sent_at) }}</span>
+                <span v-if="c.last_sent_at" class="text-amber-600">{{ t('hub.ui.carts_abandoned.last_sent_on', 'Le {date}', { date: formatDate(c.last_sent_at) }) }}</span>
                 <span v-else class="text-gray-300">—</span>
               </td>
             </tr>
@@ -208,23 +213,23 @@
       
       <div class="px-6 py-4 grid grid-cols-2 md:grid-cols-5 gap-3 shrink-0 bg-gray-50 dark:bg-slate-950">
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">0-3 j</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{{ t('hub.ui.carts_abandoned.bucket_0_3d', '0-3 j') }}</p>
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ qCounters.bucket_0_3d }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">3-7 j</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{{ t('hub.ui.carts_abandoned.bucket_3_7d', '3-7 j') }}</p>
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ qCounters.bucket_3_7d }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">7-30 j</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{{ t('hub.ui.carts_abandoned.bucket_7_30d', '7-30 j') }}</p>
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ qCounters.bucket_7_30d }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">+30 j</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{{ t('hub.ui.carts_abandoned.bucket_30d_plus', '+30 j') }}</p>
           <p class="text-lg font-bold text-gray-800 dark:text-slate-100">{{ qCounters.bucket_30d_plus }}</p>
         </div>
         <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-xl p-3">
-          <p class="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">Valeur potent.</p>
+          <p class="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">{{ t('hub.ui.carts_abandoned.value_potential', 'Valeur potent.') }}</p>
           <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ formatEur(qCounters.value_total) }}</p>
         </div>
       </div>
@@ -232,31 +237,31 @@
       
       <div class="px-6 py-3 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shrink-0 flex items-center gap-3 flex-wrap">
         <label class="text-xs text-gray-600 dark:text-slate-300">
-          Âge min (j)
+          {{ t('hub.ui.carts_abandoned.age_min_d', 'Âge min (j)') }}
           <input v-model.number="qFilters.ageMinDays" type="number" min="0" class="ml-1 w-16 text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-800" @change="loadQuotes" />
         </label>
         <label class="text-xs text-gray-600 dark:text-slate-300">
-          Âge max (j)
+          {{ t('hub.ui.carts_abandoned.age_max_d', 'Âge max (j)') }}
           <input v-model.number="qFilters.ageMaxDays" type="number" min="1" class="ml-1 w-16 text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-800" @change="loadQuotes" />
         </label>
         <label class="text-xs text-gray-600 dark:text-slate-300">
-          Valeur min (€)
+          {{ t('hub.ui.carts_abandoned.value_min', 'Valeur min (€)') }}
           <input v-model.number="qFilters.valueMin" type="number" min="0" class="ml-1 w-20 text-xs border border-gray-200 dark:border-slate-700 rounded px-2 py-1 bg-white dark:bg-slate-800" @change="loadQuotes" />
         </label>
 
         <div class="ml-auto flex items-center gap-2">
           <label class="flex items-center gap-1.5 text-xs cursor-pointer" :class="testMode ? 'text-amber-600 font-semibold' : 'text-gray-500'">
             <input v-model="testMode" type="checkbox" class="rounded text-amber-500 focus:ring-amber-400" />
-            🧪 Test
+            🧪 {{ t('hub.ui.carts_abandoned.test', 'Test') }}
           </label>
           <input
             v-if="testMode"
             v-model="testEmail"
             type="email"
-            placeholder="email-test@…"
+            :placeholder="t('hub.ui.carts_abandoned.test_email_ph', 'email-test@…')"
             class="text-xs border border-amber-300 dark:border-amber-700 rounded px-2 py-1 bg-amber-50 dark:bg-amber-900/20 w-52 focus:outline-none focus:ring-2 focus:ring-amber-400"
           />
-          <span v-if="selectedQuoteIds.size > 0" class="text-xs text-gray-500">{{ selectedQuoteIds.size }} sélectionné{{ selectedQuoteIds.size > 1 ? 's' : '' }}</span>
+          <span v-if="selectedQuoteIds.size > 0" class="text-xs text-gray-500">{{ selectedQuoteIds.size > 1 ? t('hub.ui.carts_abandoned.selected_other', '{n} sélectionnés', { n: selectedQuoteIds.size }) : t('hub.ui.carts_abandoned.selected_one', '{n} sélectionné', { n: selectedQuoteIds.size }) }}</span>
           <button
             @click="sendQuotes"
             :disabled="selectedQuoteIds.size === 0 || sending || (testMode && !isValidEmail(testEmail))"
@@ -264,7 +269,7 @@
             :class="testMode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary-600 hover:bg-primary-700'"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
-            {{ sending ? 'Envoi…' : (testMode ? `Tester ${selectedQuoteIds.size || 'X'} mails` : `Relancer ${selectedQuoteIds.size || 'X'}`) }}
+            {{ sending ? t('hub.ui.carts_abandoned.sending', 'Envoi…') : (testMode ? t('hub.ui.carts_abandoned.test_send', 'Tester {n} mails', { n: selectedQuoteIds.size || 'X' }) : t('hub.ui.carts_abandoned.send', 'Relancer {n}', { n: selectedQuoteIds.size || 'X' })) }}
           </button>
         </div>
       </div>
@@ -276,8 +281,8 @@
         </div>
         <div v-else-if="!quotes.length" class="flex flex-col items-center justify-center py-20 text-center">
           <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-3xl mb-4">📋</div>
-          <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">Aucun devis pending dans cette tranche</p>
-          <p class="text-xs text-gray-400 mt-2">Ajuste les filtres ou actualise.</p>
+          <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">{{ t('hub.ui.carts_abandoned.empty_quotes', 'Aucun devis pending dans cette tranche') }}</p>
+          <p class="text-xs text-gray-400 mt-2">{{ t('hub.ui.carts_abandoned.empty_hint', 'Ajuste les filtres ou actualise.') }}</p>
         </div>
         <table v-else class="w-full text-sm">
           <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800/80 z-10">
@@ -285,13 +290,13 @@
               <th class="px-4 py-2.5 font-medium w-8">
                 <input type="checkbox" :checked="allQuotesSelected" @change="toggleAllQuotes" class="rounded text-primary-600 focus:ring-primary-500" />
               </th>
-              <th class="px-4 py-2.5 font-medium">Réf.</th>
-              <th class="px-4 py-2.5 font-medium">Contact</th>
-              <th class="px-4 py-2.5 font-medium">Société</th>
-              <th class="px-4 py-2.5 font-medium">Activité</th>
-              <th class="px-4 py-2.5 font-medium text-center">Produits</th>
-              <th class="px-4 py-2.5 font-medium text-right">Valeur HT</th>
-              <th class="px-4 py-2.5 font-medium">Âge</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_ref', 'Réf.') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_contact', 'Contact') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_company', 'Société') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_activity', 'Activité') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ t('hub.ui.carts_abandoned.col_products', 'Produits') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ t('hub.ui.carts_abandoned.col_value_ht', 'Valeur HT') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ t('hub.ui.carts_abandoned.col_age', 'Âge') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -312,7 +317,7 @@
               <td class="px-4 py-2.5 text-xs text-gray-500">{{ q.activite || '—' }}</td>
               <td class="px-4 py-2.5 text-center font-medium">{{ q.items_count }}</td>
               <td class="px-4 py-2.5 text-right font-bold">{{ formatEur(q.total_estimated) }}</td>
-              <td class="px-4 py-2.5 text-xs text-gray-500">{{ q.age_days }}j</td>
+              <td class="px-4 py-2.5 text-xs text-gray-500">{{ t('hub.ui.carts_abandoned.age_days', '{n}j', { n: q.age_days }) }}</td>
             </tr>
           </tbody>
         </table>
@@ -322,10 +327,10 @@
     
     <div v-if="sendResult" class="px-6 py-3 border-t text-xs"
       :class="sendResult.test_mode ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-300' : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/30 text-emerald-700 dark:text-emerald-300'">
-      <span v-if="sendResult.test_mode">🧪 <strong>Mode TEST</strong> — </span>
+      <span v-if="sendResult.test_mode">🧪 <strong>{{ t('hub.ui.carts_abandoned.mode_test', 'Mode TEST') }}</strong> — </span>
       <span v-else>✅ </span>
-      {{ sendResult.sent }} relance{{ sendResult.sent > 1 ? 's' : '' }} mise{{ sendResult.sent > 1 ? 's' : '' }} en queue<span v-if="sendResult.errors"> · {{ sendResult.errors }} erreur(s)</span>
-      <span v-if="sendResult.test_mode"> à {{ testEmail }} (clients réels non touchés)</span>
+      {{ sendResult.sent > 1 ? t('hub.ui.carts_abandoned.result_other', '{n} relances mises en queue', { n: sendResult.sent }) : t('hub.ui.carts_abandoned.result_one', '{n} relance mise en queue', { n: sendResult.sent }) }}<span v-if="sendResult.errors"> · {{ t('hub.ui.carts_abandoned.result_errors', '{n} erreur(s)', { n: sendResult.errors }) }}</span>
+      <span v-if="sendResult.test_mode"> {{ t('hub.ui.carts_abandoned.result_test_to', 'à {email} (clients réels non touchés)', { email: testEmail }) }}</span>
     </div>
   </div>
 </template>
@@ -333,9 +338,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'hub', middleware: 'crm-auth', ssr: false })
 
-import { CUSTOMER_ACTIVITIES } from '~/utils/customerActivity'
-const activityLabelMap = Object.fromEntries(CUSTOMER_ACTIVITIES.map(a => [a.code, a.label]))
-function activityLabel(code: string) { return activityLabelMap[code] || code }
+const { t } = useHubT()
+const { libelle: activityLabel } = useCustomerActivities()
 
 type Tab = 'carts' | 'quotes'
 const activeTab = ref<Tab>('carts')
@@ -352,6 +356,7 @@ interface Cart {
   age_hours: number
   last_sent_at: string | null
   date_upd: string
+  has_ordered_before: boolean | number
 }
 const carts = ref<Cart[]>([])
 const counters = ref<any>({})
@@ -385,7 +390,7 @@ const loadingQuotes = ref(true)
 const sending = ref(false)
 const sendResult = ref<{ sent: number; errors: number; test_mode?: boolean } | null>(null)
 const testMode = ref(false)
-const testEmail = ref('contact@codemyshop.com')
+const testEmail = ref('')
 
 function isValidEmail(e: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) }
 
@@ -416,7 +421,7 @@ function formatEur(n: number) {
 }
 function formatAgeHours(h: number) {
   if (h < 24) return `${h}h`
-  return `${Math.floor(h / 24)}j`
+  return t('hub.ui.carts_abandoned.age_days', '{n}j', { n: Math.floor(h / 24) })
 }
 function formatDate(d: string) {
   if (!d) return ''
@@ -464,15 +469,15 @@ async function toggleAuto() {
   try {
     await $fetch('/api/bo/abandoned-carts/config', { method: 'PUT', body: { auto: newAuto } })
     config.value = { ...config.value, auto: newAuto }
-  } catch (e) { console.error('toggle auto failed', e); alert('Erreur changement de mode') }
+  } catch (e) { console.error('toggle auto failed', e); alert(t('hub.ui.carts_abandoned.err_toggle', 'Erreur changement de mode')) }
 }
 
 async function sendCarts() {
   if (selectedIds.value.size === 0) return
-  if (testMode.value && !isValidEmail(testEmail.value)) { alert('Email de test invalide'); return }
+  if (testMode.value && !isValidEmail(testEmail.value)) { alert(t('hub.ui.carts_abandoned.err_test_email', 'Email de test invalide')); return }
   const msg = testMode.value
-    ? `MODE TEST — Envoyer ${selectedIds.value.size} mail(s) à ${testEmail.value} ? (clients réels non touchés)`
-    : `Envoyer ${selectedIds.value.size} relance(s) panier aux CLIENTS ?`
+    ? t('hub.ui.carts_abandoned.confirm_test', 'MODE TEST — Envoyer {n} mail(s) à {email} ? (clients réels non touchés)', { n: selectedIds.value.size, email: testEmail.value })
+    : t('hub.ui.carts_abandoned.confirm_carts', 'Envoyer {n} relance(s) panier aux CLIENTS ?', { n: selectedIds.value.size })
   if (!confirm(msg)) return
   sending.value = true; sendResult.value = null
   try {
@@ -482,16 +487,16 @@ async function sendCarts() {
     sendResult.value = r
     if (!testMode.value) selectedIds.value = new Set()
     await loadCarts()
-  } catch (e: any) { console.error('send failed', e); alert('Erreur envoi : ' + (e?.data?.message || e?.message)) }
+  } catch (e: any) { console.error('send failed', e); alert(t('hub.ui.carts_abandoned.err_send', 'Erreur envoi : {msg}', { msg: e?.data?.message || e?.message })) }
   finally { sending.value = false }
 }
 
 async function sendQuotes() {
   if (selectedQuoteIds.value.size === 0) return
-  if (testMode.value && !isValidEmail(testEmail.value)) { alert('Email de test invalide'); return }
+  if (testMode.value && !isValidEmail(testEmail.value)) { alert(t('hub.ui.carts_abandoned.err_test_email', 'Email de test invalide')); return }
   const msg = testMode.value
-    ? `MODE TEST — Envoyer ${selectedQuoteIds.value.size} mail(s) à ${testEmail.value} ? (clients réels non touchés)`
-    : `Envoyer ${selectedQuoteIds.value.size} relance(s) devis aux CLIENTS ?`
+    ? t('hub.ui.carts_abandoned.confirm_test', 'MODE TEST — Envoyer {n} mail(s) à {email} ? (clients réels non touchés)', { n: selectedQuoteIds.value.size, email: testEmail.value })
+    : t('hub.ui.carts_abandoned.confirm_quotes', 'Envoyer {n} relance(s) devis aux CLIENTS ?', { n: selectedQuoteIds.value.size })
   if (!confirm(msg)) return
   sending.value = true; sendResult.value = null
   try {
@@ -501,12 +506,16 @@ async function sendQuotes() {
     sendResult.value = r
     if (!testMode.value) selectedQuoteIds.value = new Set()
     await loadQuotes()
-  } catch (e: any) { console.error('send failed', e); alert('Erreur envoi : ' + (e?.data?.message || e?.message)) }
+  } catch (e: any) { console.error('send failed', e); alert(t('hub.ui.carts_abandoned.err_send', 'Erreur envoi : {msg}', { msg: e?.data?.message || e?.message })) }
   finally { sending.value = false }
 }
 
 onMounted(async () => {
   await loadConfig()
+  try {
+    const r = await $fetch<{ info: Record<string, string> }>('/api/hub/configuration/shop-info')
+    if (r?.info?.PS_SHOP_EMAIL) testEmail.value = r.info.PS_SHOP_EMAIL
+  } catch {  }
   await Promise.all([loadCarts(), loadQuotes()])
 })
 </script>

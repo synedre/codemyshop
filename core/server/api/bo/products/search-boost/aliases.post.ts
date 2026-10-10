@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{ id?: number; alias?: string; search?: string; active?: boolean }>(event)
   const id     = Number(body?.id || 0)
   const alias  = String(body?.alias || '').trim().toLowerCase()

@@ -3,30 +3,79 @@
 const props = defineProps<{
   title?: string | null
   subtitle?: string | null
-  payload?: { limit?: number; featuredPosition?: 'left' | 'right' } | null
+  payload?: {
+    
+    product_ids?: number[]
+    limit?: number
+    featuredPosition?: 'left' | 'right'
+    id_category?: number
+    
+    variant?: string
+    sectionBadge?: string | null
+    note?: string | null
+    titleAccent?: string | null
+  } | null
 }>()
 
-const limit = computed(() => Math.min(Math.max(props.payload?.limit ?? 5, 1), 5))
+const variant = computed(() => props.payload?.variant || 'featured')
+const isShowcase = computed(() => variant.value.startsWith('showcase'))
+
+const limit = computed(() => {
+  const max = isShowcase.value ? 12 : 5
+  return Math.min(Math.max(props.payload?.limit ?? max, 1), max)
+})
 const featuredPosition = computed<'left' | 'right'>(() =>
   props.payload?.featuredPosition === 'left' ? 'left' : 'right',
 )
 
-const { data } = await useFetch('/api/catalogue/by-category', {
-  query: { id_category: 390, limit: limit.value },
-  server: false,
-  lazy: true,
-})
+const cfg = useRuntimeConfig()
+const idCategory = computed(() => Number(
+  props.payload?.id_category
+    ?? (cfg.public as any).newProductsCategoryId
+    ?? 390,
+))
+
+const pinnedIds = computed(() => (props.payload?.product_ids ?? [])
+  .map(Number)
+  .filter((n) => Number.isInteger(n) && n > 0)
+  .slice(0, limit.value))
+const hasPinned = computed(() => pinnedIds.value.length > 0)
+
+const { activeLang } = useRouteLang()
+
+const { data } = await useFetch(
+  () => (hasPinned.value ? '/api/catalogue/by-ids' : '/api/catalogue/by-category'),
+  {
+    key: `home-new-products-${idCategory.value}-${limit.value}-${pinnedIds.value.join('-')}`,
+    query: computed(() => (hasPinned.value
+      ? { ids: pinnedIds.value.join(','), lang: activeLang.value }
+      : { id_category: idCategory.value, limit: limit.value, lang: activeLang.value })),
+    watch: [activeLang],
+  },
+)
 const products = computed(() => data.value?.products ?? [])
 
-const featuredBadge = { text: 'Nouveau', variant: 'new' as const }
+const { t } = useHubT()
+const featuredBadge = computed(() => ({ text: t('home.new_products_badge', 'Nouveau'), variant: 'new' as const }))
 </script>
 
 <template>
-  <HomeFeaturedProductGrid
-    :title="title || 'Nos nouveautés'"
+  <HomeProductShowcaseGrid
+    v-if="isShowcase"
+    :title="title || t('home.new_products', 'Nos nouveautés')"
     :subtitle="subtitle"
     :products="products"
-    :header-pill="{ text: 'Derniers ajouts', variant: 'green' }"
+    :card-variant="variant === 'showcase-offer' ? 'showcase-offer' : 'showcase'"
+    :section-badge="payload?.sectionBadge"
+    :note="payload?.note"
+    :title-accent="payload?.titleAccent"
+  />
+  <HomeFeaturedProductGrid
+    v-else
+    :title="title || t('home.new_products', 'Nos nouveautés')"
+    :subtitle="subtitle"
+    :products="products"
+    :header-pill="{ text: t('home.new_products_pill', 'Derniers ajouts'), variant: 'green' }"
     :featured-badge="featuredBadge"
     :featured-position="featuredPosition"
   />

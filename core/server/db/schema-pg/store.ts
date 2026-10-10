@@ -38,6 +38,15 @@ export const storeVaisseau = vaisseauMereAcSchema.table(
     hasSchool: smallint('has_school').notNull().default(0),
     position: integer('position').notNull().default(0),
     active: smallint('active').notNull().default(1),
+    
+
+    advisorName: varchar('advisor_name', { length: 128 }),
+    
+    advisorRole: varchar('advisor_role', { length: 128 }),
+    advisorPhotoUrl: varchar('advisor_photo_url', { length: 255 }),
+    
+
+    advisorActive: smallint('advisor_active').notNull().default(0),
     dateAdd: timestamp('date_add', { mode: 'date' }).notNull().defaultNow(),
     dateUpd: timestamp('date_upd', { mode: 'date' }).notNull().defaultNow(),
   },
@@ -55,12 +64,36 @@ export const storeLangVaisseau = vaisseauMereAcSchema.table(
     description: text('description'),
     metaTitle: varchar('meta_title', { length: 255 }),
     metaDescription: text('meta_description'),
+    
+
+    advisorPitch: text('advisor_pitch'),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.idStore, t.idLang] }),
   }),
 )
 
+export const storeStockVaisseau = vaisseauMereAcSchema.table(
+  'cs_store_stock',
+  {
+    idStore: integer('id_store').notNull(),
+    idProduct: integer('id_product').notNull(),
+    
+    idProductAttribute: integer('id_product_attribute').notNull().default(0),
+    quantity: integer('quantity').notNull().default(0),
+    
+    syncedAt: timestamp('synced_at', { mode: 'date' }).notNull().defaultNow(),
+    
+    source: varchar('source', { length: 32 }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.idStore, t.idProduct, t.idProductAttribute] }),
+    idxProduct: index('idx_store_stock_product').on(t.idProduct, t.idProductAttribute),
+  }),
+)
+
 export type StorePgRow = typeof storeVaisseau.$inferSelect
 export type StorePgInsert = typeof storeVaisseau.$inferInsert
 export type StoreLangPgRow = typeof storeLangVaisseau.$inferSelect
+export type StoreStockPgRow = typeof storeStockVaisseau.$inferSelect
+export type StoreStockPgInsert = typeof storeStockVaisseau.$inferInsert

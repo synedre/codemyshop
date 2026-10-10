@@ -85,8 +85,24 @@ export async function analyzeVisitor(
   }
 
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   const key = `${clientId}:${visitorId}`
-  await storage.setItem(key, avatar)
+  try {
+    await storage.setItem(key, avatar)
+  } catch (err) {
+    console.error(`[analyze-visitor] persistance impossible pour ${key} — avatar rendu sans être stocké :`, err)
+  }
 
   return avatar
 }

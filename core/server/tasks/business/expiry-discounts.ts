@@ -1,6 +1,6 @@
 
 
-import { defineTask } from 'nitropack/runtime'
+import { defineLeaderTask } from '~/server/utils/schedule-leader'
 import { skipIfNotAcInternal } from '~/server/utils/cron-context'
 import { withAutomateLock } from '~/server/utils/automate-lock'
 import { runAutomate } from '~/server/utils/automate-logger'
@@ -180,7 +180,7 @@ async function syncExpiryDiscounts(active: boolean) {
   return { stats, eligibleCount: lots.length, totalApplied: allApplied.length }
 }
 
-export default defineTask({
+export default defineLeaderTask({
   meta: {
     name: 'business:expiry-discounts',
     description: 'Sync décotes DLC ps_specific_price (port ac_cron_expiry_discounts, Wave 4F)',

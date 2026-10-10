@@ -4,7 +4,17 @@ import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
 import { replaceFaqsForParent, upsertFaqTranslations } from '~/modules/faq/server/utils/faq'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+import { callAction } from '~/server/utils/hooks-bus'
+import { HOOKS_ACTION, type ActionCategorySavedPayload } from '~/server/utils/hooks-catalog'
+import { useClientDb } from '~/server/utils/db'
+import { invalidateCategoryPathCache } from '~/server/utils/category-path'
+import {
+  categorySubtreeIds, snapshotEntityUrls, poseRedirectsForMovedUrls,
+} from '~/server/utils/rename-redirect'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id || id < 2) throw createError({ statusCode: 400, message: 'id invalide' })
   const q = getQuery(event)
@@ -16,6 +26,7 @@ export default defineEventHandler(async (event) => {
     parentId?: number
     active?: boolean
     h1?: string
+    heroImageUrl?: string
     summary?: string
     description?: string
     slug?: string
@@ -39,6 +50,29 @@ export default defineEventHandler(async (event) => {
   const slug = (body.slug?.trim() || body.name.trim())
     .toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+
+  
+  
+  
+  
+  
+  const cdb = useClientDb(event)
+  const currentSlugRow = await cdb.get<{ link_rewrite: string }>(
+    `SELECT link_rewrite FROM ps_category_lang
+      WHERE id_category = ? AND id_lang = ? AND id_shop = 1 LIMIT 1`,
+    [id, langId],
+  ).catch(() => null)
+
+  const slugChanges = !!currentSlugRow && String(currentSlugRow.link_rewrite || '') !== slug
+  const parentChanges = isMaster
+    && body.parentId !== undefined
+    && Number(body.parentId) !== Number(current.id_parent)
+  
+  
+  const urlsWillMove = slugChanges || parentChanges
+
+  const seoIds = urlsWillMove ? await categorySubtreeIds(cdb, id) : []
+  const urlsBefore = await snapshotEntityUrls(cdb, { event, kind: 'category', ids: seoIds })
 
   
   if (isMaster) {
@@ -85,9 +119,32 @@ export default defineEventHandler(async (event) => {
   `)
 
   
-  if (body.h1 !== undefined) {
-    const { upsertCategoryH1 } = await import('~/modules/category-extra/server/utils/category-extra')
-    await upsertCategoryH1(Number(id), langId, String(body.h1 || ''), { ensureParent: isMaster }, { event })
+  
+  
+  
+  let redirects: Array<{ source: string; target: string; action: string }> = []
+  if (urlsWillMove) {
+    invalidateCategoryPathCache()
+    const urlsAfter = await snapshotEntityUrls(cdb, { event, kind: 'category', ids: seoIds })
+    
+    
+    try {
+      redirects = await poseRedirectsForMovedUrls(cdb, urlsBefore, urlsAfter, 'category')
+    } catch (err: any) {
+      console.error(`[bo/categories/${id} PUT] 301 non posees:`, err?.message)
+    }
+  }
+
+  
+  if (body.h1 !== undefined || body.heroImageUrl !== undefined) {
+    const { upsertCategoryH1, upsertCategoryHeroImageUrl } = await import('~/modules/category-extra/server/utils/category-extra')
+    if (body.h1 !== undefined) {
+      await upsertCategoryH1(Number(id), langId, String(body.h1 || ''), { ensureParent: isMaster }, { event })
+    }
+    
+    if (isMaster && body.heroImageUrl !== undefined) {
+      await upsertCategoryHeroImageUrl(Number(id), String(body.heroImageUrl || ''), { event })
+    }
   }
 
   if (isMaster && Array.isArray(body.groupIds)) {
@@ -130,5 +187,11 @@ export default defineEventHandler(async (event) => {
     await replaceCategoryLinksFromCategory(Number(id), body.linkedPostIds, { event })
   }
 
-  return { success: true, id, slug, langId, isMaster }
+  callAction<ActionCategorySavedPayload>(HOOKS_ACTION.CATEGORY_SAVED, {
+    categoryId: id, created: false,
+  }).catch((err: any) => {
+    console.error(`[bo/categories/${id} PUT] hook '${HOOKS_ACTION.CATEGORY_SAVED}' failed:`, err?.message)
+  })
+
+  return { success: true, id, slug, langId, isMaster, redirects }
 })

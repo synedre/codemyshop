@@ -2,6 +2,8 @@
 
 import { updateSmartProjectStatus } from '~/enterprise/base/smartproject/server/utils/smartproject'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const VALID_STATUSES = new Set([
   'perdu_standby',
   'lead_entrant',
@@ -15,6 +17,7 @@ const VALID_STATUSES = new Set([
 ])
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!id || id <= 0) {
     throw createError({ statusCode: 400, message: 'id projet invalide' })

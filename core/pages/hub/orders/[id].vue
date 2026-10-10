@@ -10,7 +10,7 @@
       </NuxtLink>
       <div v-if="order" class="flex-1 min-w-0">
         <div class="flex items-center gap-3">
-          <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Commande #{{ order.id }} — {{ order.reference }}</h1>
+          <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.order.title', 'Commande #{id} — {ref}', { id: order.id, ref: order.reference }) }}</h1>
           <span class="text-xs px-2 py-0.5 rounded-full font-medium" :style="{ backgroundColor: (order.statusColor || '#999') + '20', color: order.statusColor || '#999' }">{{ order.status }}</span>
         </div>
         <p class="text-xs text-gray-400 mt-0.5">{{ formatDate(order.dateAdd) }} — {{ order.payment }}</p>
@@ -18,7 +18,7 @@
       <div v-if="order && invoice" class="flex items-center gap-2">
         <a :href="`/api/bo/invoices/pdf?id=${invoice.id}`" target="_blank" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-          Facture PDF
+          {{ t('hub.ui.order.invoice_pdf', 'Facture PDF') }}
         </a>
       </div>
     </header>
@@ -34,24 +34,24 @@
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Modifier le statut</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ t('hub.ui.order.edit_status', 'Modifier le statut') }}</h2>
           <select v-model="newStatusId" class="w-full text-sm border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 mb-3">
             <option v-for="s in statuses" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
           <button @click="updateStatus" :disabled="newStatusId === order.statusId || updatingStatus" class="w-full text-xs py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-40 transition-colors">
-            {{ updatingStatus ? 'Mise à jour…' : 'Appliquer' }}
+            {{ updatingStatus ? t('hub.ui.order.updating', 'Mise à jour…') : t('hub.ui.order.apply', 'Appliquer') }}
           </button>
         </div>
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Montants</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ t('hub.ui.order.amounts', 'Montants') }}</h2>
           <dl class="space-y-2 text-sm">
-            <div class="flex justify-between"><dt class="text-gray-500">Produits HT</dt><dd class="font-medium">{{ formatEur(order.totalProducts) }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500">Livraison TTC</dt><dd class="font-medium">{{ formatEur(order.totalShippingTTC) }}</dd></div>
-            <div v-if="order.totalDiscounts > 0" class="flex justify-between"><dt class="text-gray-500">Remises</dt><dd class="font-medium text-green-600">-{{ formatEur(order.totalDiscounts) }}</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">{{ t('hub.ui.order.products_ht', 'Produits HT') }}</dt><dd class="font-medium">{{ formatEur(order.totalProducts) }}</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">{{ t('hub.ui.order.shipping_ttc', 'Livraison TTC') }}</dt><dd class="font-medium">{{ formatEur(order.totalShippingTTC) }}</dd></div>
+            <div v-if="order.totalDiscounts > 0" class="flex justify-between"><dt class="text-gray-500">{{ t('hub.ui.order.discounts', 'Remises') }}</dt><dd class="font-medium text-green-600">-{{ formatEur(order.totalDiscounts) }}</dd></div>
             <div class="flex justify-between border-t border-gray-100 dark:border-slate-800 pt-2">
-              <dt class="text-gray-800 dark:text-slate-100 font-bold">Total TTC</dt>
+              <dt class="text-gray-800 dark:text-slate-100 font-bold">{{ t('hub.ui.order.total_ttc', 'Total TTC') }}</dt>
               <dd class="font-bold text-lg">{{ formatEur(order.totalPaidTTC) }}</dd>
             </div>
           </dl>
@@ -59,28 +59,37 @@
 
         
         <div v-if="customer" class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Client</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ t('hub.ui.order.customer', 'Client') }}</h2>
           <p class="text-sm font-medium text-gray-800 dark:text-slate-100">{{ customer.firstname }} {{ customer.lastname }}</p>
           <p v-if="customer.company" class="text-xs text-gray-500">{{ customer.company }}</p>
           <p class="text-xs text-gray-400 mt-1">{{ customer.email }}</p>
-          <p v-if="customer.siret" class="text-xs text-gray-400">SIRET : {{ customer.siret }}</p>
-          <p class="text-[10px] text-gray-300 mt-2">Client depuis {{ formatDate(customer.dateAdd) }}</p>
+          <p v-if="customer.siret" class="text-xs text-gray-400">{{ t('hub.ui.order.siret', 'SIRET : {siret}', { siret: customer.siret }) }}</p>
+          <p class="text-[10px] text-gray-300 mt-2">{{ t('hub.ui.order.customer_since', 'Client depuis {date}', { date: formatDate(customer.dateAdd) }) }}</p>
         </div>
       </div>
 
       
+      <DeliveryTrackingCard :order-id="order.id" variant="hub" />
+
+      
       <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden">
-        <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-800">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">Produits ({{ items.length }})</h2>
+        <div class="px-5 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between gap-3 flex-wrap">
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ t('hub.ui.order.products_count', 'Produits ({count})', { count: items.length }) }}</h2>
+          <div v-if="erpCopy && items.length" class="flex items-center gap-2 flex-wrap justify-end">
+            <span v-if="erpCopyMessage" class="text-xs" :class="erpCopyError ? 'text-red-600' : 'text-emerald-700'">{{ erpCopyMessage }}</span>
+            <button type="button" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium" @click="copyForErp">
+              {{ t('hub.ui.order.copy_for', 'Copier pour {label}', { label: erpCopy.label }) }}
+            </button>
+          </div>
         </div>
         <table class="w-full text-sm">
           <thead>
             <tr class="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
-              <th class="px-5 py-2.5 font-medium">Produit</th>
-              <th class="px-5 py-2.5 font-medium">Réf.</th>
-              <th class="px-5 py-2.5 font-medium text-center">Qté</th>
-              <th class="px-5 py-2.5 font-medium text-right">Prix unit. HT</th>
-              <th class="px-5 py-2.5 font-medium text-right">Total TTC</th>
+              <th class="px-5 py-2.5 font-medium">{{ t('hub.ui.order.product', 'Produit') }}</th>
+              <th class="px-5 py-2.5 font-medium">{{ t('hub.ui.order.ref', 'Réf.') }}</th>
+              <th class="px-5 py-2.5 font-medium text-center">{{ t('hub.ui.order.qty', 'Qté') }}</th>
+              <th class="px-5 py-2.5 font-medium text-right">{{ t('hub.ui.order.unit_price_ht', 'Prix unit. HT') }}</th>
+              <th class="px-5 py-2.5 font-medium text-right">{{ t('hub.ui.order.total_ttc', 'Total TTC') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -112,7 +121,7 @@
 
         
         <div v-if="addrDelivery" class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-2">Adresse de livraison</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-2">{{ t('hub.ui.order.delivery_address', 'Adresse de livraison') }}</h2>
           <div class="text-xs text-gray-600 leading-relaxed">
             <p class="font-medium">{{ addrDelivery.firstname }} {{ addrDelivery.lastname }}</p>
             <p v-if="addrDelivery.company">{{ addrDelivery.company }}</p>
@@ -126,7 +135,7 @@
 
         
         <div v-if="addrInvoice" class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-2">Adresse de facturation</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-2">{{ t('hub.ui.order.billing_address', 'Adresse de facturation') }}</h2>
           <div class="text-xs text-gray-600 leading-relaxed">
             <p class="font-medium">{{ addrInvoice.firstname }} {{ addrInvoice.lastname }}</p>
             <p v-if="addrInvoice.company">{{ addrInvoice.company }}</p>
@@ -139,7 +148,7 @@
 
         
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">Historique</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100 mb-3">{{ t('hub.ui.order.history', 'Historique') }}</h2>
           <div class="space-y-2 max-h-60 overflow-auto">
             <div v-for="h in history" :key="h.id" class="flex items-start gap-2">
               <span class="w-2 h-2 rounded-full mt-1 shrink-0" :style="{ backgroundColor: h.statusColor || '#999' }" />
@@ -148,7 +157,7 @@
                 <p class="text-[10px] text-gray-400">{{ formatDateTime(h.dateAdd) }}<span v-if="h.employeeName"> — {{ h.employeeName }}</span></p>
               </div>
             </div>
-            <p v-if="!history.length" class="text-xs text-gray-400">Aucun historique</p>
+            <p v-if="!history.length" class="text-xs text-gray-400">{{ t('hub.ui.order.no_history', 'Aucun historique') }}</p>
           </div>
         </div>
       </div>
@@ -157,6 +166,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildOrderErpRows, readOrderErpCopyConfig, toTsv } from '~/utils/order-erp-copy'
+
 definePageMeta({ layout: 'hub', ssr: false, middleware: ['hub-auth'] })
 
 const { t } = useHubT()
@@ -174,6 +185,26 @@ const statuses = ref<any[]>([])
 const newStatusId = ref(0)
 const loading = ref(true)
 const updatingStatus = ref(false)
+
+const erpCopy = readOrderErpCopyConfig(useRuntimeConfig().public as Record<string, unknown>)
+const erpCopyMessage = ref('')
+const erpCopyError = ref(false)
+
+async function copyForErp() {
+  if (!erpCopy || !order.value) return
+  const { rows, discountNotCopied } = buildOrderErpRows(items.value, order.value, erpCopy)
+  try {
+    await navigator.clipboard.writeText(toTsv(rows))
+    erpCopyError.value = false
+    erpCopyMessage.value = (rows.length > 1
+      ? t('hub.ui.order.copied_other', '{count} lignes copiées, à coller dans Excel', { count: rows.length })
+      : t('hub.ui.order.copied_one', '{count} ligne copiée, à coller dans Excel', { count: rows.length }))
+      + (discountNotCopied > 0 ? t('hub.ui.order.discount_to_report', ' — remise de {amount} TTC à reporter', { amount: formatEur(discountNotCopied) }) : '')
+  } catch {
+    erpCopyError.value = true
+    erpCopyMessage.value = t('hub.ui.order.copy_refused', 'Copie refusée par le navigateur')
+  }
+}
 
 async function load() {
   loading.value = true

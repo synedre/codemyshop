@@ -1,8 +1,15 @@
 
 
-import { useClientDb } from '~/server/utils/db'
+import { useClientDb, resolveClientId } from '~/server/utils/db'
 import { getFrontRole, isProfileAdmin } from '~/server/utils/roles'
-import { signToken } from '~/server/utils/session-crypto'
+import { setHubSessionCookie } from '~/server/utils/session'
+import { rateLimit } from '~/server/utils/redis'
+
+const LOGIN_WINDOW_SEC = 600
+
+const LOGIN_MAX_PER_IP = 15
+
+const LOGIN_MAX_PER_EMAIL = 8
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ email: string; password: string }>(event)
@@ -14,14 +21,24 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Email et mot de passe requis' })
   }
 
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+  const withinQuota =
+    (await rateLimit(`login-ip:${ip}`, LOGIN_MAX_PER_IP, LOGIN_WINDOW_SEC)) &&
+    (await rateLimit(`login-email:${email}`, LOGIN_MAX_PER_EMAIL, LOGIN_WINDOW_SEC))
+  if (!withinQuota) {
+    throw createError({ statusCode: 429, message: 'Trop de tentatives, réessayez dans quelques minutes' })
+  }
+
   const db = useClientDb(event)
 
   
   try {
+    
+    
     const emp = await db.get<any>(
       `SELECT id_employee, email, firstname, lastname, passwd, active, id_profile
          FROM ps_employee
-        WHERE email = ?
+        WHERE LOWER(email) = ?
         LIMIT 1`,
       [email],
     )
@@ -37,7 +54,7 @@ export default defineEventHandler(async (event) => {
           lastname: String(emp.lastname || ''),
           role,
           profileId,
-          clientId: 'ac-hub',
+          clientId: resolveClientId(event),
           userType: 'employee',
           isAdmin: isProfileAdmin(profileId),
         })
@@ -50,15 +67,19 @@ export default defineEventHandler(async (event) => {
 
   
   try {
+    
+    
     const cust = await db.get<any>(
       `SELECT id_customer, email, firstname, lastname, passwd, active
          FROM ps_customer
-        WHERE email = ? AND deleted = 0
+        WHERE LOWER(email) = ? AND deleted = 0
         LIMIT 1`,
       [email],
     )
     if (cust) {
-      if (Number(cust.active) !== 1) return { success: false, error: 'Compte désactivé' }
+      
+      
+      if (Number(cust.active) !== 1) return { success: false, error: 'Identifiants incorrects' }
       const isValid = await verifyBcrypt(password, String(cust.passwd || ''))
       if (isValid) {
         return createSession(event, {
@@ -68,7 +89,7 @@ export default defineEventHandler(async (event) => {
           lastname: String(cust.lastname || ''),
           role: 'customer',
           profileId: 0,
-          clientId: 'ac-hub',
+          clientId: resolveClientId(event),
           userType: 'customer',
           isAdmin: false,
         })
@@ -105,14 +126,7 @@ interface SessionPayload {
 }
 
 function createSession(event: any, data: SessionPayload) {
-  const token = signToken(data)
-  setCookie(event, 'hub_session', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  })
+  setHubSessionCookie(event, { ...data })
 
   return {
     success: true,

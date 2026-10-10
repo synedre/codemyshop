@@ -2,9 +2,12 @@
 
 import { updateAppointmentStatus } from '~/enterprise/base/appointment/server/utils/appointment'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const ALLOWED = ['pending', 'confirmed', 'cancelled', 'done'] as const
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const id = Number(getRouterParam(event, 'id'))
   if (!Number.isFinite(id) || id <= 0) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid id' })

@@ -1,9 +1,12 @@
 
 
 import { useClientDb } from '~/server/utils/db'
-import { resolveCustomerIdForRequest } from '~/server/utils/customer-session'
+import { requireCustomer, resolveCustomerIdForRequest } from '~/server/utils/customer-session'
 
 export default defineEventHandler(async (event) => {
+  
+  
+  requireCustomer(event)
   const { customerId } = getQuery(event) as Record<string, string>
   const resolvedId = resolveCustomerIdForRequest(event, customerId)
   if (!resolvedId) throw createError({ statusCode: 400, message: 'customerId requis' })
@@ -18,6 +21,14 @@ export default defineEventHandler(async (event) => {
       ORDER BY id_address DESC`,
     [resolvedId],
   )
+
+  
+  
+  const custRows = await db.query<any>(
+    `SELECT id_address_invoice_default FROM ps_customer WHERE id_customer = ? LIMIT 1`,
+    [resolvedId],
+  )
+  const defaultInvoiceId = Number(custRows?.[0]?.id_address_invoice_default || 0)
 
   return rows.map((r: any) => ({
     id: Number(r.id_address),
@@ -37,5 +48,6 @@ export default defineEventHandler(async (event) => {
     phoneMobile: String(r.phone_mobile || ''),
     other: String(r.other || ''),
     dni: String(r.dni || ''),
+    isDefaultBilling: defaultInvoiceId > 0 && Number(r.id_address) === defaultInvoiceId,
   }))
 })

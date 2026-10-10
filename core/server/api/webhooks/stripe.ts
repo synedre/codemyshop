@@ -60,29 +60,24 @@ async function provisionClient(
 ) {
   try {
     
-    console.log(`[orchestrator] 1/4 — Création projet Matomo...`)
-    const { createProject } = await import('../../services/matomoAdmin')
-    const matomo = await createProject(clientName)
-    console.log(`[orchestrator]   ✓ Matomo project: ${matomo.projectId}`)
-
     
-    console.log(`[orchestrator] 2/4 — Commande VPS OVH...`)
+    
+    console.log(`[orchestrator] 1/3 — Commande VPS OVH...`)
     const { orderClientVPS, waitForVPSReady } = await import('../../services/ovh')
     const order = await orderClientVPS(clientName)
     console.log(`[orchestrator]   ✓ VPS commandé: orderId ${order.orderId}`)
 
     
-    console.log(`[orchestrator] 3/4 — Attente provisioning VPS...`)
+    console.log(`[orchestrator] 2/3 — Attente provisioning VPS...`)
     const vps = await waitForVPSReady(order.serviceName)
     console.log(`[orchestrator]   ✓ VPS prêt: ${vps.ip}`)
 
     
-    console.log(`[orchestrator] 4/4 — Lancement playbook Ansible...`)
+    console.log(`[orchestrator] 3/3 — Lancement playbook Ansible...`)
     const playbookPath = resolve(process.cwd(), '../ansible/deploy-client.yml')
     const extraVars = [
       `client_name=${clientName}`,
       `domain=${domain}`,
-      `matomo_key=${matomo.apiToken}`,
       `git_deploy_token=${gitToken}`,
       `admin_email=${email}`,
     ].join(' ')
@@ -96,15 +91,9 @@ async function provisionClient(
     
     console.log(`[orchestrator] Enregistrement en DB...`)
     const { createClientVps } = await import('~/internal/hub/server/utils/hub')
-    const config = JSON.stringify({
-      analytics: {
-        provider: 'matomo-centralized',
-        host: process.env.MATOMO_HOST ?? 'https://analytics.codemyshop.fr',
-        projectId: matomo.projectId,
-        projectApiKey: matomo.apiToken,
-        sovereignData: true,
-      },
-    })
+    
+    
+    const config = JSON.stringify({})
 
     await createClientVps({
       clientId: clientName,

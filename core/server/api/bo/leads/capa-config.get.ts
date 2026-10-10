@@ -2,6 +2,8 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 const DEFAULTS = {
   ticketAnnuelEur: 10000,
   caConfortableMin: 5_000_000,
@@ -11,6 +13,7 @@ const DEFAULTS = {
 }
 
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const db = useClientDb(event)
   try {
     const row = await db.get<any>(

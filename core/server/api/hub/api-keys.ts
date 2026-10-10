@@ -1,5 +1,7 @@
 
 
+import { resolveClientId } from '~/server/utils/db'
+
 const MASK_PATTERN = /^\u2022+$|^\*+$/  
 
 export default defineEventHandler(async (event) => {
@@ -8,7 +10,7 @@ export default defineEventHandler(async (event) => {
   
   if (method === 'GET') {
     const { clientId } = getQuery(event)
-    const id = (clientId as string) || 'ac-hub'
+    const id = (clientId as string) || resolveClientId(event)
 
     
     const hasPsKey = hasStoredKey(id, 'prestashopKey')

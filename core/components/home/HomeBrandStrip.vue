@@ -14,6 +14,8 @@ const props = defineProps<{
   speed?: number
 }>()
 
+const { localePath } = useLocalePath()
+
 const speedPx = computed(() => Math.max(20, props.speed ?? 60))
 
 const looped = computed(() => [...props.items, ...props.items])
@@ -29,16 +31,16 @@ const animationDuration = computed(() => `${(props.items.length * ITEM_WIDTH_PX)
       <p v-if="subtitle" class="text-sm text-gray-500 mt-1">{{ subtitle }}</p>
     </div>
 
-    <div class="brand-strip relative overflow-hidden" aria-label="Marques distribuées">
+    <div class="brand-strip relative overflow-hidden" role="region" aria-label="Marques distribuées">
       <ul
         class="brand-strip-track flex items-center gap-12 whitespace-nowrap"
         :style="{ animationDuration: animationDuration }"
       >
         <li v-for="(b, i) in looped" :key="`${b.href}-${i}`" class="shrink-0">
           <NuxtLink
-            :to="b.href"
+            :to="localePath(b.href)"
             :title="b.label"
-            class="brand-item flex items-center justify-center h-12 px-2 text-gray-400 hover:text-gray-900 transition-colors"
+            class="brand-item flex items-center justify-center h-12 px-2 text-gray-500 hover:text-gray-900 transition-colors"
           >
             <img
               v-if="b.image"

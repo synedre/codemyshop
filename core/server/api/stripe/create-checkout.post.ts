@@ -19,7 +19,10 @@ export default defineEventHandler(async (event) => {
 
   const origin = getRequestHeader(event, 'origin')
     || getRequestHeader(event, 'referer')?.replace(/\/[^/]*$/, '')
-    || 'https://codemyshop.com'
+    || ''
+  if (!origin) {
+    throw createError({ statusCode: 400, message: 'origin/referer header requis pour générer les URLs de retour Stripe' })
+  }
 
   const plan = body.plan ?? 'starter'
 

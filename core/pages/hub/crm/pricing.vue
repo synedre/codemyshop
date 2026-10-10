@@ -2,31 +2,31 @@
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
     <header class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
       <div>
-        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">Grilles Tarifaires B2B</h1>
-        <p class="text-xs text-gray-400 mt-0.5">{{ groups.length }} groupe{{ groups.length > 1 ? 's' : '' }} · {{ tiers.length }} palier{{ tiers.length > 1 ? 's' : '' }} · {{ contracts.length }} contrat{{ contracts.length > 1 ? 's' : '' }}</p>
+        <h1 class="text-base font-bold text-gray-800 dark:text-slate-100">{{ tHub('hub.ui.crm_pricing.title', 'Grilles Tarifaires B2B') }}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ groups.length > 1 ? tHub('hub.ui.crm_pricing.count_groups_other', '{n} groupes', { n: groups.length }) : tHub('hub.ui.crm_pricing.count_groups_one', '{n} groupe', { n: groups.length }) }} · {{ tiers.length > 1 ? tHub('hub.ui.crm_pricing.count_tiers_other', '{n} paliers', { n: tiers.length }) : tHub('hub.ui.crm_pricing.count_tiers_one', '{n} palier', { n: tiers.length }) }} · {{ contracts.length > 1 ? tHub('hub.ui.crm_pricing.count_contracts_other', '{n} contrats', { n: contracts.length }) : tHub('hub.ui.crm_pricing.count_contracts_one', '{n} contrat', { n: contracts.length }) }}</p>
       </div>
-      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">Actualiser</button>
+      <button @click="load" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">{{ tHub('hub.ui.crm_pricing.refresh', 'Actualiser') }}</button>
     </header>
 
     <div class="flex-1 overflow-auto p-6 space-y-6">
 
       
       <section class="bg-primary-50/40 dark:bg-slate-800/30 border border-primary-100 dark:border-slate-700 rounded-xl p-4">
-        <h2 class="text-xs font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300 mb-3">🧮 Simulateur de résolution</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300 mb-3">{{ tHub('hub.ui.crm_pricing.sim_title', '🧮 Simulateur de résolution') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
           <label class="text-xs">
-            <span class="text-gray-500 dark:text-slate-400">Produit (id)</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.sim_product', 'Produit (id)') }}</span>
             <input v-model.number="sim.product" type="number" min="1" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
           </label>
           <label class="text-xs">
-            <span class="text-gray-500 dark:text-slate-400">Client (id)</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.sim_customer', 'Client (id)') }}</span>
             <input v-model.number="sim.customer" type="number" min="1" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
           </label>
           <label class="text-xs">
-            <span class="text-gray-500 dark:text-slate-400">Quantité</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.sim_qty', 'Quantité') }}</span>
             <input v-model.number="sim.qty" type="number" min="1" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
           </label>
-          <button @click="resolve" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-semibold">Résoudre</button>
+          <button @click="resolve" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-semibold">{{ tHub('hub.ui.crm_pricing.resolve', 'Résoudre') }}</button>
         </div>
         <div v-if="simResult" class="mt-3 flex items-center gap-3">
           <span class="text-sm font-mono font-bold text-primary-700 dark:text-primary-300">{{ formatEur(simResult.price) }}</span>
@@ -38,11 +38,11 @@
       
       <section>
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Groupes tarifaires</h2>
-          <button @click="openGroupCreate" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold">+ Nouveau groupe</button>
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ tHub('hub.ui.crm_pricing.groups_title', 'Groupes tarifaires') }}</h2>
+          <button @click="openGroupCreate" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold">{{ tHub('hub.ui.crm_pricing.new_group', '+ Nouveau groupe') }}</button>
         </div>
         <div v-if="loading" class="h-20 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-        <div v-else-if="!groups.length" class="py-10 text-center text-xs text-gray-400">Aucun groupe tarifaire. Créez-en un pour démarrer.</div>
+        <div v-else-if="!groups.length" class="py-10 text-center text-xs text-gray-400">{{ tHub('hub.ui.crm_pricing.no_groups', 'Aucun groupe tarifaire. Créez-en un pour démarrer.') }}</div>
         <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           <div
             v-for="g in groups"
@@ -52,13 +52,13 @@
             <div class="flex items-start justify-between mb-2">
               <p class="text-xs font-semibold text-gray-700 dark:text-slate-300">{{ g.name }}</p>
               <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" :class="g.active ? 'bg-success-100 text-success-600' : 'bg-gray-100 text-gray-400'">
-                {{ g.active ? 'actif' : 'inactif' }}
+                {{ g.active ? tHub('hub.ui.crm_pricing.active', 'actif') : tHub('hub.ui.crm_pricing.inactive', 'inactif') }}
               </span>
             </div>
-            <p class="text-[10px] text-gray-400">Priorité {{ g.priority }} · {{ tiersByGroup[g.id]?.length || 0 }} palier{{ (tiersByGroup[g.id]?.length || 0) > 1 ? 's' : '' }}</p>
+            <p class="text-[10px] text-gray-400">{{ (tiersByGroup[g.id]?.length || 0) > 1 ? tHub('hub.ui.crm_pricing.priority_tiers_other', 'Priorité {priority} · {n} paliers', { priority: g.priority, n: (tiersByGroup[g.id]?.length || 0) }) : tHub('hub.ui.crm_pricing.priority_tiers_one', 'Priorité {priority} · {n} palier', { priority: g.priority, n: (tiersByGroup[g.id]?.length || 0) }) }}</p>
             <div class="absolute top-2 right-2 hidden group-hover:flex gap-1">
-              <button @click="openGroupEdit(g)" class="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" title="Éditer">✎</button>
-              <button @click="deleteGroup(g)" class="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" title="Supprimer">✕</button>
+              <button @click="openGroupEdit(g)" class="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" :title="tHub('hub.ui.crm_pricing.edit', 'Éditer')">✎</button>
+              <button @click="deleteGroup(g)" class="text-[10px] px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" :title="tHub('hub.ui.crm_pricing.delete', 'Supprimer')">✕</button>
             </div>
           </div>
         </div>
@@ -67,22 +67,22 @@
       
       <section>
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">Paliers quantité → prix</h2>
-          <button @click="openTierCreate" :disabled="!groups.length" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed">+ Nouveau palier</button>
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ tHub('hub.ui.crm_pricing.tiers_title', 'Paliers quantité → prix') }}</h2>
+          <button @click="openTierCreate" :disabled="!groups.length" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed">{{ tHub('hub.ui.crm_pricing.new_tier', '+ Nouveau palier') }}</button>
         </div>
         <div v-if="loading" class="space-y-2">
           <div v-for="i in 4" :key="i" class="h-10 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse" />
         </div>
-        <div v-else-if="!tiers.length" class="py-10 text-center text-xs text-gray-400 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">Aucun palier. Créez-en un pour activer la résolution B2B.</div>
+        <div v-else-if="!tiers.length" class="py-10 text-center text-xs text-gray-400 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">{{ tHub('hub.ui.crm_pricing.no_tiers', 'Aucun palier. Créez-en un pour activer la résolution B2B.') }}</div>
         <table v-else class="w-full text-sm bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 overflow-hidden">
           <thead class="bg-gray-50 dark:bg-slate-800/50">
             <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-              <th class="px-4 py-2.5 font-medium">Groupe</th>
-              <th class="px-4 py-2.5 font-medium">Produit</th>
-              <th class="px-4 py-2.5 font-medium text-right">Qté min</th>
-              <th class="px-4 py-2.5 font-medium text-right">Prix HT</th>
-              <th class="px-4 py-2.5 font-medium text-center">Actif</th>
-              <th class="px-4 py-2.5 font-medium text-right">Actions</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_pricing.col_group', 'Groupe') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_pricing.col_product', 'Produit') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_pricing.col_min_qty', 'Qté min') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_pricing.col_price_ht', 'Prix HT') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ tHub('hub.ui.crm_pricing.col_active', 'Actif') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_pricing.col_actions', 'Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -103,8 +103,8 @@
               </td>
               <td class="px-4 py-2.5 text-right">
                 <div class="flex justify-end gap-1">
-                  <button @click="openTierEdit(t)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" title="Éditer">✎</button>
-                  <button @click="deleteTier(t)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" title="Supprimer">✕</button>
+                  <button @click="openTierEdit(t)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-primary-600" :title="tHub('hub.ui.crm_pricing.edit', 'Éditer')">✎</button>
+                  <button @click="deleteTier(t)" class="text-[10px] px-1.5 py-0.5 border border-gray-200 dark:border-slate-700 rounded text-gray-600 hover:text-danger-500" :title="tHub('hub.ui.crm_pricing.delete', 'Supprimer')">✕</button>
                 </div>
               </td>
             </tr>
@@ -114,15 +114,15 @@
 
       
       <section v-if="contracts.length">
-        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Contrats négociés individuels</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">{{ tHub('hub.ui.crm_pricing.contracts_title', 'Contrats négociés individuels') }}</h2>
         <table class="w-full text-sm bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 overflow-hidden">
           <thead class="bg-gray-50 dark:bg-slate-800/50">
             <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-              <th class="px-4 py-2.5 font-medium">Client</th>
-              <th class="px-4 py-2.5 font-medium">Produit</th>
-              <th class="px-4 py-2.5 font-medium text-right">Prix HT</th>
-              <th class="px-4 py-2.5 font-medium">Validité</th>
-              <th class="px-4 py-2.5 font-medium text-center">Actif</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_pricing.col_customer', 'Client') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_pricing.col_product', 'Produit') }}</th>
+              <th class="px-4 py-2.5 font-medium text-right">{{ tHub('hub.ui.crm_pricing.col_price_ht', 'Prix HT') }}</th>
+              <th class="px-4 py-2.5 font-medium">{{ tHub('hub.ui.crm_pricing.col_validity', 'Validité') }}</th>
+              <th class="px-4 py-2.5 font-medium text-center">{{ tHub('hub.ui.crm_pricing.col_active', 'Actif') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -146,28 +146,28 @@
     <div v-if="groupModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="groupModalOpen = false">
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-md mx-4">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ groupEditId ? 'Éditer le groupe' : 'Nouveau groupe' }}</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ groupEditId ? tHub('hub.ui.crm_pricing.edit_group', 'Éditer le groupe') : tHub('hub.ui.crm_pricing.new_group_title', 'Nouveau groupe') }}</h2>
           <button @click="groupModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="submitGroup" class="p-5 space-y-3">
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Nom *</span>
-            <input v-model="groupForm.name" required maxlength="64" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" placeholder="Restau, Traiteur, Gold…" />
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.name_req', 'Nom *') }}</span>
+            <input v-model="groupForm.name" required maxlength="64" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" :placeholder="tHub('hub.ui.crm_pricing.group_name_ph', 'Restau, Traiteur, Gold…')" />
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Priorité</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.priority', 'Priorité') }}</span>
               <input v-model.number="groupForm.priority" type="number" min="0" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs flex items-center gap-2 mt-4">
               <input v-model="groupForm.active" type="checkbox" :true-value="1" :false-value="0" />
-              <span class="text-gray-500 dark:text-slate-400">Actif</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.col_active', 'Actif') }}</span>
             </label>
           </div>
           <p v-if="groupError" class="text-xs text-danger-500">{{ groupError }}</p>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="groupModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">Annuler</button>
-            <button type="submit" :disabled="groupSaving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ groupSaving ? 'Sauvegarde…' : (groupEditId ? 'Enregistrer' : 'Créer') }}</button>
+            <button type="button" @click="groupModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.crm_pricing.cancel', 'Annuler') }}</button>
+            <button type="submit" :disabled="groupSaving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ groupSaving ? tHub('hub.ui.crm_pricing.saving', 'Sauvegarde…') : (groupEditId ? tHub('hub.ui.crm_pricing.save', 'Enregistrer') : tHub('hub.ui.crm_pricing.create', 'Créer')) }}</button>
           </div>
         </form>
       </div>
@@ -177,43 +177,43 @@
     <div v-if="tierModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="tierModalOpen = false">
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-2xl w-full max-w-md mx-4">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tierEditId ? 'Éditer le palier' : 'Nouveau palier' }}</h2>
+          <h2 class="text-sm font-bold text-gray-800 dark:text-slate-100">{{ tierEditId ? tHub('hub.ui.crm_pricing.edit_tier', 'Éditer le palier') : tHub('hub.ui.crm_pricing.new_tier_title', 'Nouveau palier') }}</h2>
           <button @click="tierModalOpen = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <form @submit.prevent="submitTier" class="p-5 space-y-3">
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">Groupe *</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.group_req', 'Groupe *') }}</span>
             <select v-model.number="tierForm.idGroup" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5">
-              <option value="" disabled>— Sélectionner —</option>
+              <option value="" disabled>{{ tHub('hub.ui.crm_pricing.select', '— Sélectionner —') }}</option>
               <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
             </select>
           </label>
           <label class="text-xs block">
-            <span class="text-gray-500 dark:text-slate-400">ID Produit *</span>
+            <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.product_id_req', 'ID Produit *') }}</span>
             <input v-model.number="tierForm.idProduct" type="number" min="1" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Qté min *</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.min_qty_req', 'Qté min *') }}</span>
               <input v-model.number="tierForm.minQuantity" type="number" step="0.001" min="0.001" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Prix HT *</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.price_ht_req', 'Prix HT *') }}</span>
               <input v-model.number="tierForm.unitPriceHt" type="number" step="0.000001" min="0" required class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs">
-              <span class="text-gray-500 dark:text-slate-400">Devise</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.currency', 'Devise') }}</span>
               <input v-model="tierForm.currency" maxlength="3" class="w-full mt-1 border border-gray-200 dark:border-slate-700 rounded px-2 py-1.5" />
             </label>
             <label class="text-xs flex items-center gap-2 mt-4">
               <input v-model="tierForm.active" type="checkbox" :true-value="1" :false-value="0" />
-              <span class="text-gray-500 dark:text-slate-400">Actif</span>
+              <span class="text-gray-500 dark:text-slate-400">{{ tHub('hub.ui.crm_pricing.col_active', 'Actif') }}</span>
             </label>
           </div>
           <p v-if="tierError" class="text-xs text-danger-500">{{ tierError }}</p>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="tierModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">Annuler</button>
-            <button type="submit" :disabled="tierSaving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ tierSaving ? 'Sauvegarde…' : (tierEditId ? 'Enregistrer' : 'Créer') }}</button>
+            <button type="button" @click="tierModalOpen = false" class="text-xs px-3 py-1.5 border border-gray-200 dark:border-slate-700 rounded hover:bg-gray-50 dark:hover:bg-slate-800">{{ tHub('hub.ui.crm_pricing.cancel', 'Annuler') }}</button>
+            <button type="submit" :disabled="tierSaving" class="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 font-semibold disabled:opacity-50">{{ tierSaving ? tHub('hub.ui.crm_pricing.saving', 'Sauvegarde…') : (tierEditId ? tHub('hub.ui.crm_pricing.save', 'Enregistrer') : tHub('hub.ui.crm_pricing.create', 'Créer')) }}</button>
           </div>
         </form>
       </div>
@@ -256,6 +256,8 @@ interface Contract {
   notes: string | null
   active: number
 }
+
+const { t: tHub } = useHubT()
 
 const groups = ref<Group[]>([])
 const tiers = ref<Tier[]>([])
@@ -321,7 +323,7 @@ async function resolve() {
     })
     simResult.value = res
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_pricing.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 
@@ -349,18 +351,18 @@ async function submitGroup() {
     groupModalOpen.value = false
     await load()
   } catch (e: any) {
-    groupError.value = e?.data?.statusMessage || e?.message || 'Erreur inconnue'
+    groupError.value = e?.data?.statusMessage || e?.message || tHub('hub.ui.crm_pricing.unknown_error', 'Erreur inconnue')
   } finally {
     groupSaving.value = false
   }
 }
 async function deleteGroup(g: Group) {
-  if (!confirm(`Supprimer le groupe "${g.name}" et tous ses paliers ?`)) return
+  if (!confirm(tHub('hub.ui.crm_pricing.delete_group_confirm', 'Supprimer le groupe "{name}" et tous ses paliers ?', { name: g.name }))) return
   try {
     await $fetch(`/api/bo/pricing/groups/${g.id}`, { method: 'DELETE' })
     await load()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_pricing.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 
@@ -396,18 +398,18 @@ async function submitTier() {
     tierModalOpen.value = false
     await load()
   } catch (e: any) {
-    tierError.value = e?.data?.statusMessage || e?.message || 'Erreur inconnue'
+    tierError.value = e?.data?.statusMessage || e?.message || tHub('hub.ui.crm_pricing.unknown_error', 'Erreur inconnue')
   } finally {
     tierSaving.value = false
   }
 }
 async function deleteTier(t: Tier) {
-  if (!confirm(`Supprimer le palier "${t.groupName} / ${t.productName || t.idProduct} ≥ ${t.minQuantity}" ?`)) return
+  if (!confirm(tHub('hub.ui.crm_pricing.delete_tier_confirm', 'Supprimer le palier "{name} / {product} ≥ {qty}" ?', { name: t.groupName, product: t.productName || t.idProduct, qty: t.minQuantity }))) return
   try {
     await $fetch(`/api/bo/pricing/tiers/${t.id}`, { method: 'DELETE' })
     await load()
   } catch (e: any) {
-    alert(`Erreur : ${e?.data?.statusMessage || e?.message}`)
+    alert(tHub('hub.ui.crm_pricing.err_generic', 'Erreur : {msg}', { msg: e?.data?.statusMessage || e?.message }))
   }
 }
 

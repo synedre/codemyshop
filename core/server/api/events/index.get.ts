@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
             COALESCE(el.title, elf.title)                       AS title,
             COALESCE(el.subtitle, elf.subtitle)                 AS subtitle,
             COALESCE(el.description_html, elf.description_html) AS description_html,
-            (SELECT COUNT(*) FROM cs_event_registration r
+            (SELECT COALESCE(SUM(r.attendees_count), 0) FROM cs_event_registration r
               WHERE r.id_event = e.id_event AND r.status = 'confirmed') AS registered_count
        FROM cs_event e
   LEFT JOIN cs_event_lang el  ON el.id_event  = e.id_event AND el.id_lang  = ?
@@ -48,7 +48,9 @@ export default defineEventHandler(async (event) => {
       country: r.country,
       lat: r.lat,
       lng: r.lng,
-      meetingUrl: r.meeting_url,
+      
+      meetingUrl: null,
+      hasMeetingUrl: !!r.meeting_url,
       maxParticipants: r.max_participants,
       priceCents: Number(r.price_cents),
       isFree: Number(r.price_cents) === 0,

@@ -7,35 +7,47 @@ import { verifySiret } from '~/server/utils/siret-verify'
 import { usePocPg } from '~/server/db/drizzle-pg'
 import { sql } from 'drizzle-orm'
 
+export async function saveQuoteRequestCritical(
+  payload: QuoteRequestedPayload,
+): Promise<number> {
+  return createQuoteRequestWithItems(
+    {
+      firstname: payload.firstname,
+      lastname: payload.lastname,
+      email: payload.email,
+      phone: payload.phone,
+      company: payload.company,
+      siret: payload.siret,
+      activite: payload.activite,
+      message: payload.message,
+      totalItems: payload.totalItems,
+      attribution: payload.attribution,
+    },
+    (payload.items || []).map((item) => ({
+      idProduct: item.id,
+      name: item.name,
+      reference: item.reference ?? null,
+      quantity: item.quantity,
+    })),
+  )
+}
+
 export async function SaveToDatabaseHandler(event: DomainEvent<QuoteRequestedPayload>): Promise<void> {
   try {
     const { payload } = event
 
     
     
-    const idQuoteRequest = await createQuoteRequestWithItems(
-      {
-        firstname: payload.firstname,
-        lastname: payload.lastname,
-        email: payload.email,
-        phone: payload.phone,
-        company: payload.company,
-        siret: payload.siret,
-        activite: payload.activite,
-        message: payload.message,
-        totalItems: payload.totalItems,
-      },
-      (payload.items || []).map((item) => ({
-        idProduct: item.id,
-        name: item.name,
-        reference: item.reference ?? null,
-        quantity: item.quantity,
-      })),
-    )
-
-    ;(event as any)._quoteRequestId = idQuoteRequest
-
-    console.log(`[SaveToDatabase] QuoteRequest #${idQuoteRequest} saved (${(payload.items || []).length} items)`)
+    
+    
+    let idQuoteRequest = (event as any)._quoteRequestId as number | undefined
+    if (!idQuoteRequest) {
+      idQuoteRequest = await saveQuoteRequestCritical(payload)
+      ;(event as any)._quoteRequestId = idQuoteRequest
+      console.log(`[SaveToDatabase] QuoteRequest #${idQuoteRequest} saved (fallback path, ${(payload.items || []).length} items)`)
+    } else {
+      console.log(`[SaveToDatabase] QuoteRequest #${idQuoteRequest} already persisted synchronously — proceeding to enrichment`)
+    }
 
     
     

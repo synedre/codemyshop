@@ -3,11 +3,11 @@
 import { existsSync, mkdirSync } from 'node:fs'
 import { join, extname } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { verifyToken } from '~/server/utils/session-crypto'
+import { readHubSessionToken } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
   
-  const session = verifyToken<any>(getCookie(event, 'hub_session'))
+  const session = readHubSessionToken<any>(getCookie(event, 'hub_session'))
   if (!session) {
     throw createError({ statusCode: 401, message: 'Non authentifié' })
   }

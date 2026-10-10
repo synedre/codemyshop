@@ -1,6 +1,7 @@
 
 <template>
-  <section class="relative py-20 lg:py-24 overflow-hidden bg-white dark:bg-slate-900">
+  
+  <section v-if="hasReviews" class="relative py-20 lg:py-24 overflow-hidden bg-white dark:bg-slate-900">
     <div class="relative max-w-6xl mx-auto px-4 sm:px-6">
       <div class="flex items-baseline gap-3 mb-10">
         <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-white">{{ t('testimonials.heading') }}</h2>
@@ -13,4 +14,10 @@
 
 <script setup lang="ts">
 const { t } = useT()
+
+const { data } = await useFetch<{ reviews: unknown[] }>('/api/reviews', {
+  query: { limit: 50 },
+  default: () => ({ reviews: [] }),
+})
+const hasReviews = computed(() => (data.value?.reviews?.length ?? 0) > 0)
 </script>

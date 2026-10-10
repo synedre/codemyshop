@@ -12,6 +12,11 @@ export default defineEventHandler(async (event) => {
 
   try {
     
+    
+    
+    
+    
+    
     const cat = await db.get<{
       id_category: number
       id_parent: number
@@ -26,13 +31,15 @@ export default defineEventHandler(async (event) => {
               COALESCE(cl.link_rewrite,     clf.link_rewrite, '')     AS link_rewrite,
               COALESCE(cl.description,      clf.description, '')      AS description,
               COALESCE(cl.meta_description, clf.meta_description, '') AS meta_description
-         FROM ps_category c
+         FROM ps_category_lang hit
+         JOIN ps_category c ON c.id_category = hit.id_category
     LEFT JOIN ps_category_lang cl  ON cl.id_category  = c.id_category AND cl.id_lang  = ?
     LEFT JOIN ps_category_lang clf ON clf.id_category = c.id_category AND clf.id_lang = 1
-        WHERE c.active = 1 AND c.id_category > 2
-          AND (cl.link_rewrite = ? OR clf.link_rewrite = ?)
+        WHERE hit.link_rewrite = ? AND hit.id_lang IN (?, 1)
+          AND c.active = 1 AND c.id_category > 2
+     ORDER BY (hit.id_lang = ?) DESC, c.id_category
         LIMIT 1`,
-      [idLang, String(slug), String(slug)],
+      [idLang, String(slug), idLang, idLang],
     )
 
     if (!cat) return null

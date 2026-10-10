@@ -2,7 +2,10 @@
 
 import { useClientDb } from '~/server/utils/db'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const q = getQuery(event) as Record<string, string>
   const page = Math.max(1, Number(q.page || 1))
   const perPage = Math.min(10000, Math.max(1, Number(q.perPage || 100)))
@@ -10,6 +13,16 @@ export default defineEventHandler(async (event) => {
   const categoryId = q.category ? Number(q.category) : 0
   const sort = q.sort || 'id'
   const dir = q.dir === 'ASC' ? 'ASC' : 'DESC'
+
+  
+  const fId        = (q.fId        || '').trim()
+  const fName      = (q.fName      || '').trim()
+  const fReference = (q.fReference || '').trim()
+  const fCategory  = (q.fCategory  || '').trim()
+  const fPriceMin  = Number(q.fPriceMin || 0)
+  const fStockMin  = Number(q.fStockMin || 0)
+  const fActive    = q.fActive === '1' ? '1' : (q.fActive === '0' ? '0' : '')
+
   const db = useClientDb(event)
 
   try {
@@ -26,6 +39,35 @@ export default defineEventHandler(async (event) => {
     if (categoryId) {
       conditions.push(`p.id_category_default = ?`)
       params.push(categoryId)
+    }
+    if (fId) {
+      conditions.push(`(CAST(p.id_product AS TEXT) ILIKE ? OR p.ean13 ILIKE ?)`)
+      const s = `%${fId}%`
+      params.push(s, s)
+    }
+    if (fName) {
+      conditions.push(`pl.name ILIKE ?`)
+      params.push(`%${fName}%`)
+    }
+    if (fReference) {
+      conditions.push(`p.reference ILIKE ?`)
+      params.push(`%${fReference}%`)
+    }
+    if (fCategory) {
+      conditions.push(`cl.name ILIKE ?`)
+      params.push(`%${fCategory}%`)
+    }
+    if (fPriceMin > 0) {
+      conditions.push(`p.price >= ?`)
+      params.push(fPriceMin)
+    }
+    if (fStockMin > 0) {
+      conditions.push(`COALESCE(sa.quantity, 0) >= ?`)
+      params.push(fStockMin)
+    }
+    if (fActive === '1' || fActive === '0') {
+      conditions.push(`p.active = ?`)
+      params.push(Number(fActive))
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
@@ -78,6 +120,26 @@ export default defineEventHandler(async (event) => {
     }
 
     
+    
+    
+    
+    
+    const missingCover = products.some((p: any) => !p.imageUrl)
+    if (missingCover) {
+      const { resolveClientId } = await import('~/server/utils/db')
+      const { applyCdnCovers } = await import('~/server/utils/cover-cdn')
+      const tenant = resolveClientId(event) || null
+      const cards = products.map((p: any) => ({ id: p.id, slug: p.linkRewrite, image: undefined as string | undefined, imageSrcset: undefined as string | undefined }))
+      await applyCdnCovers(db as any, cards, { tenant })
+      for (let i = 0; i < products.length; i++) {
+        if (!products[i].imageUrl && cards[i].image) {
+          
+          products[i].imageUrl = cards[i].image
+        }
+      }
+    }
+
+    
     if (products.length) {
       const productIds = products.map((p: any) => p.id)
       const placeholders = productIds.map(() => '?').join(',')
@@ -95,6 +157,28 @@ export default defineEventHandler(async (event) => {
       for (const p of products) {
         p.imageIds = imagesByProduct.get(p.id) || []
       }
+    }
+
+    
+    
+    
+    try {
+      if (products.length) {
+        const { filledCountExpr, deriveSeoStatus } = await import('~/server/utils/seo-coverage')
+        const ids = products.map((p: any) => p.id)
+        const ph = ids.map(() => '?').join(',')
+        const covRows = await db.query<any>(`
+          SELECT l.id_product AS id, (${filledCountExpr('product')}) AS filled
+          FROM ps_product_lang l
+          WHERE l.id_lang = 1 AND l.id_shop = 1 AND l.id_product IN (${ph})
+        `, ids)
+        const covMap = new Map<number, number>()
+        for (const r of covRows) covMap.set(Number(r.id), Number(r.filled))
+        for (const p of products) p.seoStatus = deriveSeoStatus(covMap.get(p.id) ?? 0, 'product')
+      }
+    } catch (e: any) {
+      console.error('[bo/products] seoStatus enrich error:', e?.message)
+      for (const p of products) p.seoStatus = null
     }
 
     return { products, total, page, perPage, totalPages: Math.ceil(total / perPage) }

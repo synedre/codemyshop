@@ -9,7 +9,7 @@
         </div>
         <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
           <span class="w-1.5 h-1.5 rounded-full bg-amber-400" />
-          En cours de dev
+          {{ t('hub.ui.feature_placeholder.in_dev', 'En cours de dev') }}
         </span>
       </div>
     </header>
@@ -45,11 +45,11 @@
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18" />
               </svg>
-              Voir dans la marketplace
+              {{ t('hub.ui.feature_placeholder.see_marketplace', 'Voir dans la marketplace') }}
             </NuxtLink>
             <a v-if="feedbackTo" :href="`mailto:${feedbackTo}?subject=Feature%20${encodeURIComponent(title)}`"
                class="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline">
-              Proposer un cas d'usage →
+              {{ t('hub.ui.feature_placeholder.suggest_use_case', 'Proposer un cas d\'usage →') }}
             </a>
           </div>
         </div>
@@ -59,6 +59,8 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useHubT()
+
 withDefaults(defineProps<{
   title:       string
   subtitle:    string
@@ -69,6 +71,6 @@ withDefaults(defineProps<{
   feedbackTo?: string
 }>(), {
   benefits:   () => [],
-  feedbackTo: 'contact@codemyshop.com',
+  feedbackTo: '',
 })
 </script>

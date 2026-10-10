@@ -342,6 +342,6 @@ A starter Grafana dashboard JSON is on the roadmap.
 
 ### Where do I report bugs or ask questions?
 
-- [GitHub Discussions](https://github.com/codemyshop/codemyshop/discussions) — for "how do I…" questions
-- [GitHub Issues](https://github.com/codemyshop/codemyshop/issues/new/choose) — for bugs (templates provided)
+- [GitHub Discussions](https://github.com/synedre/codemyshop/discussions) — for "how do I…" questions
+- [GitHub Issues](https://github.com/synedre/codemyshop/issues/new/choose) — for bugs (templates provided)
 - Security: see [SECURITY.md](SECURITY.md), do **not** open a public issue

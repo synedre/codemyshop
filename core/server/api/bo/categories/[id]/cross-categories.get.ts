@@ -14,13 +14,14 @@ export default defineEventHandler(async (event) => {
   const rows = await db.query<{
     id_cross_category: number
     position: number
+    cross_first: number
     name: string | null
     link_rewrite: string | null
     level_depth: number
     active: number
     id_parent: number
   }>(
-    `SELECT cc.id_cross_category, cc.position,
+    `SELECT cc.id_cross_category, cc.position, cc.cross_first,
             cl.name, cl.link_rewrite,
             c.level_depth, c.active, c.id_parent
        FROM cs_category_cross cc
@@ -42,5 +43,6 @@ export default defineEventHandler(async (event) => {
       id_parent: r.id_parent,
       position: r.position,
     })),
+    crossFirst: rows.length ? Number(rows[0].cross_first) === 1 : false,
   }
 })

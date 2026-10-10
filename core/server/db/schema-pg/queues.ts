@@ -2,6 +2,8 @@
 
 import {
   integer,
+  jsonb,
+  numeric,
   serial,
   text,
   timestamp,
@@ -47,13 +49,41 @@ export const cmsQueue = vaisseauMereAcSchema.table(
     metaTitle: varchar('meta_title', { length: 255 }),
     optimizedSlug: varchar('optimized_slug', { length: 255 }),
     instructions: text('instructions'),
-    model: varchar('model', { length: 64 }).notNull().default('gemini-2.5-flash'),
+    model: varchar('model', { length: 64 }).notNull().default('claude-sonnet-5'),
+    
+
+    provider: varchar('provider', { length: 32 }),
     status: varchar('status', { length: 10 }).notNull().default('pending'),
     contentHtml: text('content_html'),
     faqJson: text('faq_json'),
     wordCount: integer('word_count'),
     faqCount: integer('faq_count'),
     errorMsg: varchar('error_msg', { length: 512 }),
+    
+
+    source: varchar('source', { length: 16 }).notNull().default('worker'),
+    
+
+    tokensIn: integer('tokens_in'),
+    tokensOut: integer('tokens_out'),
+    
+
+    costUsd: numeric('cost_usd', { precision: 10, scale: 6 }),
+    
+
+    coverScene: text('cover_scene'),
+    
+
+    publishedAt: timestamp('published_at', { mode: 'date', precision: 0 }),
+    
+
+    idLang: integer('id_lang').notNull().default(1),
+    
+
+    qualityScore: numeric('quality_score', { precision: 4, scale: 2 }),
+    qualityReport: jsonb('quality_report'),
+    
+    qualityApprovedAt: timestamp('quality_approved_at', { mode: 'date', precision: 0 }),
     dateAdd: timestamp('date_add', { mode: 'date', precision: 0 }).notNull().defaultNow(),
     dateUpd: timestamp('date_upd', { mode: 'date', precision: 0 }).notNull().defaultNow(),
   },

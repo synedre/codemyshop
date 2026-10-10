@@ -34,7 +34,7 @@
           class="group relative rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2"
         >
           
-          <div class="relative h-full bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl dark:backdrop-blur-sm border border-white/30 dark:border-white/[0.06] rounded-3xl p-7 lg:p-8 flex flex-col gap-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.2)] group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] dark:hover:bg-white/[0.05]">
+          <div class="relative h-full bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl dark:backdrop-blur-sm border border-white/30 dark:border-white/[0.06] rounded-3xl p-7 lg:p-8 flex flex-col gap-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.2)] group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] dark:hover:bg-slate-800/[0.05]">
 
             
             <div class="absolute top-0 left-8 right-8 h-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" :style="{ background: `linear-gradient(90deg, transparent, ${persona.color}, transparent)` }" />

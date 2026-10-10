@@ -4,7 +4,12 @@ import type { LoyaltyAccountResponse, LoyaltyTier, LoyaltyTransaction } from '~/
 import type { LoyaltyConvertResponse } from '~/server/api/loyalty/convert.post'
 import { getApiErrorMessage } from '~/utils/api-error'
 
+import { useDisplayTimeZone } from '../../composables/useDisplayTimeZone'
+
+const displayTz = useDisplayTimeZone()
+
 definePageMeta({ layout: false, ssr: false })
+const { localePath } = useLocalePath()
 
 const { t } = useHubT()
 const { loggedIn, customer, checkSession } = useCustomerAuth()
@@ -15,7 +20,7 @@ const converting = ref(false)
 const lastResult = ref<LoyaltyConvertResponse | null>(null)
 const errorMsg = ref('')
 
-const formatDate = (d: string | null | undefined) => d ? new Date(d).toLocaleDateString('fr-FR') : ''
+const formatDate = (d: string | null | undefined) => d ? new Date(d).toLocaleDateString('fr-FR', { timeZone: displayTz }) : ''
 const formatPoints = (n: number) => Math.abs(n).toLocaleString('fr-FR')
 const formatEur = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n)
 
@@ -92,16 +97,12 @@ useHead({ title: t('account.account_fidelity_title', 'Mes points de fidélité')
 
 <template>
   <NuxtLayout name="white-label">
-    <div class="min-h-screen bg-gray-50">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-
-        
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <NuxtLink to="/mon-compte" class="text-xs text-gray-400 hover:text-primary-600">{{ t('account.account_back_link', '← Mon compte') }}</NuxtLink>
-            <h1 class="text-2xl font-bold text-gray-900 mt-1">{{ t('account.account_fidelity_page_title', 'Mes points de fidélité') }}</h1>
-          </div>
-        </div>
+    
+    <AccountShell
+      :title="t('account.account_fidelity_page_title', 'Mes points de fidélité')"
+      :back-label="t('account.account_back_link', '← Mon compte')"
+    >
+      <div>
 
         <div v-if="loading" class="text-center py-12 text-gray-400 text-sm">{{ t('common.common_loading', 'Chargement…') }}</div>
 
@@ -292,6 +293,6 @@ useHead({ title: t('account.account_fidelity_title', 'Mes points de fidélité')
         </template>
 
       </div>
-    </div>
+    </AccountShell>
   </NuxtLayout>
 </template>

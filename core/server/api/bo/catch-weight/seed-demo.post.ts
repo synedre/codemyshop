@@ -2,7 +2,10 @@
 
 import { seedDemoLine } from '~/enterprise/vertical-food/catchweight/server/utils/catchweight'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<{
     idProduct: number
     quantityOrdered: number

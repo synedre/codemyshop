@@ -2,7 +2,10 @@
 
 import { upsertExperiment } from '~/enterprise/misc/ab-testing/server/utils/ab-testing'
 
+import { requireEmployeeSession } from '~/server/utils/session'
+
 export default defineEventHandler(async (event) => {
+  requireEmployeeSession(event)
   const body = await readBody<any>(event)
   const id = Number(body?.id || 0)
   const name = String(body?.name || '').trim()

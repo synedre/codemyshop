@@ -3,19 +3,28 @@
 import { sql } from 'drizzle-orm'
 import { usePocPg } from '~/server/db/drizzle-pg'
 import { createOrderFromCart, getOrderFromDb } from '~/server/utils/orders-db'
-import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from '~/server/utils/order-emails'
-import { getCustomerSession, resolveCustomerIdForRequest } from '~/server/utils/customer-session'
+import { fetchCarrierName } from '~/server/utils/carrier-name'
+import { sendOrderConfirmationEmail, notifyAdminNewOrder } from '~/server/utils/order-emails'
+import { getThemePrimaryColor } from '~/modules/theme/server/utils/theme'
+import { getCustomerSession, requireCustomer, resolveCustomerIdForRequest } from '~/server/utils/customer-session'
 import { attachActionToSession } from '~/internal/impersonation/server/utils/impersonation'
 import { creditLoyaltyForOrder } from '~/server/utils/loyalty'
+import { assertCartAccess } from '~/server/utils/cart-proof'
 
 export default defineEventHandler(async (event) => {
+  
+  
+  
+  requireCustomer(event)
   const body = await readBody<any>(event)
-  const { cartId, customerId, addressDeliveryId, addressInvoiceId, carrierId, paymentMethod, clientId, customerEmail } = body || {}
+  const { cartId, customerId, addressDeliveryId, addressInvoiceId, carrierId, paymentMethod, clientId, customerEmail, deliveryComment, attribution } = body || {}
   const resolvedCustomerId = resolveCustomerIdForRequest(event, customerId)
 
   if (!cartId || !resolvedCustomerId || !addressDeliveryId || !carrierId) {
     throw createError({ statusCode: 400, message: 'cartId, customerId, addressDeliveryId et carrierId requis' })
   }
+
+  await assertCartAccess(event, cartId)
 
   const ctx = clientId ? { clientId: String(clientId) } : { event }
   const created = await createOrderFromCart({
@@ -31,6 +40,87 @@ export default defineEventHandler(async (event) => {
   const order = await getOrderFromDb(created.id, ctx)
   if (!order) throw createError({ statusCode: 500, message: 'Commande créée mais introuvable' })
 
+  
+  
+  
+  
+  
+  
+  
+  try {
+    const dPg = usePocPg()
+    const projectRows: any[] = await dPg.execute(sql`
+      UPDATE cs_main.cs_smartproject
+         SET project_status = 'en_cours',
+             final_price    = COALESCE(final_price, ${Number((order as any).totalPaidTTC || 0)}),
+             date_upd       = NOW()
+       WHERE cart_id_cart = ${Number(cartId)}
+         AND project_status IN ('lead_entrant', 'qualification', 'devis_envoye', 'devis_accepte')
+       RETURNING id_ac_smartproject
+    `) as any[]
+    if (projectRows?.length) {
+      console.log(`[orders/create] smartproject #${projectRows[0].id_ac_smartproject} → en_cours (order=#${(order as any).id}, cart=${cartId})`)
+    }
+  } catch (err: any) {
+    console.error('[orders/create] smartproject status sync failed:', err?.message || err)
+  }
+
+  
+  
+  
+  
+  
+  
+  if (attribution && typeof attribution === 'object') {
+    const cut = (v: any, n: number): string | null => {
+      const s = (v == null ? '' : String(v)).trim()
+      return s ? s.slice(0, n) : null
+    }
+    const gclid = cut(attribution.gclid, 255)
+    const gbraid = cut(attribution.gbraid, 255)
+    const wbraid = cut(attribution.wbraid, 255)
+    if (gclid || gbraid || wbraid) {
+      
+      const rawClickAt = cut(attribution.click_at, 32)
+      const clickAt = rawClickAt && !Number.isNaN(Date.parse(rawClickAt)) ? rawClickAt : null
+      try {
+        const dPg = usePocPg()
+        await dPg.execute(sql`
+          INSERT INTO cs_main.cs_order_attribution
+            (id_order, gclid, gbraid, wbraid, utm_source, utm_medium, utm_campaign, landing_url, click_at)
+          VALUES (
+            ${Number((order as any).id)}, ${gclid}, ${gbraid}, ${wbraid},
+            ${cut(attribution.utm_source, 128)}, ${cut(attribution.utm_medium, 128)},
+            ${cut(attribution.utm_campaign, 255)}, ${cut(attribution.landing_url, 1024)}, ${clickAt}
+          )
+          ON CONFLICT (id_order) DO NOTHING
+        `)
+      } catch (err: any) {
+        console.error(`[orders/create] cs_order_attribution INSERT failed (order=${(order as any).id}):`, err?.message || err)
+      }
+    }
+  }
+
+  
+  
+  
+  
+  const deliveryCommentClean = String(deliveryComment || '').trim().slice(0, 2000)
+  if (deliveryCommentClean) {
+    try {
+      const dPg = usePocPg()
+      await dPg.execute(sql`
+        INSERT INTO cs_main.ps_message
+          (id_cart, id_customer, id_order, message, private, date_add)
+        VALUES
+          (${Number(cartId)}, ${resolvedCustomerId}, ${Number((order as any).id)},
+           ${deliveryCommentClean}, 0, NOW())
+      `)
+    } catch (err: any) {
+      console.error(`[orders/create] ps_message INSERT failed (order=${(order as any).id}):`, err?.message || err)
+    }
+  }
+
   const session = getCustomerSession(event)
   if (session?.isImpersonated && session.impersonationSessionId) {
     await attachActionToSession(session.impersonationSessionId, { idOrder: Number((order as any).id) }).catch(err => {
@@ -38,7 +128,27 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (customerEmail) {
+  
+  
+  
+  let effectiveCustomerEmail: string | undefined = customerEmail
+  if (!effectiveCustomerEmail && resolvedCustomerId) {
+    try {
+      const dPg = usePocPg()
+      const rows: any[] = await dPg.execute(sql`
+        SELECT email FROM ps_customer
+         WHERE id_customer = ${resolvedCustomerId} LIMIT 1
+      `) as any[]
+      effectiveCustomerEmail = rows?.[0]?.email || undefined
+      if (effectiveCustomerEmail) {
+        console.log(`[orders/create] customerEmail fallback DB → ${effectiveCustomerEmail} (id_customer=${resolvedCustomerId})`)
+      }
+    } catch {
+      
+    }
+  }
+
+  if (effectiveCustomerEmail) {
     const d = usePocPg()
     const shopRows: any[] = await d.execute(sql`SELECT value FROM cs_main.ps_configuration WHERE name='PS_SHOP_NAME' LIMIT 1`).catch(() => [] as any[]) as any[]
     const shopRow = shopRows?.[0]
@@ -49,8 +159,19 @@ export default defineEventHandler(async (event) => {
     
     
     
+    const carrierName = await fetchCarrierName(d, carrierId)
+
+    
+    
+    
+    
+    
+    
+    
+    
     const paymentLow = String(order.payment).toLowerCase()
     const isSystempay = paymentLow.includes('systempay') || paymentLow.includes('carte bancaire')
+      || paymentLow.includes('stripe') || paymentLow.includes('klarna') || paymentLow.includes('paypal')
     const isBankwire = paymentLow.includes('virement')
 
     if (!isSystempay) {
@@ -71,24 +192,22 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      
-      const carrierRow: any = await d.execute(sql`
-        SELECT cl.name FROM cs_main.ps_carrier c
-        LEFT JOIN cs_main.ps_carrier_lang cl
-          ON cl.id_carrier = c.id_carrier AND cl.id_lang = 1
-        WHERE c.id_carrier = ${Number(carrierId)} LIMIT 1
-      `).catch(() => [] as any[])
-      const carrierName = String((carrierRow?.[0]?.name) || '')
-
       const cfg = useRuntimeConfig()
       const baseUrl = String(cfg.public.psFrontUrl || '').replace(/\/$/, '')
       const historyUrl = `${baseUrl}/mon-compte/commandes/${(order as any).id}`
 
+      
+      
+      
+      
+      
+      const accentColor = (await getThemePrimaryColor({ event }).catch(() => null)) || '#4F46E5'
+
       sendOrderConfirmationEmail(
         order as any,
-        String(customerEmail),
+        String(effectiveCustomerEmail),
         shopName,
-        '#4F46E5',
+        accentColor,
         bankDetails,
         { carrierName, historyUrl },
       ).catch(err => {
@@ -99,27 +218,26 @@ export default defineEventHandler(async (event) => {
     }
 
     
-    const addr = (order as any).addressDelivery
-    const customerName = `${addr?.firstname || ''} ${addr?.lastname || ''}`.trim() || String(customerEmail)
     
-    const custRows: any[] = await d.execute(sql`
-      SELECT company FROM cs_main.ps_customer WHERE id_customer = ${resolvedCustomerId} LIMIT 1
-    `).catch(() => [] as any[]) as any[]
-    const company = String(custRows?.[0]?.company || addr?.company || '')
-    sendAdminNewOrderEmail({
-      orderRef:      String((order as any).reference),
-      customerName,
-      customerEmail: String(customerEmail),
-      totalPaid:     Number((order as any).totalPaidTTC || 0),
-      payment:       String((order as any).payment || ''),
-      shopName,
-      firstname:     String(addr?.firstname || ''),
-      lastname:      String(addr?.lastname || ''),
-      company,
-      idOrder:       Number((order as any).id || 0),
-    }).catch(err => {
-      console.error('[orders/create] Admin notif failed:', err?.message || err)
-    })
+    
+    
+    
+    
+    if (!isSystempay) {
+      
+      notifyAdminNewOrder({
+        order:           order as any,
+        customerEmail:   String(effectiveCustomerEmail),
+        shopName,
+        carrierName,
+        customerMessage: deliveryCommentClean,
+        customerId:      resolvedCustomerId,
+      }).catch(err => {
+        console.error('[orders/create] Admin notif failed:', err?.message || err)
+      })
+    } else {
+      console.log(`[orders/create] SystemPay → notif admin différée jusqu'à IPN success (order=#${(order as any).reference})`)
+    }
   }
 
   
